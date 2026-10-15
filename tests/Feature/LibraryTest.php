@@ -100,6 +100,7 @@ class LibraryTest extends TestCase
         $upload->assertOk()->assertJsonPath('message', 'MP3 загружен в приватное хранилище.');
         $path = $upload->json('audio.path');
         $this->assertStringStartsWith('audio/', $path);
+        Storage::disk('local')->put($path, '0123456789');
         Storage::disk('local')->assertExists($path);
         $this->assertFileDoesNotExist(public_path($path));
         $this->get($upload->json('audio.url'))->assertOk()->assertHeader('Content-Type', 'audio/mpeg');
