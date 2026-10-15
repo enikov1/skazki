@@ -9,7 +9,7 @@ class AudioPlaybackState extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['position_seconds', 'updated_at'];
+    protected $fillable = ['story_id', 'position_seconds', 'updated_at'];
 
     protected function casts(): array
     {
