@@ -8,7 +8,15 @@
  @if($story->cover_path)<img class="detail-cover" src="{{ asset($story->cover_path) }}" alt="Обложка сказки «{{ $story->title }}»" width="640" height="480">@endif</header>
  <p class="story-summary">{{ $story->summary }}</p>
  @if($story->audio_path)<section class="audio-box"><div><p class="eyebrow">Можно послушать</p><h2>Аудиосказка</h2></div><audio controls preload="metadata" src="{{ asset($story->audio_path) }}">Ваш браузер не поддерживает воспроизведение аудио.</audio></section>@endif
- <section class="reading-text" aria-label="Текст сказки">{!! nl2br(e($story->body)) !!}</section>
+ @php
+   $readerPreferences = auth()->user()?->profile_preferences ?? [];
+   $fontSizeCandidate = (int) ($readerPreferences['reader_font_size'] ?? 20);
+   $readerFontSize = in_array($fontSizeCandidate, [16, 18, 20, 22, 24], true) ? $fontSizeCandidate : 20;
+   $readerTheme = in_array($readerPreferences['reader_theme'] ?? null, ['cream', 'white', 'green'], true) ? $readerPreferences['reader_theme'] : 'cream';
+   $readerWidth = $readerPreferences['reader_width'] ?? 'medium';
+   $readerMaxWidth = ['narrow' => '560px', 'medium' => '700px', 'wide' => '820px'][$readerWidth] ?? '700px';
+ @endphp
+ <section class="reading-text reader-theme-{{ $readerTheme }}" style="font-size: {{ $readerFontSize }}px; --reader-max-width: {{ $readerMaxWidth }}" aria-label="Текст сказки">{!! nl2br(e($story->body)) !!}</section>
  <section class="comments-section" id="comments"><div class="section-heading"><div><p class="eyebrow">Делимся впечатлениями</p><h2>Комментарии</h2></div><span class="result-count">{{ $comments->total() }}</span></div>
  @auth
  <form class="comment-form" method="post" action="{{ route('comments.store', $story) }}">@csrf<label class="field"><span>Ваш комментарий</span><textarea name="body" rows="4" minlength="3" maxlength="2000" required placeholder="Что вам понравилось в этой истории?"></textarea></label>@error('body')<p class="field-error">{{ $message }}</p>@enderror<button class="button" type="submit">Отправить на проверку</button></form>
