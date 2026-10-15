@@ -6,16 +6,33 @@ use App\Models\Role;
 use App\Models\Story;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
         $this->call(RolePermissionSeeder::class);
-        $adminEmail = config('initial-admin.email');
-        $adminPassword = config('initial-admin.password');
-        if (filled($adminEmail) && filled($adminPassword)) {
-            $admin = User::firstOrCreate(['email' => $adminEmail], ['name' => config('initial-admin.name') ?: 'Администратор', 'password' => $adminPassword, 'email_verified_at' => now()]);
+        $adminName = trim((string) config('initial-admin.name'));
+        $adminEmail = Str::lower(trim((string) config('initial-admin.email')));
+        $adminPassword = (string) config('initial-admin.password');
+        if (filled($adminName) || filled($adminEmail) || filled($adminPassword)) {
+            if (blank($adminName) || blank($adminEmail) || blank($adminPassword)) {
+                throw new RuntimeException('Для первого администратора задайте все три значения: ADMIN_NAME, ADMIN_EMAIL и ADMIN_PASSWORD.');
+            }
+            if (mb_strlen($adminPassword) < 12) {
+                throw new RuntimeException('ADMIN_PASSWORD должен содержать не менее 12 символов.');
+            }
+
+            // Intentionally refresh an existing account when the one-time deployment secret is supplied.
+            // Remove ADMIN_PASSWORD from runtime secrets immediately after provisioning.
+            $admin = User::updateOrCreate(['email' => $adminEmail], [
+                'name' => $adminName,
+                'password' => $adminPassword,
+                'email_verified_at' => now(),
+                'password_login_enabled' => true,
+            ]);
             $admin->roles()->syncWithoutDetaching([Role::where('slug', 'admin')->value('id')]);
         }
         if (app()->environment('local', 'testing') && Story::count() === 0) {

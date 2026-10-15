@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\MediaLibraryController;
 use App\Http\Controllers\Admin\StoryController as AdminStoryController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OAuthController;
@@ -30,29 +31,48 @@ Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store']
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
 
 Route::middleware('guest')->group(function (): void {
-    Route::get('/vhod', [LoginController::class, 'create'])->name('login');
-    Route::post('/vhod', [LoginController::class, 'store'])->middleware('throttle:login')->name('login.store');
-    Route::get('/registratsiya', [RegisterController::class, 'create'])->name('register');
-    Route::post('/registratsiya', [RegisterController::class, 'store'])->middleware('throttle:login')->name('register.store');
-    Route::get('/zabyl-parol', [PasswordController::class, 'requestForm'])->name('password.request');
-    Route::post('/zabyl-parol', [PasswordController::class, 'sendLink'])->middleware('throttle:login')->name('password.email');
-    Route::get('/sbros-parol/{token}', [PasswordController::class, 'resetForm'])->name('password.reset');
-    Route::post('/sbros-parol', [PasswordController::class, 'reset'])->middleware('throttle:login')->name('password.update');
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:login')->name('login.store');
+    Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:login')->name('register.store');
+    Route::get('/forgot-password', [PasswordController::class, 'requestForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordController::class, 'sendLink'])->middleware('throttle:login')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordController::class, 'resetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordController::class, 'reset'])->middleware('throttle:login')->name('password.update');
     Route::get('/oauth/{provider}', [OAuthController::class, 'redirect'])->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.redirect');
+
+    // Keep old links working while exposing readable, standard URLs in the interface.
+    Route::get('/vhod', fn (\Illuminate\Http\Request $request) => redirect()->route('login', $request->query(), 301));
+    Route::post('/vhod', [LoginController::class, 'store'])->middleware('throttle:login');
+    Route::get('/registratsiya', fn (\Illuminate\Http\Request $request) => redirect()->route('register', $request->query(), 301));
+    Route::post('/registratsiya', [RegisterController::class, 'store'])->middleware('throttle:login');
+    Route::get('/zabyl-parol', fn (\Illuminate\Http\Request $request) => redirect()->route('password.request', $request->query(), 301));
+    Route::post('/zabyl-parol', [PasswordController::class, 'sendLink'])->middleware('throttle:login');
+    Route::get('/sbros-parol/{token}', fn (\Illuminate\Http\Request $request, string $token) => redirect()->route('password.reset', ['token' => $token] + $request->query(), 301));
+    Route::post('/sbros-parol', [PasswordController::class, 'reset'])->middleware('throttle:login');
 });
 Route::get('/oauth/{provider}/callback', [OAuthController::class, 'callback'])->middleware('account.active')->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.callback');
 Route::middleware(['auth', 'account.active'])->group(function (): void {
-    Route::get('/podtverdit-email', fn () => view('auth.verify-email'))->name('verification.notice');
-    Route::get('/podtverdit-email/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+    Route::get('/email/verify', fn () => view('auth.verify-email'))->name('verification.notice');
+    $verifyEmail = function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
         $request->fulfill();
         return redirect()->route('home')->with('status', 'Адрес почты подтверждён.');
-    })->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
-    Route::post('/podtverdit-email', function (\Illuminate\Http\Request $request) {
+    };
+    Route::get('/email/verify/{id}/{hash}', $verifyEmail)->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
         $request->user()->sendEmailVerificationNotification();
         return back()->with('status', 'Письмо для подтверждения отправлено.');
     })->middleware('throttle:6,1')->name('verification.send');
+
+    Route::get('/podtverdit-email', fn (\Illuminate\Http\Request $request) => redirect()->route('verification.notice', $request->query(), 301));
+    Route::get('/podtverdit-email/{id}/{hash}', $verifyEmail)->middleware(['signed', 'throttle:6,1']);
+    Route::post('/podtverdit-email', function (\Illuminate\Http\Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'Письмо для подтверждения отправлено.');
+    })->middleware('throttle:6,1');
 });
-Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware(['auth', 'account.active'])->name('logout');
+Route::post('/logout', [LoginController::class, 'destroy'])->middleware(['auth', 'account.active'])->name('logout');
+Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware(['auth', 'account.active']);
 Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -80,6 +100,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'r
     Route::patch('/users/{user}/block', [RoleController::class, 'block'])->middleware('role:admin')->name('users.block');
     Route::patch('/users/{user}/unblock', [RoleController::class, 'unblock'])->middleware('role:admin')->name('users.unblock');
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->middleware('role:admin')->name('audit-logs.index');
+    Route::get('/media', [MediaLibraryController::class, 'index'])->middleware('role:admin,editor')->name('media.index');
+    Route::post('/media', [MediaLibraryController::class, 'store'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('media.store');
 });
 
 Route::redirect('/prototype', '/demo/')->name('prototype');

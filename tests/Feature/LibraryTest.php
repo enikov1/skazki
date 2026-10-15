@@ -8,6 +8,7 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\User;
 use App\Models\Comment;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -18,6 +19,48 @@ use Tests\TestCase;
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_initial_admin_seed_updates_existing_credentials_and_login_uses_email(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create(['name' => 'Старое имя', 'email' => 'kosta@example.test', 'password' => Hash::make('Old-password-2026')]);
+        config(['initial-admin.name' => 'kosta683', 'initial-admin.email' => 'KOSTA@example.test', 'initial-admin.password' => 'New-admin-password-2026']);
+
+        $this->seed(DatabaseSeeder::class);
+
+        $admin = $admin->fresh();
+        $this->assertSame('kosta683', $admin->name);
+        $this->assertTrue(Hash::check('New-admin-password-2026', $admin->password));
+        $this->assertTrue($admin->hasRole('admin'));
+        $this->post('/login', ['email' => 'kosta@example.test', 'password' => 'New-admin-password-2026'])->assertRedirect(route('home'));
+        $this->assertAuthenticatedAs($admin);
+    }
+
+    public function test_auth_routes_use_readable_paths_and_redirect_legacy_login_url(): void
+    {
+        $this->get('/login')->assertOk();
+        $this->get('/vhod')->assertRedirect(route('login'), 301);
+    }
+
+    public function test_editors_can_upload_and_pick_media_but_regular_users_cannot(): void
+    {
+        $this->seed();
+        Storage::fake('public');
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+
+        $this->actingAs($editor)->get(route('admin.media.index', ['select' => 'cover_path']))->assertOk()->assertSee('Медиатека');
+        $this->post(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('illustration.webp', 400, 300)])
+            ->assertRedirect(route('admin.media.index', ['select' => 'cover_path']));
+        $files = Storage::disk('public')->allFiles('media');
+        $this->assertCount(1, $files);
+        Storage::disk('public')->assertExists($files[0]);
+
+        auth()->logout();
+        $reader = User::factory()->create();
+        $reader->roles()->attach(Role::where('slug', 'user')->value('id'));
+        $this->actingAs($reader)->get(route('admin.media.index'))->assertForbidden();
+    }
 
     public function test_published_story_is_available_and_draft_is_not(): void
     {
