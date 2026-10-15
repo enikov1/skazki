@@ -139,7 +139,8 @@ class LibraryTest extends TestCase
             ->assertSee('data-audio-id="narodnaya-istoriya"', false)
             ->assertDontSee('data-audio-id="draft-audio-track"', false)
             ->assertDontSee('data-audio-id="no-audio-story"', false)
-            ->assertSee('data-audio-results', false)->assertSee('id="audioDock"', false);
+            ->assertSee('data-audio-results', false)->assertSee('id="audioDock"', false)
+            ->assertSee('id="dockSleepTimer"', false)->assertSee('До конца сказки');
 
         $filtered = $this->getJson(route('audio.index', ['genre' => 'Приключения', 'age' => '5-8', 'q' => 'Лесная']));
         $filtered->assertOk()->assertJsonPath('count', 1);
