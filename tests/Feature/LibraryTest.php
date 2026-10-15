@@ -9,6 +9,8 @@ use App\Models\ArticleComment;
 use App\Models\User;
 use App\Models\Comment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class LibraryTest extends TestCase
@@ -68,6 +70,8 @@ class LibraryTest extends TestCase
         $user = User::where('email', 'masha@example.com')->firstOrFail();
         $this->assertTrue($user->hasRole('user'));
         $this->assertFalse($user->hasRole('admin'));
+        $this->assertDatabaseHas('user_consent_events', ['user_id' => $user->id, 'consent_type' => 'terms', 'action' => 'granted']);
+        $this->assertDatabaseHas('user_consent_events', ['user_id' => $user->id, 'consent_type' => 'privacy_notice', 'action' => 'granted']);
     }
 
     public function test_parent_articles_are_searchable_and_drafts_remain_private(): void
@@ -145,5 +149,28 @@ class LibraryTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Костя']);
         $this->put(route('profile.password'), ['current_password' => 'password-for-tests', 'password' => 'New-Reading-Pass-2026', 'password_confirmation' => 'New-Reading-Pass-2026'])->assertRedirect();
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('New-Reading-Pass-2026', $reader->fresh()->password));
+    }
+
+    public function test_profile_avatar_preferences_and_optional_consent_are_manageable(): void
+    {
+        $this->seed();
+        Storage::fake('public');
+        $reader = User::factory()->create();
+        $this->actingAs($reader)->put(route('profile.avatar.update'), ['avatar' => UploadedFile::fake()->image('portrait.jpg', 400, 400)])->assertRedirect();
+        $avatarPath = $reader->fresh()->avatar_path;
+        $this->assertNotEmpty($avatarPath);
+        Storage::disk('public')->assertExists($avatarPath);
+
+        $this->put(route('profile.preferences'), ['reader_font_size' => 24, 'reader_theme' => 'green', 'reader_width' => 'narrow'])->assertRedirect();
+        $this->get(route('stories.show', 'kolobok'))->assertOk()->assertSee('reader-theme-green')->assertSee('font-size: 24px; --reader-max-width: 560px', false);
+
+        $this->put(route('profile.newsletter'), ['newsletter' => '1'])->assertRedirect();
+        $this->put(route('profile.newsletter'), ['newsletter' => '0'])->assertRedirect();
+        $this->assertDatabaseCount('user_consent_events', 2);
+        $this->assertDatabaseHas('user_consent_events', ['user_id' => $reader->id, 'consent_type' => 'newsletter', 'action' => 'revoked']);
+
+        $this->delete(route('profile.avatar.destroy'))->assertRedirect();
+        $this->assertNull($reader->fresh()->avatar_path);
+        Storage::disk('public')->assertMissing($avatarPath);
     }
 }
