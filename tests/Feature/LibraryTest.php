@@ -79,7 +79,13 @@ class LibraryTest extends TestCase
         $this->get(route('articles.index', ['q' => 'вечер']))->assertOk()->assertSee('Читаем вместе каждый вечер')->assertDontSee('Скрытая статья');
         $this->get(route('articles.show', 'reading-together'))->assertOk()->assertSee('Начните с короткой истории')->assertSee('application/ld+json', false);
         $this->get(route('articles.show', 'hidden-article'))->assertNotFound();
-        $this->get(route('sitemap'))->assertOk()->assertSee('/roditelyam/reading-together')->assertDontSee('hidden-article');
+        $sitemap = $this->get(route('sitemap'));
+        $sitemap->assertOk();
+        ob_start();
+        $sitemap->baseResponse->sendContent();
+        $xml = ob_get_clean();
+        $this->assertStringContainsString('/roditelyam/reading-together', $xml);
+        $this->assertStringNotContainsString('hidden-article', $xml);
     }
 
     public function test_article_comments_require_moderation_and_votes_can_change(): void
