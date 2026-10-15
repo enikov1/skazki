@@ -145,3 +145,10 @@ body { font-family: $font-stack; }
 .reader-theme-green{background:#f1f6ef}
 .story-detail .reading-text{max-width:var(--reader-max-width,700px);padding:20px 24px;border-radius:15px;transition:background-color .2s}
 @media(max-width:700px){.story-detail .reading-text{padding:16px 14px}.consent-status-row{grid-template-columns:minmax(0,1fr) auto}}
+.social-account-list{display:grid;gap:9px;margin-top:15px}
+.social-account-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
+.social-account-row>span{display:grid;gap:2px;min-width:0}
+.social-account-row strong{font-size:13px}
+.social-account-row small{color:var(--muted);font-size:11px}
+.social-account-row form{margin:0}
+.social-login-hint{display:block;margin-top:12px}
