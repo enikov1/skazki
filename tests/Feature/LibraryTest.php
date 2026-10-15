@@ -11,6 +11,7 @@ use App\Models\Comment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Socialite;
 use Tests\TestCase;
 
 class LibraryTest extends TestCase
@@ -172,5 +173,52 @@ class LibraryTest extends TestCase
         $this->delete(route('profile.avatar.destroy'))->assertRedirect();
         $this->assertNull($reader->fresh()->avatar_path);
         Storage::disk('public')->assertMissing($avatarPath);
+    }
+
+    public function test_oauth_account_can_only_be_linked_from_the_signed_in_profile(): void
+    {
+        $this->seed();
+        config(['services.yandex.client_id' => 'test-client', 'services.yandex.client_secret' => 'test-secret']);
+        $reader = User::factory()->create();
+        $external = \Mockery::mock();
+        $external->shouldReceive('getId')->andReturn('yandex-user-123');
+        $external->shouldReceive('getEmail')->andReturn('reader@example.test');
+        $external->shouldReceive('getName')->andReturn('Reader');
+        $driver = \Mockery::mock();
+        $driver->shouldReceive('redirect')->once()->andReturn(redirect('https://identity.example.test/authorize'));
+        $driver->shouldReceive('user')->once()->andReturn($external);
+        Socialite::shouldReceive('driver')->with('yandex')->twice()->andReturn($driver);
+
+        $this->actingAs($reader)->get(route('oauth.link', 'yandex'))->assertRedirect('https://identity.example.test/authorize');
+        $this->get(route('oauth.callback', 'yandex'))->assertRedirect(route('profile.show'))->assertSessionHas('status', 'Аккаунт привязан. Теперь можно входить через эту сеть.');
+        $this->assertDatabaseHas('social_accounts', ['user_id' => $reader->id, 'provider' => 'yandex', 'provider_user_id' => 'yandex-user-123']);
+    }
+
+    public function test_oauth_does_not_merge_accounts_by_matching_email_and_prevents_lockout(): void
+    {
+        $this->seed();
+        config(['services.yandex.client_id' => 'test-client', 'services.yandex.client_secret' => 'test-secret']);
+        $reader = User::factory()->create(['email' => 'reader@example.test']);
+        $external = \Mockery::mock();
+        $external->shouldReceive('getId')->andReturn('yandex-user-456');
+        $external->shouldReceive('getEmail')->andReturn('reader@example.test');
+        $external->shouldReceive('getName')->andReturn('Reader');
+        $driver = \Mockery::mock();
+        $driver->shouldReceive('redirect')->once()->andReturn(redirect('https://identity.example.test/authorize'));
+        $driver->shouldReceive('user')->once()->andReturn($external);
+        Socialite::shouldReceive('driver')->with('yandex')->twice()->andReturn($driver);
+
+        $this->get(route('oauth.redirect', 'yandex'))->assertRedirect('https://identity.example.test/authorize');
+        $this->get(route('oauth.callback', 'yandex'))->assertRedirect(route('login'))->assertSessionHasErrors('oauth');
+        $this->assertDatabaseCount('social_accounts', 0);
+
+        $account = $reader->socialAccounts()->create(['provider' => 'yandex', 'provider_user_id' => 'yandex-user-789']);
+        $reader->forceFill(['password_login_enabled' => false])->save();
+        $this->actingAs($reader)->delete(route('profile.social-accounts.destroy', $account))->assertSessionHasErrors('oauth');
+        $this->assertDatabaseHas('social_accounts', ['id' => $account->id]);
+        $this->put(route('profile.password'), ['password' => 'New-Reader-Password-2026', 'password_confirmation' => 'New-Reader-Password-2026'])->assertRedirect();
+        $this->assertTrue($reader->fresh()->password_login_enabled);
+        $this->delete(route('profile.social-accounts.destroy', $account))->assertRedirect();
+        $this->assertDatabaseMissing('social_accounts', ['id' => $account->id]);
     }
 }
