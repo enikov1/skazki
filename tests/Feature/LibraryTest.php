@@ -530,7 +530,7 @@ class LibraryTest extends TestCase
         $this->get(route('profile.show'))->assertOk()->assertSee('Главная профиля')->assertSee('История чтения')->assertSee($story->title);
         $this->get(route('profile.history'))->assertOk()->assertSee('История и очередь')->assertSee('История чтения')->assertSee('Очередь аудиосказок');
         $this->get(route('profile.settings'))->assertOk()->assertSee('Настройки профиля')->assertSee('Внешний вид сказок')->assertSee('Согласия');
-        $this->get(route('profile.security'))->assertOk()->assertSee('Безопасность аккаунта')->assertSee('Изменить пароль')->assertSee('Связанные аккаунты');
+        $this->get(route('profile.security'))->assertOk()->assertSee('Безопасность аккаунта')->assertSee('Создать пароль')->assertSee('Связанные аккаунты');
 
         $this->put(route('profile.update'), ['name' => 'Костя'])->assertRedirect();
         $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Костя']);
