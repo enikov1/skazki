@@ -11,7 +11,7 @@ use App\Models\Comment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Socialite;
+use Laravel\Socialite\Facades\Socialite;
 use Tests\TestCase;
 
 class LibraryTest extends TestCase
