@@ -21,7 +21,12 @@ fi
 git fetch origin "$branch"
 git merge --ff-only "origin/$branch"
 
-if [ -f package.json ] && command -v npm >/dev/null 2>&1; then
+if [ -f package.json ]; then
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "Node.js and npm are required to rebuild the site assets." >&2
+    exit 1
+  fi
+  if [ ! -d node_modules/gulp ]; then npm install; fi
   npm run build
 fi
 

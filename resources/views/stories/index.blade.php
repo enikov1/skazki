@@ -1,26 +1,79 @@
 @extends('layouts.app')
-@section('title', 'Сказки для детей — читать и слушать | СказкоМир')
-@section('description', 'Большая библиотека сказок для детей: выбирайте историю по возрасту, жанру и настроению.')
+@section('title', 'СказкоМир — детские сказки и аудио онлайн — СказкоМир')
+@section('description', 'СказкоМир — детская библиотека историй, аудио и занятий.')
 @if(request()->query() || request()->query('page'))@section('robots', 'noindex,follow')@endif
 @section('content')
-<section class="welcome-card">
-  <div><p class="eyebrow">Библиотека семейных историй</p><h1>Найдём сказку <span>на сегодня</span></h1><p class="lead">Выбирайте историю по возрасту и настроению. Читайте вместе, открывайте новых героев и возвращайтесь к любимым книгам.</p></div>
-  <div class="welcome-art" aria-hidden="true"><span>📚</span><span>☀️</span><span>🌷</span></div>
-</section>
-<section class="catalog-section" aria-labelledby="catalog-heading">
- <div class="section-heading"><div><p class="eyebrow">Наша библиотека</p><h2 id="catalog-heading">Сказки и истории</h2></div><span class="result-count">{{ $stories->total() }} историй</span></div>
- <form class="filter-panel" method="get" action="{{ route('home') }}">
-  <label class="field search-field"><span>Поиск</span><input type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Название сказки или герой"></label>
-  <label class="field"><span>Жанр</span><select name="genre"><option value="">Все жанры</option>@foreach($genres as $genre)<option value="{{ $genre }}" @selected(($filters['genre'] ?? '') === $genre)>{{ $genre }}</option>@endforeach</select></label>
-  <label class="field age-field"><span>Возраст ребёнка</span><select name="age"><option value="">Любой возраст</option>@foreach(range(3, 12) as $age)<option value="{{ $age }}" @selected((string)($filters['age'] ?? '') === (string)$age)>{{ $age }} лет</option>@endforeach</select></label>
-  <button class="button" type="submit">Показать сказки</button>
-  @if(count($filters))<a class="clear-filter" href="{{ route('home') }}">Сбросить</a>@endif
- </form>
- @if($stories->count())<div class="story-grid">@foreach($stories as $story)
-  <article class="story-card"><a class="cover-link" href="{{ route('stories.show', $story) }}">@if($story->cover_path)<img class="story-cover" src="{{ asset($story->cover_path) }}" alt="Обложка сказки «{{ $story->title }}»" width="640" height="480" loading="lazy">@else<div class="cover-placeholder" aria-hidden="true">📖</div>@endif</a>
-   <div class="story-card-body"><div class="story-meta"><span>{{ $story->genre }}</span><span>{{ $story->age_min }}–{{ $story->age_max }} лет</span></div><h3><a href="{{ route('stories.show', $story) }}">{{ $story->title }}</a></h3><p class="byline">{{ $story->author ?: 'СказкоМир' }} · {{ $story->reading_minutes }} мин</p><p>{{ $story->summary }}</p><a class="text-link" href="{{ route('stories.show', $story) }}">Открыть сказку <span aria-hidden="true">→</span></a></div>
-  </article>
- @endforeach</div>{{ $stories->links('pagination::simple-tailwind') }}
- @else<div class="empty-state"><span aria-hidden="true">🔎</span><h3>Таких сказок пока нет</h3><p>Попробуйте изменить запрос или выбрать другой возраст.</p><a class="button button-soft" href="{{ route('home') }}">Посмотреть все сказки</a></div>@endif
-</section>
+@php
+  $homeStories = $stories->getCollection();
+  $heroStory = $homeStories->first();
+  $audioStories = $homeStories->filter(fn ($story) => filled($story->audio_path))->take(6);
+  if ($audioStories->isEmpty()) $audioStories = $homeStories->take(6);
+  $coverClasses = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'];
+@endphp
+<form class="searchbar" id="searchForm" role="search" action="{{ route('home') }}" method="get">
+  <label class="visually-hidden" for="globalSearch">Поиск по библиотеке</label>
+  <span aria-hidden="true"><svg class="icon"><use href="{{ asset('assets/icons.svg') }}#search"></use></svg></span>
+  <input id="globalSearch" type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Найти сказку, рассказ, стихотворение или загадку…">
+  <button type="submit" aria-label="Найти"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#search"></use></svg></button>
+</form>
+<div class="layout">
+  <div class="maincol">
+    <section class="hero">
+      <div>
+        <span class="eyebrow"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#star"></use></svg> Сказка, которую выбирают сегодня</span>
+        <h1>Читайте и слушайте вместе</h1>
+        <p>Любимые истории для маленьких читателей и их родителей.</p>
+        @if($heroStory)<a class="btn" href="{{ route('stories.show', $heroStory) }}">Читать сказку →</a>@endif
+        <a class="btn secondary" href="{{ url('/demo/audio.html') }}">Слушать</a>
+      </div>
+      <a class="hero-book" href="{{ $heroStory ? route('stories.show', $heroStory) : route('home') }}"><img src="{{ asset('assets/illustrations/family-reading.webp') }}" alt="Взрослый и ребёнок читают историю вместе"><small>Читаем вместе</small></a>
+    </section>
+    <div class="feature-row">
+      <a class="feature-tile" href="{{ url('/demo/activities.html') }}"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#puzzle"></use></svg> Загадка дня</h3><p>Без рук, без топорёнка построена избёнка. Что это?</p><span class="tile-link">Попробовать отгадать <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></span></a>
+      <a class="feature-tile" href="{{ route('articles.index') }}"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#message"></use></svg> Идея для чтения</h3><p>Читайте по очереди: взрослый — страницу, ребёнок — абзац.</p><span class="tile-link">Советы родителям <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></span></a>
+    </div>
+    <div class="promo"><strong>Читайте в своём ритме</strong><p>Выбирайте историю по возрасту, настроению и времени.</p><a class="btn small" href="{{ url('/demo/fairy-tales.html') }}">Открыть библиотеку</a></div>
+    <section class="section">
+      <div class="section-head"><h2>Сказки</h2><a href="{{ url('/demo/fairy-tales.html') }}">Все материалы <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></div>
+      <div class="book-row">
+        @foreach($homeStories->take(6) as $index => $story)
+          <a class="book-card" href="{{ route('stories.show', $story) }}" data-book-id="{{ $story->slug }}" data-genre="{{ $story->genre }}" data-age="{{ $story->age_min }}–{{ $story->age_max }} лет" data-search="{{ Str::lower($story->title.' '.$story->author.' '.$story->genre) }}">
+            <div class="cover {{ $coverClasses[$index % count($coverClasses)] }}">@if($story->cover_path)<img class="cover-img" src="{{ asset($story->cover_path) }}" alt="Иллюстрация к сказке «{{ $story->title }}»" loading="lazy">@endif<span class="mini-title">{{ $story->title }}</span></div><h3>{{ $story->title }}</h3><div class="author">{{ $story->author ?: 'СказкоМир' }}</div>
+          </a>
+        @endforeach
+      </div>
+    </section>
+    <section class="section bluebg">
+      <div class="section-head"><h2>Рассказы</h2><a href="{{ url('/demo/fairy-tales.html?type=stories') }}">Все материалы <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></div>
+      <div class="book-row">
+        @foreach($homeStories->slice(3, 6) as $index => $story)
+          <a class="book-card" href="{{ route('stories.show', $story) }}"><div class="cover {{ $coverClasses[($index + 3) % count($coverClasses)] }}">@if($story->cover_path)<img class="cover-img" src="{{ asset($story->cover_path) }}" alt="Иллюстрация к сказке «{{ $story->title }}»" loading="lazy">@endif<span class="mini-title">{{ $story->title }}</span></div><h3>{{ $story->title }}</h3><div class="author">{{ $story->author ?: 'СказкоМир' }}</div></a>
+        @endforeach
+      </div>
+    </section>
+    <section class="section bluebg">
+      <div class="section-head"><h2>Аудиосказки</h2><a href="{{ url('/demo/audio.html') }}">Все материалы <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></div>
+      <div class="book-row">
+        @foreach($audioStories as $index => $story)
+          <a class="book-card" href="{{ route('stories.show', $story) }}"><div class="cover {{ $coverClasses[$index % count($coverClasses)] }}">@if($story->cover_path)<img class="cover-img" src="{{ asset($story->cover_path) }}" alt="Иллюстрация к сказке «{{ $story->title }}»" loading="lazy">@endif<span class="mini-title">{{ $story->title }}</span><span class="audio-play"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#play"></use></svg></span></div><h3>{{ $story->title }}</h3><div class="author">{{ $story->author ?: 'СказкоМир' }}</div></a>
+        @endforeach
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Занятия для детей</h2><a href="{{ url('/demo/activities.html') }}">Все занятия →</a></div>
+      <div class="round-row">
+        @foreach([['puzzle','Загадки','activities.html'],['bulb','Викторины','quiz.html'],['palette','Раскраски','coloring.html'],['target','Счёт','logic.html'],['book','Чтение','fairy-tales.html']] as [$icon,$label,$page])
+          <a class="round-card" href="{{ url('/demo/'.$page) }}"><span class="round-icon"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#{{ $icon }}"></use></svg></span>{{ $label }}</a>
+        @endforeach
+      </div>
+    </section>
+  </div>
+  <aside class="sidebar">
+    <section class="sidebox"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#medal"></use></svg> Самые активные</h3><ul><li class="rank"><i>1</i>Миша<span>985</span></li><li class="rank"><i>2</i>Алиса<span>840</span></li><li class="rank"><i>3</i>Варвара<span>756</span></li><li class="rank"><i>4</i>Саша<span>691</span></li><li class="rank"><i>5</i>Марина<span>570</span></li></ul></section>
+    <section class="sidebox"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#message"></use></svg> Последние заметки</h3><div class="recent-notes"><article class="recent-note"><div class="note-avatar note-peach">М</div><div class="note-content"><p>«Очень добрая сказка!»</p><a href="{{ $heroStory ? route('stories.show',$heroStory) : route('home') }}">Маша · {{ $heroStory?->title ?? 'Сказки' }}</a></div></article><article class="recent-note"><div class="note-avatar note-mint">И</div><div class="note-content"><p>«Читали всей семьёй»</p><a href="{{ route('articles.index') }}">Илья · Родителям</a></div></article><article class="recent-note"><div class="note-avatar note-lilac">С</div><div class="note-content"><p>«Понравился герой»</p><a href="{{ $homeStories->get(1) ? route('stories.show',$homeStories->get(1)) : route('home') }}">Соня · {{ $homeStories->get(1)?->title ?? 'Сказки' }}</a></div></article></div><a class="sidebox-more" href="{{ route('articles.index') }}">Все отзывы читателей →</a></section>
+    <section class="sidebox"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#heart"></use></svg> Популярное</h3><ul>@foreach($homeStories->take(5) as $story)<li><a href="{{ route('stories.show',$story) }}">{{ $story->title }} <span class="rating"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#heart"></use></svg> 4.9</span></a></li>@endforeach</ul></section>
+    <section class="sidebox"><h3>Подборки</h3><ul><li><a href="{{ url('/demo/fairy-tales.html?genre=Народные') }}">Русские народные <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/fairy-tales.html?age=3–5') }}">Для малышей <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/audio.html') }}">Слушать сказки <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/activities.html') }}">Загадки и игры <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li></ul></section>
+  </aside>
+</div>
+{{ $stories->links('vendor.pagination.skazki') }}
 @endsection

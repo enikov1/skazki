@@ -15,7 +15,9 @@ del "%STATUS_FILE%" >nul 2>nul
 git fetch origin "%BRANCH%" || exit /b 1
 git merge --ff-only "origin/%BRANCH%" || exit /b 1
 if exist package.json (
-  where npm >nul 2>nul && call npm run build || exit /b 1
+  where npm >nul 2>nul || (echo Node.js and npm are required to rebuild the site assets. & exit /b 1)
+  if not exist node_modules\gulp (call npm install || exit /b 1)
+  call npm run build || exit /b 1
 )
 echo Updated branch: %BRANCH%
 endlocal

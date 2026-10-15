@@ -2400,6 +2400,58 @@ body {
   font-family: "Raleway", sans-serif;
 }
 
+/* Laravel backed detail and account components use the same visual language as the static pages. */
+.laravel-audio-box {
+  max-width: 650px;
+  margin-top: 13px;
+  padding: 14px 16px;
+  border: 1px solid #dcecf0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f1faff, #fff9f0);
+}
+
+.laravel-audio-box audio {
+  display: block;
+  width: 100%;
+  margin-top: 9px;
+}
+
+.story-comments {
+  margin-top: 16px;
+}
+
+.story-comments h2 {
+  margin: 0 0 8px;
+  font: 600 20px Raleway, sans-serif;
+}
+
+.story-comments .comment-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.story-comments .comment-heading time {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.laravel-comment-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.laravel-comment-actions form {
+  margin: 0;
+}
+
+.article-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Balanced type scale and compact metadata */
 .brand small {
   font-size: 9px;
