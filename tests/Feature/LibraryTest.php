@@ -127,12 +127,13 @@ class LibraryTest extends TestCase
     public function test_only_authorized_roles_can_open_management(): void
     {
         $this->seed();
+        $this->get('/')->assertDontSee('css/admin.css');
         $user = User::factory()->create();
         $user->roles()->attach(Role::where('slug', 'user')->value('id'));
         $this->actingAs($user)->get('/admin')->assertForbidden();
         $editor = User::factory()->create();
         $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
-        $this->actingAs($editor)->get('/admin')->assertOk()->assertSee('Управление сайтом');
+        $this->actingAs($editor)->get('/admin')->assertOk()->assertSee('Управление сайтом')->assertSee('css/admin.css');
     }
 
     public function test_public_story_has_unique_title_and_canonical(): void

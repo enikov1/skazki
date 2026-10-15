@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/site.css') }}?v=10">
+  @if(request()->routeIs('admin.*'))<link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=1">@endif
   @stack('head')
 </head>
 <body data-site-page="laravel">
@@ -34,7 +35,7 @@
   </div></header>
 <div class="nav-scrim" id="navScrim"></div>
 @unless(request()->routeIs('admin.*'))<div class="ticker" aria-label="Популярные сказки"><div class="ticker-in"><span class="ticker-label"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#star"></use></svg> Сегодня читают</span>@foreach(\App\Models\Story::query()->where('status','published')->orderByDesc('updated_at')->limit(6)->get() as $tickerStory)<a class="ticker-book" href="{{ route('stories.show',$tickerStory) }}">@if($tickerStory->cover_path)<img src="{{ asset($tickerStory->cover_path) }}" alt="" loading="lazy">@endif<span><b>{{ $tickerStory->title }}</b><small>{{ $tickerStory->author ?: 'СказкоМир' }}</small></span></a>@endforeach</div></div>@endunless
-<main class="page-wrap @if(request()->routeIs('login','register','password.*','verification.notice')) auth-page @endif">
+<main class="page-wrap @if(request()->routeIs('admin.*')) admin-area @endif @if(request()->routeIs('login','register','password.*','verification.notice')) auth-page @endif">
   @if(session('status'))<div class="notice" role="status">{{ session('status') }}</div>@endif
   @yield('content')
 </main>

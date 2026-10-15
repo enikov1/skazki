@@ -21,7 +21,7 @@ function templates() {
 }
 
 function styles() {
-  return src('src/scss/styles.scss')
+  return src(['src/scss/styles.scss', 'src/scss/admin.scss'])
     .pipe(sass({ style: 'expanded' }).on('error', sass.logError))
     .pipe(dest(DIST));
 }
@@ -43,6 +43,7 @@ async function syncDemo() {
   const PUBLIC_CSS = path.join(__dirname, 'public', 'css');
   await fs.mkdir(PUBLIC_CSS, { recursive: true });
   await fs.copyFile(path.join(DIST, 'styles.css'), path.join(PUBLIC_CSS, 'site.css'));
+  await fs.copyFile(path.join(DIST, 'admin.css'), path.join(PUBLIC_CSS, 'admin.css'));
   const PUBLIC_JS = path.join(__dirname, 'public', 'js');
   await fs.mkdir(PUBLIC_JS, { recursive: true });
   await fs.copyFile(path.join(DIST, 'app.js'), path.join(PUBLIC_JS, 'app.js'));
