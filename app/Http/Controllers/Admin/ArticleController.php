@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\EditorialStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\AuditLog;
 use App\Models\Article;
 use App\Models\ArticleComment;
@@ -18,6 +19,7 @@ use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
+    use RespondsToAjax;
     public function index(Request $request): View|JsonResponse
     {
         Gate::authorize('viewAny', Article::class);
@@ -40,13 +42,13 @@ class ArticleController extends Controller
         return view('admin.articles.form', ['article' => new Article(), 'lastEdit' => null]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         Gate::authorize('create', Article::class);
         $article = Article::create($this->validated($request) + ['created_by' => $request->user()->id, 'updated_by' => $request->user()->id]);
         $this->recordChange($request, $article, 'article.created', 'Создана статья «'.$article->title.'».');
         Cache::forget('articles:categories:v1');
-        return redirect()->route('admin.articles.edit', $article)->with('status', 'Статья сохранена как черновик.');
+        return $this->respond($request, 'Статья сохранена как черновик.', route('admin.articles.edit', $article));
     }
 
     public function edit(Article $article): View
@@ -56,16 +58,16 @@ class ArticleController extends Controller
         return view('admin.articles.form', compact('article', 'lastEdit'));
     }
 
-    public function update(Request $request, Article $article): RedirectResponse
+    public function update(Request $request, Article $article): RedirectResponse|JsonResponse
     {
         Gate::authorize('update', $article);
         $article->update($this->validated($request, $article) + ['updated_by' => $request->user()->id]);
         $this->recordChange($request, $article, 'article.updated', 'Обновлена статья «'.$article->title.'».');
         Cache::forget('articles:categories:v1');
-        return back()->with('status', 'Изменения сохранены.');
+        return $this->respond($request, 'Изменения сохранены.');
     }
 
-    public function status(Request $request, Article $article): RedirectResponse
+    public function status(Request $request, Article $article): RedirectResponse|JsonResponse
     {
         Gate::authorize('update', $article);
         $data = $request->validate(['status' => ['required', Rule::in(EditorialStatus::values())], 'publish_at' => ['nullable', 'date', 'after:now']]);
@@ -75,7 +77,7 @@ class ArticleController extends Controller
         $article->update(['status' => $data['status'], 'updated_by' => $request->user()->id, 'published_at' => $data['status'] === 'published' ? $publishAt : null]);
         $this->recordChange($request, $article, 'article.status_changed', 'Статус статьи «'.$article->title.'»: '.EditorialStatus::labelFor($previousStatus).' → '.EditorialStatus::labelFor($article->status).'.');
         Cache::forget('articles:categories:v1');
-        return back()->with('status', 'Статус статьи обновлён.');
+        return $this->respond($request, 'Статус статьи обновлён.');
     }
 
     public function preview(Article $article): View
@@ -100,12 +102,12 @@ class ArticleController extends Controller
         return view('admin.articles.comments', ['comments' => ArticleComment::with(['user', 'article'])->latest()->paginate(20)]);
     }
 
-    public function moderateComment(Request $request, ArticleComment $comment): RedirectResponse
+    public function moderateComment(Request $request, ArticleComment $comment): RedirectResponse|JsonResponse
     {
         Gate::authorize('moderate', $comment);
         $data = $request->validate(['status' => ['required', Rule::in(['approved', 'rejected'])]]);
         $comment->update(['status' => $data['status'], 'moderated_by' => $request->user()->id, 'moderated_at' => now()]);
-        return back()->with('status', 'Решение по комментарию сохранено.');
+        return $this->respond($request, 'Решение по комментарию сохранено.');
     }
 
     private function validated(Request $request, ?Article $article = null): array

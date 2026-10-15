@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\EditorialStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\AuditLog;
 use App\Models\Story;
 use Illuminate\Http\RedirectResponse;
@@ -17,6 +18,7 @@ use Illuminate\View\View;
 
 class StoryController extends Controller
 {
+    use RespondsToAjax;
     public function index(Request $request): View|JsonResponse
     {
         Gate::authorize('viewAny', Story::class);
@@ -35,14 +37,14 @@ class StoryController extends Controller
 
     public function create(): View { Gate::authorize('create', Story::class); return view('admin.stories.form', ['story' => new Story(), 'lastEdit' => null]); }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         Gate::authorize('create', Story::class);
         $story = Story::create($this->validated($request) + ['created_by' => $request->user()->id, 'updated_by' => $request->user()->id]);
         $this->recordChange($request, $story, 'story.created', 'Создана сказка «'.$story->title.'».');
         Cache::forget('stories:detail:v1:'.$story->slug);
         Cache::forget('stories:genres:v1');
-        return redirect()->route('admin.stories.edit', $story)->with('status', 'Сказка сохранена как черновик.');
+        return $this->respond($request, 'Сказка сохранена как черновик.', route('admin.stories.edit', $story));
     }
 
     public function edit(Story $story): View
@@ -52,17 +54,17 @@ class StoryController extends Controller
         return view('admin.stories.form', compact('story', 'lastEdit'));
     }
 
-    public function update(Request $request, Story $story): RedirectResponse
+    public function update(Request $request, Story $story): RedirectResponse|JsonResponse
     {
         Gate::authorize('update', $story);
         $story->update($this->validated($request, $story) + ['updated_by' => $request->user()->id]);
         $this->recordChange($request, $story, 'story.updated', 'Обновлена сказка «'.$story->title.'».');
         Cache::forget('stories:detail:v1:'.$story->slug);
         Cache::forget('stories:genres:v1');
-        return back()->with('status', 'Изменения сохранены.');
+        return $this->respond($request, 'Изменения сохранены.');
     }
 
-    public function status(Request $request, Story $story): RedirectResponse
+    public function status(Request $request, Story $story): RedirectResponse|JsonResponse
     {
         $data = $request->validate(['status' => ['required', Rule::in(EditorialStatus::values())], 'publish_at' => ['nullable', 'date', 'after:now']]);
         if ($data['status'] === 'published') Gate::authorize('publish', Story::class); else Gate::authorize('update', $story);
@@ -72,7 +74,7 @@ class StoryController extends Controller
         $this->recordChange($request, $story, 'story.status_changed', 'Статус сказки «'.$story->title.'»: '.EditorialStatus::labelFor($previousStatus).' → '.EditorialStatus::labelFor($story->status).'.');
         Cache::forget('stories:genres:v1');
         Cache::forget('stories:detail:v1:'.$story->slug);
-        return back()->with('status', 'Статус сказки обновлён.');
+        return $this->respond($request, 'Статус сказки обновлён.');
     }
 
     public function preview(Story $story): View

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\Story;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -13,6 +15,7 @@ use Illuminate\View\View;
 
 class MediaLibraryController extends Controller
 {
+    use RespondsToAjax;
     public function index(Request $request): View
     {
         Gate::authorize('create', Story::class);
@@ -45,7 +48,7 @@ class MediaLibraryController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         Gate::authorize('create', Story::class);
 
@@ -55,7 +58,17 @@ class MediaLibraryController extends Controller
 
         $path = $data['image']->storePublicly('media', 'public');
         if (! $path) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Не удалось сохранить изображение. Проверьте свободное место и настройки диска.', 'errors' => ['image' => ['Не удалось сохранить изображение. Проверьте свободное место и настройки диска.']]], 422);
+            }
             return back()->withErrors(['image' => 'Не удалось сохранить изображение. Проверьте свободное место и настройки диска.']);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Изображение загружено. Выберите его или скопируйте путь.',
+                'media' => ['path' => 'storage/'.$path, 'name' => basename($path), 'url' => Storage::disk('public')->url($path)],
+            ]);
         }
 
         return redirect()->route('admin.media.index', $request->only('select'))

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -17,7 +19,9 @@ use Illuminate\View\View;
 
 class RoleController extends Controller
 {
-    public function index(Request $request): View
+    use RespondsToAjax;
+
+    public function index(Request $request): View|JsonResponse
     {
         Gate::authorize('viewAny', User::class);
         $filters = $request->validate([
@@ -31,18 +35,23 @@ class RoleController extends Controller
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $status === 'blocked' ? $query->whereNotNull('blocked_at') : $query->whereNull('blocked_at'))
             ->latest('id')->paginate(25)->withQueryString();
 
-        return view('admin.users.index', ['users' => $users, 'roles' => Role::orderBy('id')->get(['id', 'name', 'slug']), 'filters' => $filters]);
+        $roles = Role::orderBy('id')->get(['id', 'name', 'slug']);
+        if ($request->expectsJson()) {
+            return response()->json(['html' => view('admin.users.results', compact('users', 'roles'))->render(), 'count' => $users->total()]);
+        }
+
+        return view('admin.users.index', compact('users', 'roles', 'filters'));
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(Request $request, User $user): RedirectResponse|JsonResponse
     {
         Gate::authorize('changeRole', $user);
         $data = $request->validate(['role' => ['required', Rule::in(['user', 'editor', 'moderator', 'admin'])]]);
         $currentRole = $user->roles()->value('slug');
-        if ($request->user()->is($user) && $data['role'] !== 'admin') return back()->withErrors(['role' => 'Нельзя убрать роль администратора у своей учётной записи.']);
+        if ($request->user()->is($user) && $data['role'] !== 'admin') abort(422, 'Нельзя убрать роль администратора у своей учётной записи.');
         if ($currentRole === 'admin' && $data['role'] !== 'admin') {
             $admins = Role::where('slug', 'admin')->firstOrFail()->users()->whereNull('blocked_at')->count();
-            if ($admins <= 1) return back()->withErrors(['role' => 'В системе должен остаться хотя бы один администратор.']);
+            if ($admins <= 1) abort(422, 'В системе должен остаться хотя бы один администратор.');
         }
         if ($currentRole !== $data['role']) {
             DB::transaction(function () use ($request, $user, $currentRole, $data): void {
@@ -51,22 +60,22 @@ class RoleController extends Controller
             });
         }
 
-        return back()->with('status', 'Роль пользователя обновлена.');
+        return $this->respond($request, 'Роль пользователя обновлена.');
     }
 
-    public function block(Request $request, User $user): RedirectResponse
+    public function block(Request $request, User $user): RedirectResponse|JsonResponse
     {
         Gate::authorize('block', $user);
         if ($request->user()->is($user)) {
-            return back()->withErrors(['block_reason' => 'Нельзя заблокировать собственный аккаунт.']);
+            abort(422, 'Нельзя заблокировать собственный аккаунт.');
         }
 
         $data = $request->validate(['block_reason' => ['required', 'string', 'min:3', 'max:500']]);
         if ($user->hasRole('admin') && Role::where('slug', 'admin')->firstOrFail()->users()->whereNull('blocked_at')->count() <= 1) {
-            return back()->withErrors(['block_reason' => 'Нельзя заблокировать последнего администратора.']);
+            abort(422, 'Нельзя заблокировать последнего администратора.');
         }
         if ($user->isBlocked()) {
-            return back()->with('status', 'Этот аккаунт уже заблокирован.');
+            return $this->respond($request, 'Этот аккаунт уже заблокирован.');
         }
 
         DB::transaction(function () use ($request, $user, $data): void {
@@ -74,14 +83,14 @@ class RoleController extends Controller
             AuditLog::create(['actor_id' => $request->user()->id, 'action' => 'user.blocked', 'subject_type' => User::class, 'subject_id' => $user->id, 'summary' => "Аккаунт {$user->email} заблокирован: ".trim($data['block_reason']), 'created_at' => now()]);
         });
 
-        return back()->with('status', 'Аккаунт заблокирован.');
+        return $this->respond($request, 'Аккаунт заблокирован.');
     }
 
-    public function unblock(Request $request, User $user): RedirectResponse
+    public function unblock(Request $request, User $user): RedirectResponse|JsonResponse
     {
         Gate::authorize('unblock', $user);
         if (! $user->isBlocked()) {
-            return back()->with('status', 'Этот аккаунт уже активен.');
+            return $this->respond($request, 'Этот аккаунт уже активен.');
         }
 
         DB::transaction(function () use ($request, $user): void {
@@ -89,6 +98,6 @@ class RoleController extends Controller
             AuditLog::create(['actor_id' => $request->user()->id, 'action' => 'user.unblocked', 'subject_type' => User::class, 'subject_id' => $user->id, 'summary' => "Доступ к аккаунту {$user->email} восстановлен.", 'created_at' => now()]);
         });
 
-        return back()->with('status', 'Доступ к аккаунту восстановлен.');
+        return $this->respond($request, 'Доступ к аккаунту восстановлен.');
     }
 }

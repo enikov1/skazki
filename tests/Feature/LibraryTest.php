@@ -62,6 +62,8 @@ class LibraryTest extends TestCase
         $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
 
         $this->actingAs($editor)->get(route('admin.media.index', ['select' => 'cover_path']))->assertOk()->assertSee('Медиатека');
+        $this->postJson(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('ajax-cover.png', 400, 300)])
+            ->assertOk()->assertJsonPath('media.name', 'ajax-cover.png')->assertJsonPath('media.path', 'storage/media/ajax-cover.png');
         $this->post(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('illustration.webp', 400, 300)])
             ->assertRedirect(route('admin.media.index', ['select' => 'cover_path']));
         $files = Storage::disk('public')->allFiles('media');
@@ -132,6 +134,29 @@ class LibraryTest extends TestCase
         $this->get(route('articles.show', $article))->assertNotFound();
         $this->get(route('admin.stories.index'))->assertSee('Запланировано');
         $this->get(route('admin.articles.index'))->assertSee('Запланировано');
+    }
+
+    public function test_admin_editors_and_user_controls_support_ajax(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $story = Story::create(['title' => 'Редактируемая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Текст', 'status' => 'draft', 'created_by' => $admin->id]);
+        $reader = User::factory()->create();
+
+        $this->actingAs($admin)->get(route('admin.stories.edit', $story))->assertOk()->assertSee('data-ajax-form');
+        $this->putJson(route('admin.stories.update', $story), ['title' => 'Изменённая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Новый текст', 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5])
+            ->assertOk()->assertJsonPath('message', 'Изменения сохранены.');
+        $this->assertSame('Изменённая сказка', $story->fresh()->title);
+        $this->patchJson(route('admin.stories.status', $story), ['status' => 'review'])
+            ->assertOk()->assertJsonPath('message', 'Статус сказки обновлён.');
+
+        $this->getJson(route('admin.users.index', ['q' => $reader->email]))->assertOk()->assertJsonPath('count', 1)->assertJsonFragment(['Заблокировать']);
+        $this->patchJson(route('admin.users.block', $reader), ['block_reason' => 'Нарушение правил общения'])
+            ->assertOk()->assertJsonPath('message', 'Аккаунт заблокирован.');
+        $this->assertNotNull($reader->fresh()->blocked_at);
+        $this->patchJson(route('admin.users.unblock', $reader))->assertOk()->assertJsonPath('message', 'Доступ к аккаунту восстановлен.');
+        $this->getJson(route('admin.audit-logs.index', ['action' => 'user.blocked']))->assertOk()->assertJsonPath('count', 1);
     }
 
     public function test_published_story_is_available_and_draft_is_not(): void
