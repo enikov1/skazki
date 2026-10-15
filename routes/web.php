@@ -9,12 +9,19 @@ use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoryController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::post('/roditelyam/{article:slug}/comments', [ArticleCommentController::class, 'store'])->middleware(['auth', 'throttle:public-write'])->name('article-comments.store');
+Route::post('/article-comments/{comment}/vote', [ArticleCommentController::class, 'vote'])->middleware(['auth', 'throttle:public-write'])->name('article-comments.vote');
 Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->name('stories.show');
 Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'throttle:public-write'])->name('comments.store');
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'throttle:public-write'])->name('comments.vote');
@@ -47,6 +54,10 @@ Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware('auth')-
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderator,editor'])->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::resource('stories', AdminStoryController::class)->except(['show', 'destroy']);
+    Route::resource('articles', AdminArticleController::class)->except(['show', 'destroy']);
+    Route::patch('/articles/{article}/status', [AdminArticleController::class, 'status'])->name('articles.status');
+    Route::get('/article-comments', [AdminArticleController::class, 'comments'])->middleware('role:admin,moderator')->name('articles.comments');
+    Route::patch('/article-comments/{comment}', [AdminArticleController::class, 'moderateComment'])->middleware('role:admin,moderator')->name('articles.comments.moderate');
     Route::patch('/stories/{story}/status', [AdminStoryController::class, 'status'])->name('stories.status');
     Route::get('/moderation', [ModerationController::class, 'index'])->middleware('role:admin,moderator')->name('moderation.index');
     Route::patch('/moderation/{comment}', [ModerationController::class, 'update'])->middleware('role:admin,moderator')->name('moderation.update');

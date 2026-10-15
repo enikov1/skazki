@@ -4,6 +4,7 @@
 /public/demo
 /.openai
 /public/build
+/public/css/site.css
 /public/hot
 /public/storage
 /.env

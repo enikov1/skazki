@@ -9,7 +9,7 @@
   <meta property="og:site_name" content="СказкоМир">
   <meta property="og:title" content="@yield('title', 'СказкоМир — сказки для всей семьи')">
   <meta property="og:description" content="@yield('description', 'Добрые сказки для чтения и прослушивания всей семьёй.')">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="@yield('og_type', 'website')">
   <meta name="theme-color" content="#fffaf1">
   <title>@yield('title', 'СказкоМир — сказки для всей семьи')</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +21,7 @@
 <body>
 <header class="site-header"><div class="wrap header-row">
   <a class="brand" href="{{ route('home') }}"><span class="brand-mark" aria-hidden="true">✿</span><span>СказкоМир<small>ЧИТАЕМ ВМЕСТЕ</small></span></a>
-  <nav class="primary-nav" aria-label="Главное меню"><a href="{{ route('home') }}">Сказки</a><a href="{{ route('home', ['genre' => 'Народные сказки']) }}">Народные сказки</a><a href="{{ route('prototype') }}">Все разделы</a></nav>
+  <nav class="primary-nav" aria-label="Главное меню"><a href="{{ route('home') }}">Сказки</a><a href="{{ route('articles.index') }}">Родителям</a><a href="{{ route('home', ['genre' => 'Народные сказки']) }}">Народные сказки</a><a href="{{ route('prototype') }}">Все разделы</a></nav>
   <div class="header-actions">
   @auth
     @if(auth()->user()->hasAnyRole(['admin','moderator','editor']))<a class="button button-small button-soft" href="{{ route('admin.dashboard') }}">Панель управления</a>@endif

@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Role;
 use App\Models\Story;
+use App\Models\Article;
+use App\Models\ArticleComment;
 use App\Models\User;
 use App\Models\Comment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,5 +68,49 @@ class LibraryTest extends TestCase
         $user = User::where('email', 'masha@example.com')->firstOrFail();
         $this->assertTrue($user->hasRole('user'));
         $this->assertFalse($user->hasRole('admin'));
+    }
+
+    public function test_parent_articles_are_searchable_and_drafts_remain_private(): void
+    {
+        $this->seed();
+        Article::create(['title' => 'Читаем вместе каждый вечер', 'slug' => 'reading-together', 'category' => 'Семейное чтение', 'summary' => 'Несколько добрых советов для всей семьи.', 'body' => 'Начните с короткой истории и читайте без спешки.', 'reading_minutes' => 4, 'status' => 'published', 'published_at' => now()]);
+        Article::create(['title' => 'Скрытая статья', 'slug' => 'hidden-article', 'category' => 'Тест', 'summary' => 'Не должна попасть в публичный каталог.', 'body' => 'Черновой текст.', 'status' => 'draft']);
+
+        $this->get(route('articles.index', ['q' => 'вечер']))->assertOk()->assertSee('Читаем вместе каждый вечер')->assertDontSee('Скрытая статья');
+        $this->get(route('articles.show', 'reading-together'))->assertOk()->assertSee('Начните с короткой истории')->assertSee('application/ld+json', false);
+        $this->get(route('articles.show', 'hidden-article'))->assertNotFound();
+        $this->get(route('sitemap'))->assertOk()->assertSee('/roditelyam/reading-together')->assertDontSee('hidden-article');
+    }
+
+    public function test_article_comments_require_moderation_and_votes_can_change(): void
+    {
+        $this->seed();
+        $article = Article::create(['title' => 'Совет о чтении', 'slug' => 'reading-advice', 'category' => 'Книги', 'summary' => 'Короткое вступление.', 'body' => 'Текст статьи.', 'status' => 'published', 'published_at' => now()]);
+        $reader = User::factory()->create();
+        $reader->roles()->attach(Role::where('slug', 'user')->value('id'));
+
+        $this->actingAs($reader)->post(route('article-comments.store', $article), ['body' => 'Нам очень понравился этот совет!'])->assertRedirect(route('articles.show', $article));
+        $comment = ArticleComment::firstOrFail();
+        $this->get(route('articles.show', $article))->assertDontSee('Нам очень понравился этот совет!');
+
+        $moderator = User::factory()->create();
+        $moderator->roles()->attach(Role::where('slug', 'moderator')->value('id'));
+        $this->actingAs($moderator)->patch(route('admin.articles.comments.moderate', $comment), ['status' => 'approved'])->assertRedirect();
+        $this->get(route('articles.show', $article))->assertSee('Нам очень понравился этот совет!');
+        $this->actingAs($reader)->post(route('article-comments.vote', $comment), ['vote' => 'like'])->assertRedirect();
+        $this->assertDatabaseHas('article_comments', ['id' => $comment->id, 'likes_count' => 1]);
+        $this->post(route('article-comments.vote', $comment), ['vote' => 'dislike'])->assertRedirect();
+        $this->assertDatabaseHas('article_comments', ['id' => $comment->id, 'likes_count' => 0, 'dislikes_count' => 1]);
+    }
+
+    public function test_editors_manage_articles_but_only_administrators_publish_them(): void
+    {
+        $this->seed();
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($editor)->get(route('admin.articles.index'))->assertOk();
+        $this->post(route('admin.articles.store'), ['title' => 'Новая статья для родителей', 'category' => 'Чтение', 'summary' => 'Короткое описание материала.', 'body' => 'Текст материала.', 'reading_minutes' => 3])->assertRedirect();
+        $article = Article::where('created_by', $editor->id)->firstOrFail();
+        $this->patch(route('admin.articles.status', $article), ['status' => 'published'])->assertForbidden();
     }
 }

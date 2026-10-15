@@ -39,6 +39,10 @@ function assets() {
 async function syncDemo() {
   await fs.rm(PUBLIC_DEMO, { recursive: true, force: true });
   await fs.cp(DIST, PUBLIC_DEMO, { recursive: true });
+  // Laravel's server-rendered pages use this compiled stylesheet too.
+  const PUBLIC_CSS = path.join(__dirname, 'public', 'css');
+  await fs.mkdir(PUBLIC_CSS, { recursive: true });
+  await fs.copyFile(path.join(DIST, 'styles.css'), path.join(PUBLIC_CSS, 'site.css'));
   async function rewrite(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       const target = path.join(dir, entry.name);

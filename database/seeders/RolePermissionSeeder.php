@@ -13,6 +13,8 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             'stories.manage' => 'Создавать и редактировать сказки',
             'stories.publish' => 'Публиковать сказки',
+            'articles.manage' => 'Создавать и редактировать статьи',
+            'articles.publish' => 'Публиковать статьи',
             'comments.moderate' => 'Проверять комментарии',
             'users.manage' => 'Управлять пользователями и ролями',
             'reports.view' => 'Просматривать статистику сайта',
@@ -27,7 +29,7 @@ class RolePermissionSeeder extends Seeder
         ];
         foreach ($roles as $slug => [$name, $description]) Role::firstOrCreate(['slug' => $slug], compact('name', 'description'));
 
-        Role::where('slug', 'editor')->firstOrFail()->permissions()->sync(Permission::whereIn('slug', ['stories.manage'])->pluck('id'));
+        Role::where('slug', 'editor')->firstOrFail()->permissions()->sync(Permission::whereIn('slug', ['stories.manage', 'articles.manage'])->pluck('id'));
         Role::where('slug', 'moderator')->firstOrFail()->permissions()->sync(Permission::whereIn('slug', ['comments.moderate'])->pluck('id'));
         Role::where('slug', 'admin')->firstOrFail()->permissions()->sync(Permission::pluck('id'));
     }
