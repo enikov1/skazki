@@ -11,6 +11,14 @@ use Illuminate\Validation\Rule;
 
 class ArticleCommentController extends Controller
 {
+    public function rate(Request $request, Article $article): RedirectResponse
+    {
+        abort_unless($article->status === 'published' && $article->published_at?->isPast(), 404);
+        $data = $request->validate(['rating' => ['required', 'integer', 'between:1,5']]);
+        $article->ratings()->updateOrCreate(['user_id' => $request->user()->id], ['rating' => $data['rating']]);
+        return redirect()->to(route('articles.show', $article).'#article-rating')->with('status', 'Ваша оценка сохранена.');
+    }
+
     public function store(Request $request, Article $article): RedirectResponse
     {
         abort_unless($article->status === 'published' && $article->published_at?->isPast(), 404);

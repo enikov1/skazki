@@ -109,6 +109,18 @@ class LibraryTest extends TestCase
         $this->assertDatabaseHas('article_comments', ['id' => $comment->id, 'likes_count' => 0, 'dislikes_count' => 1]);
     }
 
+    public function test_article_rating_is_editable_and_one_vote_per_reader_is_kept(): void
+    {
+        $this->seed();
+        $article = Article::create(['title' => 'История о семейном чтении', 'slug' => 'family-reading', 'category' => 'Чтение', 'summary' => 'Описание.', 'body' => 'Текст статьи.', 'status' => 'published', 'published_at' => now()]);
+        $reader = User::factory()->create();
+        $this->actingAs($reader)->post(route('articles.rate', $article), ['rating' => 5])->assertRedirect();
+        $this->post(route('articles.rate', $article), ['rating' => 4])->assertRedirect();
+        $this->assertDatabaseCount('article_ratings', 1);
+        $this->assertDatabaseHas('article_ratings', ['article_id' => $article->id, 'user_id' => $reader->id, 'rating' => 4]);
+        $this->get(route('articles.show', $article))->assertOk()->assertSee('4,0')->assertSee('Изменить оценку');
+    }
+
     public function test_editors_manage_articles_but_only_administrators_publish_them(): void
     {
         $this->seed();

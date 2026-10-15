@@ -28,4 +28,5 @@ class Article extends Model
 
     public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
     public function comments(): HasMany { return $this->hasMany(ArticleComment::class); }
+    public function ratings(): HasMany { return $this->hasMany(ArticleRating::class); }
 }

@@ -47,12 +47,23 @@ return new class extends Migration {
             $table->timestamps();
             $table->unique(['article_comment_id', 'user_id']);
         });
+
+        Schema::create('article_ratings', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('article_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedTinyInteger('rating');
+            $table->timestamps();
+            $table->unique(['article_id', 'user_id']);
+            $table->index(['article_id', 'rating']);
+        });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('article_comment_votes');
         Schema::dropIfExists('article_comments');
+        Schema::dropIfExists('article_ratings');
         Schema::dropIfExists('articles');
     }
 };

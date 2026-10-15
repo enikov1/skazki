@@ -20,6 +20,7 @@ Route::get('/', [StoryController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::post('/roditelyam/{article:slug}/rating', [ArticleCommentController::class, 'rate'])->middleware(['auth', 'throttle:public-write'])->name('articles.rate');
 Route::post('/roditelyam/{article:slug}/comments', [ArticleCommentController::class, 'store'])->middleware(['auth', 'throttle:public-write'])->name('article-comments.store');
 Route::post('/article-comments/{comment}/vote', [ArticleCommentController::class, 'vote'])->middleware(['auth', 'throttle:public-write'])->name('article-comments.vote');
 Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->name('stories.show');
