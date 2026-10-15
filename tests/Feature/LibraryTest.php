@@ -103,6 +103,8 @@ class LibraryTest extends TestCase
         Storage::disk('local')->assertExists($path);
         $this->assertFileDoesNotExist(public_path($path));
         $this->get($upload->json('audio.url'))->assertOk()->assertHeader('Content-Type', 'audio/mpeg');
+        $this->get($upload->json('audio.url'), ['Range' => 'bytes=0-3'])
+            ->assertStatus(206)->assertHeader('Content-Range', 'bytes 0-3/'.Storage::disk('local')->size($path));
 
         $draft = Story::create(['title' => 'Черновое аудио', 'slug' => 'draft-audio', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => $path]);
         $this->get(route('stories.audio', $draft))->assertNotFound();
