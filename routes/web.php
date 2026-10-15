@@ -87,6 +87,8 @@ Route::middleware(['auth', 'account.active'])->group(function (): void {
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'role:admin,moderator,editor'])->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
+    Route::get('/stories/{story}/preview', [AdminStoryController::class, 'preview'])->middleware('role:admin,editor')->name('stories.preview');
+    Route::get('/articles/{article}/preview', [AdminArticleController::class, 'preview'])->middleware('role:admin,editor')->name('articles.preview');
     Route::resource('stories', AdminStoryController::class)->except(['show', 'destroy']);
     Route::resource('articles', AdminArticleController::class)->except(['show', 'destroy']);
     Route::patch('/articles/{article}/status', [AdminArticleController::class, 'status'])->name('articles.status');

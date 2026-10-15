@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class Story extends Model
 {
-    protected $fillable = ['title', 'slug', 'author', 'genre', 'summary', 'body', 'age_min', 'age_max', 'reading_minutes', 'cover_path', 'audio_path', 'status', 'seo_title', 'seo_description', 'created_by', 'published_at'];
+    protected $fillable = ['title', 'slug', 'author', 'genre', 'summary', 'body', 'age_min', 'age_max', 'reading_minutes', 'cover_path', 'audio_path', 'status', 'seo_title', 'seo_description', 'created_by', 'updated_by', 'published_at'];
 
     protected function casts(): array
     {
@@ -34,6 +34,11 @@ class Story extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function comments(): HasMany

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EditorialStatus;
 use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ArticleController extends Controller
@@ -23,11 +25,23 @@ class ArticleController extends Controller
     public function show(Article $article): View
     {
         abort_unless($article->status === 'published' && $article->published_at?->isPast(), 404);
-        $comments = $article->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
+        return $this->render($article, false);
+    }
+
+    public function preview(Article $article): View
+    {
+        Gate::authorize('update', $article);
+        return $this->render($article, true);
+    }
+
+    private function render(Article $article, bool $preview): View
+    {
+        $comments = $preview ? null : $article->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
         $related = Article::published()->where('category', $article->category)->where('id', '<>', $article->id)->latest('published_at')->limit(3)->get();
         $rating = $article->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
         $userRating = auth()->id() ? $article->ratings()->where('user_id', auth()->id())->value('rating') : null;
+        $statusLabel = EditorialStatus::labelFor($article->status);
 
-        return view('articles.show', compact('article', 'comments', 'related', 'rating', 'userRating'));
+        return view('articles.show', compact('article', 'comments', 'related', 'rating', 'userRating', 'preview', 'statusLabel'));
     }
 }

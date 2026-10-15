@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\EditorialStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Article;
 use App\Models\ArticleComment;
 use Illuminate\Support\Facades\Gate;
@@ -18,19 +20,20 @@ class ArticleController extends Controller
     public function index(): View
     {
         Gate::authorize('viewAny', Article::class);
-        return view('admin.articles.index', ['articles' => Article::latest()->paginate(20)]);
+        return view('admin.articles.index', ['articles' => Article::with(['creator:id,name', 'updater:id,name'])->latest()->paginate(20)]);
     }
 
     public function create(): View
     {
         Gate::authorize('create', Article::class);
-        return view('admin.articles.form', ['article' => new Article()]);
+        return view('admin.articles.form', ['article' => new Article(), 'lastEdit' => null]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         Gate::authorize('create', Article::class);
-        $article = Article::create($this->validated($request) + ['created_by' => $request->user()->id]);
+        $article = Article::create($this->validated($request) + ['created_by' => $request->user()->id, 'updated_by' => $request->user()->id]);
+        $this->recordChange($request, $article, 'article.created', 'Создана статья «'.$article->title.'».');
         Cache::forget('articles:categories:v1');
         return redirect()->route('admin.articles.edit', $article)->with('status', 'Статья сохранена как черновик.');
     }
@@ -38,13 +41,15 @@ class ArticleController extends Controller
     public function edit(Article $article): View
     {
         Gate::authorize('update', $article);
-        return view('admin.articles.form', compact('article'));
+        $lastEdit = $this->lastEdit($article);
+        return view('admin.articles.form', compact('article', 'lastEdit'));
     }
 
     public function update(Request $request, Article $article): RedirectResponse
     {
         Gate::authorize('update', $article);
-        $article->update($this->validated($request, $article));
+        $article->update($this->validated($request, $article) + ['updated_by' => $request->user()->id]);
+        $this->recordChange($request, $article, 'article.updated', 'Обновлена статья «'.$article->title.'».');
         Cache::forget('articles:categories:v1');
         return back()->with('status', 'Изменения сохранены.');
     }
@@ -52,11 +57,29 @@ class ArticleController extends Controller
     public function status(Request $request, Article $article): RedirectResponse
     {
         Gate::authorize('update', $article);
-        $data = $request->validate(['status' => ['required', Rule::in(['draft', 'review', 'published', 'archived'])]]);
+        $data = $request->validate(['status' => ['required', Rule::in(EditorialStatus::values())]]);
         if ($data['status'] === 'published') Gate::authorize('publish', Article::class);
-        $article->update(['status' => $data['status'], 'published_at' => $data['status'] === 'published' ? ($article->published_at ?? now()) : null]);
+        $previousStatus = $article->status;
+        $article->update(['status' => $data['status'], 'updated_by' => $request->user()->id, 'published_at' => $data['status'] === 'published' ? ($article->published_at ?? now()) : null]);
+        $this->recordChange($request, $article, 'article.status_changed', 'Статус статьи «'.$article->title.'»: '.EditorialStatus::labelFor($previousStatus).' → '.EditorialStatus::labelFor($article->status).'.');
         Cache::forget('articles:categories:v1');
         return back()->with('status', 'Статус статьи обновлён.');
+    }
+
+    public function preview(Article $article): View
+    {
+        Gate::authorize('update', $article);
+        return app(\App\Http\Controllers\ArticleController::class)->preview($article);
+    }
+
+    private function lastEdit(Article $article): ?AuditLog
+    {
+        return AuditLog::with('actor')->where('subject_type', Article::class)->where('subject_id', $article->id)->latest('created_at')->first();
+    }
+
+    private function recordChange(Request $request, Article $article, string $action, string $summary): void
+    {
+        AuditLog::create(['actor_id' => $request->user()->id, 'action' => $action, 'subject_type' => Article::class, 'subject_id' => $article->id, 'summary' => $summary, 'created_at' => now()]);
     }
 
     public function comments(): View

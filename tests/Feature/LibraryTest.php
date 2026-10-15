@@ -62,6 +62,34 @@ class LibraryTest extends TestCase
         $this->actingAs($reader)->get(route('admin.media.index'))->assertForbidden();
     }
 
+    public function test_editors_can_preview_drafts_and_status_changes_record_authorship(): void
+    {
+        $this->seed();
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $story = Story::create(['title' => 'Черновая история', 'slug' => 'draft-story', 'genre' => 'Тест', 'summary' => 'Описание черновика', 'body' => 'Полный текст для предпросмотра.', 'status' => 'draft', 'created_by' => $editor->id]);
+        $article = Article::create(['title' => 'Черновая статья', 'slug' => 'draft-article', 'category' => 'Тест', 'summary' => 'Описание статьи', 'body' => 'Текст статьи для предпросмотра.', 'reading_minutes' => 3, 'status' => 'draft', 'created_by' => $editor->id]);
+
+        $this->actingAs($editor)->get(route('admin.stories.preview', $story))->assertOk()->assertSee('Предпросмотр')->assertSee('Полный текст для предпросмотра.')->assertSee('noindex,nofollow');
+        $this->get(route('stories.show', $story))->assertNotFound();
+        $this->get(route('admin.articles.preview', $article))->assertOk()->assertSee('Предпросмотр')->assertSee('Текст статьи для предпросмотра.')->assertSee('noindex,nofollow');
+        $this->get(route('articles.show', $article))->assertNotFound();
+
+        auth()->logout();
+        $anotherEditor = User::factory()->create();
+        $anotherEditor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($anotherEditor)->get(route('admin.stories.preview', $story))->assertForbidden();
+        auth()->logout();
+        $this->actingAs($editor);
+
+        $this->patch(route('admin.stories.status', $story), ['status' => 'review'])->assertRedirect();
+        $this->assertSame($editor->id, $story->fresh()->updated_by);
+        $this->assertDatabaseHas('audit_logs', ['actor_id' => $editor->id, 'action' => 'story.status_changed', 'subject_id' => $story->id]);
+        $this->patch(route('admin.articles.status', $article), ['status' => 'review'])->assertRedirect();
+        $this->assertSame($editor->id, $article->fresh()->updated_by);
+        $this->assertDatabaseHas('audit_logs', ['actor_id' => $editor->id, 'action' => 'article.status_changed', 'subject_id' => $article->id]);
+    }
+
     public function test_published_story_is_available_and_draft_is_not(): void
     {
         $this->seed();

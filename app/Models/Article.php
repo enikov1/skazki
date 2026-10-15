@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class Article extends Model
 {
-    protected $fillable = ['title', 'slug', 'category', 'summary', 'body', 'reading_minutes', 'cover_path', 'status', 'seo_title', 'seo_description', 'created_by', 'published_at'];
+    protected $fillable = ['title', 'slug', 'category', 'summary', 'body', 'reading_minutes', 'cover_path', 'status', 'seo_title', 'seo_description', 'created_by', 'updated_by', 'published_at'];
 
     protected function casts(): array { return ['published_at' => 'datetime']; }
 
@@ -27,6 +27,7 @@ class Article extends Model
     }
 
     public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
+    public function updater(): BelongsTo { return $this->belongsTo(User::class, 'updated_by'); }
     public function comments(): HasMany { return $this->hasMany(ArticleComment::class); }
     public function ratings(): HasMany { return $this->hasMany(ArticleRating::class); }
 }

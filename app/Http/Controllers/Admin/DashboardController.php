@@ -12,6 +12,6 @@ class DashboardController extends Controller
 {
     public function __invoke(): View
     {
-        return view('admin.dashboard', ['stories' => Story::count(), 'published' => Story::published()->count(), 'pending' => Comment::where('status', 'pending')->count(), 'users' => User::count(), 'recentStories' => Story::latest()->limit(6)->get()]);
+        return view('admin.dashboard', ['stories' => Story::count(), 'published' => Story::published()->count(), 'pending' => Comment::where('status', 'pending')->count(), 'users' => User::count(), 'recentStories' => Story::with(['creator:id,name', 'updater:id,name'])->latest()->limit(6)->get()]);
     }
 }

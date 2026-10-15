@@ -2533,6 +2533,32 @@ body {
     flex-direction: column;
   }
 }
+.editor-last-change {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-left: 3px solid #82bed6;
+  background: #f2f9fb;
+  color: #566a70;
+  font-size: 13px;
+}
+
+.preview-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 18px 0;
+  padding: 13px 16px;
+  border: 1px solid #e8d59f;
+  border-radius: 14px;
+  background: #fff8df;
+  color: #665322;
+}
+
+.preview-banner span {
+  font-size: 13px;
+}
+
 /* Balanced type scale and compact metadata */
 .brand small {
   font-size: 9px;
