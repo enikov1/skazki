@@ -36,6 +36,117 @@ php artisan serve
 
 Для OAuth создайте приложения в кабинетах разработчиков Яндекса и VK, задайте client ID/secret и callback-URL вида `https://ваш-домен/oauth/yandex/callback` и `https://ваш-домен/oauth/vkontakte/callback`. Если провайдер не возвращает email, учётную запись следует связывать с подтверждённым email отдельным сценарием.
 
+## Запуск на Open Server Panel 6 (Windows)
+
+Инструкция рассчитана на текущую рабочую ветку `codex/laravel-production-foundation`. После слияния этой ветки в `main` замените её имя в командах Git на `main`.
+
+### 1. Подготовьте OpenServer
+
+Установите и запустите Open Server Panel 6. Для этого проекта понадобятся:
+
+- PHP 8.3 или новее с расширениями `fileinfo`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `ctype`, `curl` и `dom`;
+- Apache или Nginx;
+- MySQL/MariaDB;
+- Composer (поставляется с OpenServer и доступен в консоли PHP-проекта);
+- Git для Windows;
+- Node.js 22 или новее и npm. Node.js можно установить через дополнение NVM в OpenServer или отдельно.
+
+Если OpenServer установлен не в `C:\OSPanel`, используйте свой путь установки. В настройках OpenServer убедитесь, что папка с проектами входит в `projects_search_path`. В примерах ниже это `C:\OSPanel\home`.
+
+### 2. Склонируйте проект
+
+Откройте командную строку Windows и выполните:
+
+```bat
+cd /d C:\OSPanel\home
+git clone --branch codex/laravel-production-foundation https://github.com/enikov1/skazki.git skazkomir.local
+```
+
+Если репозиторий уже склонирован, пропустите `git clone`. Файл `.env` и ваши загруженные файлы не должны попадать в Git; `.env` создаётся локально и остаётся на компьютере при обычном `git pull`.
+
+### 3. Укажите OpenServer корень сайта Laravel
+
+Laravel должен открываться из каталога `public`, а не из корня репозитория. Создайте файл:
+
+`C:\OSPanel\home\skazkomir.local\.osp\project.ini`
+
+Содержимое:
+
+```ini
+[skazkomir.local]
+public_dir = {base_dir}\public
+php_engine = PHP-8.3
+```
+
+Создайте папку `.osp`, если её ещё нет. Если в вашей установке PHP-модуль называется иначе, укажите в `php_engine` точное имя установленного модуля. Перезапустите OpenServer, выберите для домена PHP 8.3+ и Apache или Nginx. Домен `skazkomir.local` должен появиться в меню проектов.
+
+### 4. Создайте базу данных и настройте Laravel
+
+Запустите в OpenServer модуль MySQL/MariaDB и создайте пустую базу `skazkomir` с кодировкой `utf8mb4`. Создайте для неё пользователя и пароль либо используйте локальные реквизиты выбранного модуля. Откройте консоль проекта из меню OpenServer, перейдите в каталог проекта и выполните:
+
+```bat
+cd /d C:\OSPanel\home\skazkomir.local
+copy .env.example .env
+composer install
+php artisan key:generate
+```
+
+Откройте `.env` и задайте параметры локальной базы:
+
+```dotenv
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://skazkomir.local
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=skazkomir
+DB_USERNAME=имя_пользователя_базы
+DB_PASSWORD=пароль_пользователя_базы
+```
+
+Порт и имя пользователя зависят от настроек модуля OpenServer; при необходимости возьмите их из настроек MySQL/MariaDB. Затем создайте таблицы и демонстрационные данные:
+
+```bat
+php artisan migrate --seed
+```
+
+Установите зависимости вёрстки и соберите макеты:
+
+```bat
+npm ci
+npm run build
+```
+
+Если команда `npm` не найдена, установите/включите Node.js 22+ в OpenServer или добавьте Node.js в `PATH`, затем откройте новую консоль. Обновите список проектов OpenServer (при необходимости перезапустите панель) и откройте `http://skazkomir.local`.
+
+Для первого администратора перед выполнением `php artisan db:seed` заполните в `.env` `ADMIN_NAME`, `ADMIN_EMAIL` и `ADMIN_PASSWORD`. После создания аккаунта удалите пароль из `.env`. Никогда не публикуйте и не отправляйте `.env` в Git.
+
+### 5. Получайте обновления из Git
+
+Сначала сохраните свои изменения в отдельном коммите или сделайте резервную копию. Затем откройте консоль проекта и выполните из папки `skazkomir.local`:
+
+```bat
+git status
+git pull --ff-only origin codex/laravel-production-foundation
+composer install
+npm ci
+npm run build
+php artisan migrate
+php artisan optimize:clear
+```
+
+`git pull` скачивает новые файлы, `composer install` и `npm ci` обновляют зависимости по манифестам, `npm run build` пересобирает макеты, а `php artisan migrate` применяет новые миграции без удаления данных. Команды можно повторять после каждого обновления проекта. Если изменились только тексты или PHP-код, пересборку npm можно пропустить.
+
+Если Git сообщает о локальных изменениях, не запускайте `git reset --hard`: сначала сохраните свою работу коммитом или резервной копией, иначе изменения можно потерять. Не используйте `php artisan migrate:fresh` для обновления — команда удалит таблицы и данные. После слияния рабочей ветки в `main` обновляйте так:
+
+```bat
+git switch main
+git pull --ff-only origin main
+```
+
+Подробности о проектах, PHP-модулях и консоли опубликованы в [документации Open Server Panel 6](https://github-wiki-see.page/m/OSPanel/OpenServerPanel/wiki/%D0%94%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F-v6.0.0) и [примере настройки домена](https://github-wiki-see.page/m/OSPanel/OpenServerPanel/wiki/Home-v6.0.0#creating-projects).
+
 ## Проверки
 
 ```bash
