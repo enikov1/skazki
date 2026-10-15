@@ -206,3 +206,42 @@ document.querySelectorAll('[data-share-target]').forEach(button=>button.addEvent
 document.querySelectorAll('[data-media-picker]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();const popup=window.open(link.href,'skazkomir-media-library','popup,width=1040,height=760');if(!popup)location.assign(link.href)}));
 window.addEventListener('message',event=>{if(event.origin!==location.origin||event.data?.type!=='skazkomir:media-selected'||event.data.field!=='cover_path'||typeof event.data.path!=='string')return;if(!/^(storage\/media|assets\/(covers|illustrations))\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp|gif)$/i.test(event.data.path))return;const field=document.querySelector('[name="cover_path"]');if(!field)return;field.value=event.data.path;field.dispatchEvent(new Event('input',{bubbles:true}));notify('Изображение выбрано')} );
 document.querySelectorAll('[data-media-select]').forEach(button=>button.addEventListener('click',async()=>{const message={type:'skazkomir:media-selected',field:button.dataset.mediaField,path:button.dataset.mediaPath};if(window.opener&&!window.opener.closed){window.opener.postMessage(message,location.origin);window.close();return}try{await navigator.clipboard.writeText(message.path);notify('Путь скопирован')}catch{notify(message.path)}}));
+
+// BBEditor stores a small safe BBCode vocabulary; only supported tags become HTML.
+document.querySelectorAll('[data-bbeditor]').forEach(editor=>{
+  const input=editor.querySelector('[data-bbe-input]');
+  const panes=[...editor.querySelectorAll('[data-bbe-pane]')];
+  const tabs=[...editor.querySelectorAll('[data-bbe-tab]')];
+  const preview=editor.querySelector('[data-bbe-pane="preview"]');
+  if(!input||!preview)return;
+  const renderPreview=()=>{
+    const escaped=document.createElement('div');
+    escaped.textContent=input.value;
+    preview.innerHTML=escaped.innerHTML
+      .replace(/\[b\](.*?)\[\/b\]/gis,'<strong>$1</strong>')
+      .replace(/\[i\](.*?)\[\/i\]/gis,'<em>$1</em>')
+      .replace(/\[u\](.*?)\[\/u\]/gis,'<u>$1</u>')
+      .replace(/\[h2\](.*?)\[\/h2\]/gis,'<h2>$1</h2>')
+      .replace(/\[quote\](.*?)\[\/quote\]/gis,'<blockquote>$1</blockquote>')
+      .replace(/\[list\]/gi,'<ul>').replace(/\[\/list\]/gi,'</ul>')
+      .replace(/\[li\](.*?)\[\/li\]/gis,'<li>$1</li>').replace(/\n/g,'<br>');
+    if(!input.value.trim())preview.innerHTML='<p class="bbeditor-empty">Предпросмотр появится здесь.</p>';
+  };
+  const showPane=name=>{
+    panes.forEach(pane=>pane.hidden=pane.dataset.bbePane!==name);
+    tabs.forEach(tab=>{const active=tab.dataset.bbeTab===name;tab.classList.toggle('is-active',active);tab.setAttribute('aria-selected',String(active))});
+    if(name==='preview')renderPreview();
+  };
+  tabs.forEach(tab=>tab.addEventListener('click',()=>showPane(tab.dataset.bbeTab)));
+  editor.querySelectorAll('[data-bbe-command]').forEach(button=>button.addEventListener('click',()=>{
+    const command=button.dataset.bbeCommand,start=input.selectionStart,end=input.selectionEnd,selected=input.value.slice(start,end)||'Текст';
+    const templates={b:['[b]','[/b]'],i:['[i]','[/i]'],u:['[u]','[/u]'],h2:['[h2]','[/h2]'],quote:['[quote]','[/quote]'],list:['[list][li]','[/li][/list]']};
+    const [open,close]=templates[command]||[];
+    if(!open)return;
+    const replacement=open+selected+close;
+    input.setRangeText(replacement,start,end,'select');
+    input.focus();
+    input.dispatchEvent(new Event('input',{bubbles:true}));
+  }));
+  input.addEventListener('input',()=>{if(!preview.hidden)renderPreview()});
+});

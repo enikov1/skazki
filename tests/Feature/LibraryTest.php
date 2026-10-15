@@ -42,6 +42,16 @@ class LibraryTest extends TestCase
         $this->get('/vhod')->assertRedirect(route('login'), 301);
     }
 
+    public function test_bbeditor_renders_only_allowed_formatting_and_escapes_html(): void
+    {
+        $html = app(\App\Support\BBEditor::class)->render('[h2]Заголовок[/h2][b]Жирный[/b] <script>alert(1)</script>');
+
+        $this->assertStringContainsString('<h2>Заголовок</h2>', $html);
+        $this->assertStringContainsString('<strong>Жирный</strong>', $html);
+        $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $html);
+        $this->assertStringNotContainsString('<script>', $html);
+    }
+
     public function test_editors_can_upload_and_pick_media_but_regular_users_cannot(): void
     {
         $this->seed();
