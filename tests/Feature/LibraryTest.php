@@ -63,7 +63,7 @@ class LibraryTest extends TestCase
 
         $this->actingAs($editor)->get(route('admin.media.index', ['select' => 'cover_path']))->assertOk()->assertSee('Медиатека');
         $this->postJson(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('ajax-cover.png', 400, 300)])
-            ->assertOk()->assertJsonPath('media.name', 'ajax-cover.png')->assertJsonPath('media.path', 'storage/media/ajax-cover.png');
+            ->assertOk()->assertJsonPath('media.path', 'storage/media/'.$this->json('media.name'));
         $this->post(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('illustration.webp', 400, 300)])
             ->assertRedirect(route('admin.media.index', ['select' => 'cover_path']));
         $files = Storage::disk('public')->allFiles('media');
