@@ -25,6 +25,7 @@ composer install
 php artisan key:generate
 # Создайте PostgreSQL/MySQL БД и задайте DB_* в .env
 php artisan migrate --seed
+php artisan storage:link
 # Скомпилируйте макеты Gulp/Pug/SCSS в /demo
 npm ci && npm run build
 php artisan serve
@@ -109,6 +110,7 @@ DB_PASSWORD=пароль_пользователя_базы
 
 ```bat
 php artisan migrate --seed
+php artisan storage:link
 ```
 
 Установите зависимости вёрстки и соберите макеты:
@@ -137,6 +139,8 @@ php artisan optimize:clear
 ```
 
 `git pull` скачивает новые файлы, `composer install` и `npm ci` обновляют зависимости по манифестам, `npm run build` пересобирает макеты, а `php artisan migrate` применяет новые миграции без удаления данных. Команды можно повторять после каждого обновления проекта. Если изменились только тексты или PHP-код, пересборку npm можно пропустить.
+
+При первом обновлении профиля с загрузкой аватара выполните `php artisan storage:link`, если ссылка `public\storage` ещё не создана. Эта команда нужна один раз на локальной установке.
 
 Если Git сообщает о локальных изменениях, не запускайте `git reset --hard`: сначала сохраните свою работу коммитом или резервной копией, иначе изменения можно потерять. Не используйте `php artisan migrate:fresh` для обновления — команда удалит таблицы и данные. После слияния рабочей ветки в `main` обновляйте так:
 
