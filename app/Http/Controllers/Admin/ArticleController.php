@@ -17,10 +17,17 @@ use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         Gate::authorize('viewAny', Article::class);
-        return view('admin.articles.index', ['articles' => Article::with(['creator:id,name', 'updater:id,name'])->latest()->paginate(20)]);
+        $filters = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'status' => ['nullable', Rule::in(EditorialStatus::values())], 'category' => ['nullable', 'string', 'max:100']]);
+        $articles = Article::with(['creator:id,name', 'updater:id,name'])
+            ->when(filled($filters['q'] ?? null), fn ($query) => $query->where(fn ($query) => $query->where('title', 'like', '%'.$filters['q'].'%')->orWhere('slug', 'like', '%'.$filters['q'].'%')))
+            ->when(filled($filters['status'] ?? null), fn ($query) => $query->where('status', $filters['status']))
+            ->when(filled($filters['category'] ?? null), fn ($query) => $query->where('category', $filters['category']))
+            ->latest()->paginate(20)->withQueryString();
+        $categories = Article::query()->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
+        return view('admin.articles.index', compact('articles', 'filters', 'categories'));
     }
 
     public function create(): View
@@ -57,10 +64,11 @@ class ArticleController extends Controller
     public function status(Request $request, Article $article): RedirectResponse
     {
         Gate::authorize('update', $article);
-        $data = $request->validate(['status' => ['required', Rule::in(EditorialStatus::values())]]);
+        $data = $request->validate(['status' => ['required', Rule::in(EditorialStatus::values())], 'publish_at' => ['nullable', 'date', 'after:now']]);
         if ($data['status'] === 'published') Gate::authorize('publish', Article::class);
         $previousStatus = $article->status;
-        $article->update(['status' => $data['status'], 'updated_by' => $request->user()->id, 'published_at' => $data['status'] === 'published' ? ($article->published_at ?? now()) : null]);
+        $publishAt = $data['publish_at'] ?? ($article->status === 'published' && $article->published_at?->isFuture() ? $article->published_at : now());
+        $article->update(['status' => $data['status'], 'updated_by' => $request->user()->id, 'published_at' => $data['status'] === 'published' ? $publishAt : null]);
         $this->recordChange($request, $article, 'article.status_changed', 'Статус статьи «'.$article->title.'»: '.EditorialStatus::labelFor($previousStatus).' → '.EditorialStatus::labelFor($article->status).'.');
         Cache::forget('articles:categories:v1');
         return back()->with('status', 'Статус статьи обновлён.');

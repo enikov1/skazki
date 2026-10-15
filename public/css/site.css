@@ -7399,3 +7399,25 @@ body {
     flex-wrap: wrap;
   }
 }
+/* Editorial list filters follow the shared site filter panel. */
+.admin-content-filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(2, minmax(155px, 1fr)) auto auto;
+  align-items: end;
+}
+
+.admin-content-filters .button {
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .admin-content-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .admin-content-filters {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}

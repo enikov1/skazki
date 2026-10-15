@@ -90,6 +90,32 @@ class LibraryTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['actor_id' => $editor->id, 'action' => 'article.status_changed', 'subject_id' => $article->id]);
     }
 
+    public function test_editorial_lists_can_be_searched_filtered_and_content_can_be_scheduled(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $story = Story::create(['title' => 'Запланированная сказка', 'slug' => 'scheduled-story', 'genre' => 'Приключения', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'draft']);
+        Story::create(['title' => 'Другая сказка', 'slug' => 'another-story', 'genre' => 'Басни', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'review']);
+        $article = Article::create(['title' => 'Запланированная статья', 'slug' => 'scheduled-article', 'category' => 'Развитие', 'summary' => 'Описание', 'body' => 'Текст', 'reading_minutes' => 3, 'status' => 'draft']);
+        Article::create(['title' => 'Другая статья', 'slug' => 'another-article', 'category' => 'Здоровье', 'summary' => 'Описание', 'body' => 'Текст', 'reading_minutes' => 3, 'status' => 'review']);
+        $publishAt = now()->addDay()->startOfMinute();
+
+        $this->actingAs($admin)->get(route('admin.stories.index', ['q' => 'scheduled', 'status' => 'draft', 'genre' => 'Приключения']))
+            ->assertOk()->assertSee('Запланированная сказка')->assertDontSee('Другая сказка');
+        $this->get(route('admin.articles.index', ['q' => 'scheduled', 'status' => 'draft', 'category' => 'Развитие']))
+            ->assertOk()->assertSee('Запланированная статья')->assertDontSee('Другая статья');
+
+        $this->patch(route('admin.stories.status', $story), ['status' => 'published', 'publish_at' => $publishAt->format('Y-m-d\\TH:i')])->assertRedirect();
+        $this->patch(route('admin.articles.status', $article), ['status' => 'published', 'publish_at' => $publishAt->format('Y-m-d\\TH:i')])->assertRedirect();
+        $this->assertSame($publishAt->format('Y-m-d H:i'), $story->fresh()->published_at->format('Y-m-d H:i'));
+        $this->assertSame($publishAt->format('Y-m-d H:i'), $article->fresh()->published_at->format('Y-m-d H:i'));
+        $this->get(route('stories.show', $story))->assertNotFound();
+        $this->get(route('articles.show', $article))->assertNotFound();
+        $this->get(route('admin.stories.index'))->assertSee('Запланировано');
+        $this->get(route('admin.articles.index'))->assertSee('Запланировано');
+    }
+
     public function test_published_story_is_available_and_draft_is_not(): void
     {
         $this->seed();

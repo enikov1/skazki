@@ -16,10 +16,17 @@ use Illuminate\View\View;
 
 class StoryController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         Gate::authorize('viewAny', Story::class);
-        return view('admin.stories.index', ['stories' => Story::with(['creator:id,name', 'updater:id,name'])->latest()->paginate(20)]);
+        $filters = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'status' => ['nullable', Rule::in(EditorialStatus::values())], 'genre' => ['nullable', 'string', 'max:80']]);
+        $stories = Story::with(['creator:id,name', 'updater:id,name'])
+            ->when(filled($filters['q'] ?? null), fn ($query) => $query->where(fn ($query) => $query->where('title', 'like', '%'.$filters['q'].'%')->orWhere('slug', 'like', '%'.$filters['q'].'%')))
+            ->when(filled($filters['status'] ?? null), fn ($query) => $query->where('status', $filters['status']))
+            ->when(filled($filters['genre'] ?? null), fn ($query) => $query->where('genre', $filters['genre']))
+            ->latest()->paginate(20)->withQueryString();
+        $genres = Story::query()->whereNotNull('genre')->distinct()->orderBy('genre')->pluck('genre');
+        return view('admin.stories.index', compact('stories', 'filters', 'genres'));
     }
 
     public function create(): View { Gate::authorize('create', Story::class); return view('admin.stories.form', ['story' => new Story(), 'lastEdit' => null]); }
@@ -53,10 +60,11 @@ class StoryController extends Controller
 
     public function status(Request $request, Story $story): RedirectResponse
     {
-        $data = $request->validate(['status' => ['required', Rule::in(EditorialStatus::values())]]);
+        $data = $request->validate(['status' => ['required', Rule::in(EditorialStatus::values())], 'publish_at' => ['nullable', 'date', 'after:now']]);
         if ($data['status'] === 'published') Gate::authorize('publish', Story::class); else Gate::authorize('update', $story);
         $previousStatus = $story->status;
-        $story->update(['status' => $data['status'], 'updated_by' => $request->user()->id, 'published_at' => $data['status'] === 'published' ? ($story->published_at ?? now()) : null]);
+        $publishAt = $data['publish_at'] ?? ($story->status === 'published' && $story->published_at?->isFuture() ? $story->published_at : now());
+        $story->update(['status' => $data['status'], 'updated_by' => $request->user()->id, 'published_at' => $data['status'] === 'published' ? $publishAt : null]);
         $this->recordChange($request, $story, 'story.status_changed', 'Статус сказки «'.$story->title.'»: '.EditorialStatus::labelFor($previousStatus).' → '.EditorialStatus::labelFor($story->status).'.');
         Cache::forget('stories:genres:v1');
         Cache::forget('stories:detail:v1:'.$story->slug);
