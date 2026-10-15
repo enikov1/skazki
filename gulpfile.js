@@ -43,6 +43,10 @@ async function syncDemo() {
   const PUBLIC_CSS = path.join(__dirname, 'public', 'css');
   await fs.mkdir(PUBLIC_CSS, { recursive: true });
   await fs.copyFile(path.join(DIST, 'styles.css'), path.join(PUBLIC_CSS, 'site.css'));
+  const PUBLIC_JS = path.join(__dirname, 'public', 'js');
+  await fs.mkdir(PUBLIC_JS, { recursive: true });
+  await fs.copyFile(path.join(DIST, 'app.js'), path.join(PUBLIC_JS, 'app.js'));
+  await fs.cp(path.join(DIST, 'assets'), path.join(__dirname, 'public', 'assets'), { recursive: true, force: true });
   async function rewrite(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       const target = path.join(dir, entry.name);
