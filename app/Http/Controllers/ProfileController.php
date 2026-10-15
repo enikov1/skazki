@@ -20,17 +20,37 @@ class ProfileController extends Controller
 
     public function show(Request $request): View
     {
+        return $this->page($request, 'overview');
+    }
+
+    public function history(Request $request): View
+    {
+        return $this->page($request, 'history');
+    }
+
+    public function settings(Request $request): View
+    {
+        return $this->page($request, 'settings');
+    }
+
+    public function security(Request $request): View
+    {
+        return $this->page($request, 'security');
+    }
+
+    private function page(Request $request, string $section): View
+    {
         $user = $request->user();
-        $history = $user->readingHistories()->with('story')->whereHas('story', fn ($query) => $query->published())->latest('last_read_at')->paginate(8);
-        $audioProgress = $user->audioPlaybackStates()->with('story')->whereHas('story', fn ($query) => $query->published()->whereNotNull('audio_path'))->where('position_seconds', '>', 0)->latest('updated_at')->limit(6)->get();
-        $savedAudioQueue = $user->audioPlaybackStates()->with('story')->whereNotNull('queue_position')->whereHas('story', fn ($query) => $query->published()->whereNotNull('audio_path'))->orderBy('queue_position')->get();
+        $history = $section === 'history' ? $user->readingHistories()->with('story')->whereHas('story', fn ($query) => $query->published())->latest('last_read_at')->paginate(12) : null;
+        $audioProgress = in_array($section, ['overview', 'history'], true) ? $user->audioPlaybackStates()->with('story')->whereHas('story', fn ($query) => $query->published()->whereNotNull('audio_path'))->where('position_seconds', '>', 0)->latest('updated_at')->limit($section === 'overview' ? 3 : 50)->get() : collect();
+        $savedAudioQueue = in_array($section, ['overview', 'history'], true) ? $user->audioPlaybackStates()->with('story')->whereNotNull('queue_position')->whereHas('story', fn ($query) => $query->published()->whereNotNull('audio_path'))->orderBy('queue_position')->limit($section === 'overview' ? 3 : 50)->get() : collect();
         $avatarUrl = $user->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null;
         $preferences = array_merge(['reader_font_size' => 20, 'reader_theme' => 'cream', 'reader_width' => 'medium'], $user->profile_preferences ?? []);
-        $newsletterConsent = $user->consentEvents()->where('consent_type', 'newsletter')->orderByDesc('recorded_at')->orderByDesc('id')->first();
-        $consentEvents = $user->consentEvents()->whereIn('consent_type', ['terms', 'privacy_notice'])->orderBy('recorded_at')->get()->keyBy('consent_type');
-        $socialAccounts = $user->socialAccounts()->orderBy('provider')->get();
+        $newsletterConsent = in_array($section, ['overview', 'settings'], true) ? $user->consentEvents()->where('consent_type', 'newsletter')->orderByDesc('recorded_at')->orderByDesc('id')->first() : null;
+        $consentEvents = in_array($section, ['overview', 'settings'], true) ? $user->consentEvents()->whereIn('consent_type', ['terms', 'privacy_notice'])->orderBy('recorded_at')->get()->keyBy('consent_type') : collect();
+        $socialAccounts = in_array($section, ['overview', 'security'], true) ? $user->socialAccounts()->orderBy('provider')->get() : collect();
 
-        return view('profile.show', compact('user', 'history', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
+        return view('profile.show', compact('section', 'user', 'history', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
     }
 
     public function update(Request $request): RedirectResponse|JsonResponse

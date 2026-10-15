@@ -80,6 +80,9 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware(['auth',
 Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware(['auth', 'account.active']);
 Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/history', [ProfileController::class, 'history'])->name('profile.history');
+    Route::get('/profile/settings', [ProfileController::class, 'settings'])->name('profile.settings');
+    Route::get('/profile/security', [ProfileController::class, 'security'])->name('profile.security');
     Route::post('/audio/queue', [StoryController::class, 'saveAudioQueue'])->middleware('throttle:30,1')->name('audio.queue.save');
     Route::post('/skazki/{story:slug}/audio/progress', [StoryController::class, 'saveAudioProgress'])->middleware('throttle:public-write')->name('stories.audio.progress');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');

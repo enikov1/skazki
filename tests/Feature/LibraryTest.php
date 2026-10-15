@@ -205,7 +205,7 @@ class LibraryTest extends TestCase
         $this->postJson(route('audio.queue.save'), ['stories' => [$draft->slug]])->assertUnprocessable();
 
         $this->get(route('audio.index'))->assertOk()->assertSee('data-queue-url=', false)->assertSee('&quot;id&quot;:&quot;queue-second&quot;', false)->assertSee('Вторая в очереди');
-        $this->get(route('profile.show'))->assertOk()->assertSee('Очередь аудиосказок')->assertSee('Первая в очереди')->assertSee('Вторая в очереди');
+        $this->get(route('profile.history'))->assertOk()->assertSee('Очередь аудиосказок')->assertSee('Первая в очереди')->assertSee('Вторая в очереди');
         $this->postJson(route('audio.queue.save'), ['stories' => []])->assertOk()->assertJsonPath('count', 0);
         $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $first->id, 'queue_position' => null]);
         $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $second->id, 'queue_position' => null]);
@@ -527,7 +527,10 @@ class LibraryTest extends TestCase
         $story = Story::where('slug', 'kolobok')->firstOrFail();
         $this->actingAs($reader)->get(route('stories.show', $story))->assertOk();
         $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id]);
-        $this->get(route('profile.show'))->assertOk()->assertSee('История сказок')->assertSee($story->title);
+        $this->get(route('profile.show'))->assertOk()->assertSee('Главная профиля')->assertSee('История чтения')->assertSee($story->title);
+        $this->get(route('profile.history'))->assertOk()->assertSee('История и очередь')->assertSee('История чтения')->assertSee('Очередь аудиосказок');
+        $this->get(route('profile.settings'))->assertOk()->assertSee('Настройки профиля')->assertSee('Внешний вид сказок')->assertSee('Согласия');
+        $this->get(route('profile.security'))->assertOk()->assertSee('Безопасность аккаунта')->assertSee('Изменить пароль')->assertSee('Связанные аккаунты');
 
         $this->put(route('profile.update'), ['name' => 'Костя'])->assertRedirect();
         $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Костя']);
