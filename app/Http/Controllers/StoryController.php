@@ -25,7 +25,11 @@ class StoryController extends Controller
         }
         $related = Story::published()->where('genre', $story->genre)->where('id', '<>', $story->getKey())->limit(4)->get(['id', 'slug', 'title', 'author', 'summary', 'cover_path', 'age_min', 'age_max']);
         $comments = $story->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
+        $preferences = array_merge(['reader_font_size' => 20, 'reader_theme' => 'cream', 'reader_width' => 'medium'], auth()->user()?->profile_preferences ?? []);
+        $readerFontSize = in_array((int) $preferences['reader_font_size'], [16, 18, 20, 22, 24], true) ? (int) $preferences['reader_font_size'] : 20;
+        $readerTheme = in_array($preferences['reader_theme'], ['cream', 'white', 'green'], true) ? $preferences['reader_theme'] : 'cream';
+        $readerWidth = ['narrow' => 560, 'medium' => 700, 'wide' => 900][$preferences['reader_width']] ?? 700;
 
-        return view('stories.show', compact('story', 'related', 'comments'));
+        return view('stories.show', compact('story', 'related', 'comments', 'readerFontSize', 'readerTheme', 'readerWidth'));
     }
 }

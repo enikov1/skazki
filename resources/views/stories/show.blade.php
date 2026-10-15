@@ -14,7 +14,7 @@
     </div>
   </div>
 </section>
-<section class="story-description"><h2>О сказке</h2><p>{{ $story->summary }}</p><p>Автор: {{ $story->author ?: 'СказкоМир' }}. Категория: {{ $story->genre }}. Подходит для детей {{ $story->age_min }}–{{ $story->age_max }} лет.</p></section>
+<section class="story-description story-detail"><h2>О сказке</h2><p>{{ $story->summary }}</p><p>Автор: {{ $story->author ?: 'СказкоМир' }}. Категория: {{ $story->genre }}. Подходит для детей {{ $story->age_min }}–{{ $story->age_max }} лет.</p><article class="reading-text reader-theme-{{ $readerTheme }}" style="font-size: {{ $readerFontSize }}px; --reader-max-width: {{ $readerWidth }}px">{!! nl2br(e($story->body)) !!}</article></section>
 <section class="page-panel story-comments" id="comments"><h2>Отзывы о сказке</h2><p class="notice">Поделитесь впечатлением о сказке — ваш отзыв появится после проверки.</p>
 @auth<form class="form-grid" method="post" action="{{ route('comments.store', $story) }}">@csrf<label class="field full"><span>Комментарий</span><textarea name="body" rows="4" minlength="3" maxlength="2000" required placeholder="Что вам запомнилось?"></textarea></label>@error('body')<p class="field-error">{{ $message }}</p>@enderror<div class="field full"><button class="btn" type="submit">Оставить отзыв</button></div></form>
 @else<p class="notice">Чтобы оставить отзыв, <a href="{{ route('login', ['redirect' => request()->fullUrl()]) }}">войдите в аккаунт</a>.</p>@endauth
