@@ -62,12 +62,13 @@ class LibraryTest extends TestCase
         $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
 
         $this->actingAs($editor)->get(route('admin.media.index', ['select' => 'cover_path']))->assertOk()->assertSee('Медиатека');
-        $this->postJson(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('ajax-cover.png', 400, 300)])
-            ->assertOk()->assertJsonPath('media.path', 'storage/media/'.$this->json('media.name'));
+        $ajaxUpload = $this->postJson(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('ajax-cover.png', 400, 300)]);
+        $ajaxUpload->assertOk()->assertJsonPath('media.name', basename($ajaxUpload->json('media.path')));
+        $this->assertStringStartsWith('storage/media/', $ajaxUpload->json('media.path'));
         $this->post(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('illustration.webp', 400, 300)])
             ->assertRedirect(route('admin.media.index', ['select' => 'cover_path']));
         $files = Storage::disk('public')->allFiles('media');
-        $this->assertCount(1, $files);
+        $this->assertCount(2, $files);
         Storage::disk('public')->assertExists($files[0]);
 
         auth()->logout();

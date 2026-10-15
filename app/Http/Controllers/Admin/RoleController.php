@@ -48,10 +48,10 @@ class RoleController extends Controller
         Gate::authorize('changeRole', $user);
         $data = $request->validate(['role' => ['required', Rule::in(['user', 'editor', 'moderator', 'admin'])]]);
         $currentRole = $user->roles()->value('slug');
-        if ($request->user()->is($user) && $data['role'] !== 'admin') abort(422, 'Нельзя убрать роль администратора у своей учётной записи.');
+        if ($request->user()->is($user) && $data['role'] !== 'admin') return $this->reject($request, 'role', 'Нельзя убрать роль администратора у своей учётной записи.');
         if ($currentRole === 'admin' && $data['role'] !== 'admin') {
             $admins = Role::where('slug', 'admin')->firstOrFail()->users()->whereNull('blocked_at')->count();
-            if ($admins <= 1) abort(422, 'В системе должен остаться хотя бы один администратор.');
+            if ($admins <= 1) return $this->reject($request, 'role', 'В системе должен остаться хотя бы один администратор.');
         }
         if ($currentRole !== $data['role']) {
             DB::transaction(function () use ($request, $user, $currentRole, $data): void {
@@ -67,12 +67,12 @@ class RoleController extends Controller
     {
         Gate::authorize('block', $user);
         if ($request->user()->is($user)) {
-            abort(422, 'Нельзя заблокировать собственный аккаунт.');
+            return $this->reject($request, 'block_reason', 'Нельзя заблокировать собственный аккаунт.');
         }
 
         $data = $request->validate(['block_reason' => ['required', 'string', 'min:3', 'max:500']]);
         if ($user->hasRole('admin') && Role::where('slug', 'admin')->firstOrFail()->users()->whereNull('blocked_at')->count() <= 1) {
-            abort(422, 'Нельзя заблокировать последнего администратора.');
+            return $this->reject($request, 'block_reason', 'Нельзя заблокировать последнего администратора.');
         }
         if ($user->isBlocked()) {
             return $this->respond($request, 'Этот аккаунт уже заблокирован.');
@@ -100,4 +100,14 @@ class RoleController extends Controller
 
         return $this->respond($request, 'Доступ к аккаунту восстановлен.');
     }
+
+    private function reject(Request $request, string $field, string $message): JsonResponse|RedirectResponse
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message, 'errors' => [$field => [$message]]], 422);
+        }
+
+        return back()->withErrors([$field => $message]);
+    }
+
 }
