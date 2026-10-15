@@ -7555,6 +7555,10 @@ body {
   display: none;
 }
 
+.dock-icon-button[hidden] {
+  display: none !important;
+}
+
 .dock-sleep select {
   height: 31px;
   max-width: 118px;

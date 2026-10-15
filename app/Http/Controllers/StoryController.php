@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class StoryController extends Controller
 {
@@ -74,6 +75,21 @@ class StoryController extends Controller
         return response()->file($audioFile, [
             'Content-Type' => 'audio/mpeg',
             'Cache-Control' => 'private, max-age=3600',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    public function downloadAudio(Story $story)
+    {
+        abort_unless($story->status === 'published' && $story->published_at?->isPast() && $story->allow_download, 404);
+        $privateAudio = preg_match('~^audio/[A-Za-z0-9._-]+\\.mp3$~i', (string) $story->audio_path) === 1;
+        $publicAudio = preg_match('~^assets/audio/[A-Za-z0-9._-]+\\.mp3$~i', (string) $story->audio_path) === 1;
+        abort_unless($privateAudio || $publicAudio, 404);
+        $audioFile = $privateAudio ? Storage::disk('local')->path($story->audio_path) : public_path($story->audio_path);
+        abort_unless(is_file($audioFile), 404);
+
+        return response()->download($audioFile, Str::slug($story->title).'.mp3', [
+            'Content-Type' => 'audio/mpeg',
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

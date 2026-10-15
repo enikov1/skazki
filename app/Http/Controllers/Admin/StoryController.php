@@ -112,9 +112,11 @@ class StoryController extends Controller
                 if (preg_match('~^assets/audio/[A-Za-z0-9._-]+\\.mp3$~i', $value) && is_file(public_path($value))) return;
                 $fail('Выберите загруженный MP3 из медиатеки.');
             }],
+            'allow_download' => ['required', 'boolean'],
             'seo_title' => ['nullable', 'string', 'max:180'], 'seo_description' => ['nullable', 'string', 'max:320'],
         ]);
         $data['slug'] = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['title']);
+        $data['allow_download'] = filled($data['audio_path'] ?? null) && $request->boolean('allow_download');
         return $data;
     }
 }

@@ -180,6 +180,26 @@
   line-height: 1.5;
 }
 
+.admin-area .field-permission {
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  background: #f8faf7;
+}
+
+.admin-area .field-permission > span {
+  display: flex !important;
+  align-items: center;
+  gap: 9px;
+}
+
+.admin-area .field-permission > span input[type=checkbox] {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 .admin-area .admin-topline {
   display: flex;
   align-items: center;

@@ -30,6 +30,7 @@ Route::post('/roditelyam/{article:slug}/comments', [ArticleCommentController::cl
 Route::post('/article-comments/{comment}/vote', [ArticleCommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('article-comments.vote');
 Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->name('stories.show');
 Route::get('/skazki/{story:slug}/audio', [StoryController::class, 'audio'])->name('stories.audio');
+Route::get('/skazki/{story:slug}/audio/download', [StoryController::class, 'downloadAudio'])->name('stories.audio.download');
 Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.store');
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
 

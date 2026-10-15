@@ -108,6 +108,15 @@ class LibraryTest extends TestCase
         $this->get(route('stories.audio', $draft))->assertNotFound();
         $published = Story::create(['title' => 'Опубликованное аудио', 'slug' => 'published-audio', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => $path, 'status' => 'published', 'published_at' => now()->subMinute()]);
         $this->get(route('stories.audio', $published))->assertOk()->assertHeader('Content-Type', 'audio/mpeg');
+        $this->get(route('stories.audio.download', $published))->assertNotFound();
+
+        $this->putJson(route('admin.stories.update', $published), [
+            'title' => $published->title, 'slug' => $published->slug, 'genre' => 'Тест', 'summary' => $published->summary,
+            'body' => $published->body, 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5,
+            'audio_path' => $path, 'allow_download' => '1',
+        ])->assertOk();
+        $this->assertTrue($published->fresh()->allow_download);
+        $this->get(route('stories.audio.download', $published))->assertOk()->assertHeader('Content-Type', 'audio/mpeg')->assertHeader('Content-Disposition');
 
         $this->postJson(route('admin.audio.store'), ['audio' => UploadedFile::fake()->create('track.txt', 10, 'text/plain')])->assertUnprocessable();
     }
@@ -117,7 +126,7 @@ class LibraryTest extends TestCase
         $available = Story::create([
             'title' => 'Лесная история', 'slug' => 'lesnaya-istoriya', 'author' => 'Иван Автор', 'genre' => 'Приключения',
             'summary' => 'Описание', 'body' => 'Текст', 'age_min' => 4, 'age_max' => 7, 'audio_path' => 'audio/forest.mp3',
-            'status' => 'published', 'published_at' => now()->subMinute(),
+            'allow_download' => true, 'status' => 'published', 'published_at' => now()->subMinute(),
         ]);
         Story::create([
             'title' => 'Народная история', 'slug' => 'narodnaya-istoriya', 'genre' => 'Народные сказки',
@@ -141,6 +150,9 @@ class LibraryTest extends TestCase
             ->assertDontSee('data-audio-id="no-audio-story"', false)
             ->assertSee('data-audio-results', false)->assertSee('id="audioDock"', false)
             ->assertSee('id="dockSleepTimer"', false)->assertSee('До конца сказки');
+        $catalogHtml = $this->get(route('audio.index'))->getContent();
+        $this->assertStringContainsString(route('stories.audio.download', $available), $catalogHtml);
+        $this->assertStringNotContainsString('narodnaya-istoriya/audio/download', $catalogHtml);
 
         $filtered = $this->getJson(route('audio.index', ['genre' => 'Приключения', 'age' => '5-8', 'q' => 'Лесная']));
         $filtered->assertOk()->assertJsonPath('count', 1);
@@ -158,7 +170,7 @@ class LibraryTest extends TestCase
         $story = Story::create(['title' => 'История с жанром', 'slug' => 'genre-story', 'genre' => $genre->name, 'summary' => 'Описание', 'body' => 'Текст']);
 
         $this->actingAs($admin)->get(route('admin.genres.index'))->assertOk()->assertSee('Жанры сказок')->assertSee('Старое название');
-        $this->get(route('admin.stories.create'))->assertOk()->assertSee('data-custom-select')->assertSee('Народные сказки');
+        $this->get(route('admin.stories.create'))->assertOk()->assertSee('data-custom-select')->assertSee('Народные сказки')->assertSee('name="allow_download"', false)->assertSee('Разрешить скачивание MP3');
         $this->postJson(route('admin.genres.store'), ['name' => 'Сказки о животных'])
             ->assertOk()->assertJsonPath('genre.name', 'Сказки о животных');
         $this->postJson(route('admin.genres.store'), ['name' => 'Сказки о животных'])->assertUnprocessable();

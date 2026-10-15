@@ -52,6 +52,9 @@
 .admin-area .field textarea:focus { border-color: #6e9d79; box-shadow: 0 0 0 4px rgba(62, 118, 88, .12); }
 .admin-area .field .ajax-field-error { display: block; margin-top: 2px; color: #ad483d; font-size: 12px; font-weight: 600; }
 .admin-area .field-help { display: block; margin-top: 2px; color: var(--admin-muted); font-size: 12px; line-height: 1.5; }
+.admin-area .field-permission { align-content: start; gap: 8px; padding: 12px; border: 1px solid var(--admin-line); border-radius: 12px; background: #f8faf7; }
+.admin-area .field-permission > span { display: flex !important; align-items: center; gap: 9px; }
+.admin-area .field-permission > span input[type="checkbox"] { flex: 0 0 auto; margin: 0; }
 .admin-area .admin-topline { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .admin-area .admin-topline .lead { margin-top: 8px; font-size: 15px; }
 .admin-area .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }

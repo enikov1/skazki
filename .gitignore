@@ -5,7 +5,6 @@
 /.openai
 /public/build
 /public/assets/
-/public/js/
 /public/hot
 /public/storage
 /.env

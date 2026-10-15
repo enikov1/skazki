@@ -10,11 +10,11 @@ use Illuminate\Support\Str;
 
 class Story extends Model
 {
-    protected $fillable = ['title', 'slug', 'author', 'genre', 'summary', 'body', 'age_min', 'age_max', 'reading_minutes', 'cover_path', 'audio_path', 'status', 'seo_title', 'seo_description', 'created_by', 'updated_by', 'published_at'];
+    protected $fillable = ['title', 'slug', 'author', 'genre', 'summary', 'body', 'age_min', 'age_max', 'reading_minutes', 'cover_path', 'audio_path', 'allow_download', 'status', 'seo_title', 'seo_description', 'created_by', 'updated_by', 'published_at'];
 
     protected function casts(): array
     {
-        return ['published_at' => 'datetime'];
+        return ['published_at' => 'datetime', 'allow_download' => 'boolean'];
     }
 
     protected static function booted(): void
