@@ -8,7 +8,6 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\User;
 use App\Models\Comment;
-use App\Models\AuditLog;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -278,7 +277,7 @@ class LibraryTest extends TestCase
         $this->assertTrue($target->fresh()->isBlocked());
         $this->assertSame(1, Role::where('slug', 'admin')->firstOrFail()->users()->whereNull('blocked_at')->count());
 
-        $this->actingAs($target)->get(route('profile.show'))->assertRedirect(route('login'));
+        $this->actingAs($target->fresh())->get(route('profile.show'))->assertRedirect(route('login'));
         $this->assertGuest();
     }
 
