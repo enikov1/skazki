@@ -1,0 +1,30 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title О СказкоМире
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'О СказкоМире', href: null}])
+    h1.page-title О СказкоМире
+    p.lead СказкоМир — удобная библиотека историй и занятий для детей и их родителей.
+    section.page-panel
+      h2 Наша идея
+      p Помочь семье находить хорошие истории, читать их вместе и обсуждать в своём темпе. Здесь собраны сказки, аудиосказки и простые занятия.
+      h2 Для кого
+      p Для детей дошкольного и младшего школьного возраста, а также взрослых, которые выбирают книги вместе с ними.
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

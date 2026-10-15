@@ -1,0 +1,44 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Вход — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap.auth-page
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Вход', href: null}])
+    .auth-layout
+      +authIntro('Личный кабинет', 'Снова рады вас видеть', 'Войдите, чтобы читать любимые истории и продолжить с того места, где остановились.', '/assets/illustrations/auth-login.webp', 'Ребёнок и мишка приветливо машут рукой')
+      section.auth-card(aria-labelledby='authTitle')
+        span.auth-kicker Вход в аккаунт
+        h2#authTitle Войти в СказкоМир
+        p.auth-description Введите адрес электронной почты и пароль или выберите удобный способ входа.
+        +socialAuthButtons()
+        .auth-divider
+          span или по электронной почте
+        form#loginForm.auth-form(action='#', method='post')
+          .field
+            label(for='loginEmail') Электронная почта
+            input#loginEmail(type='email', name='email', autocomplete='email', placeholder='ваша почта', required)
+          .field
+            .field-heading
+              label(for='loginPassword') Пароль
+              a(href='recover-password.html') Забыли пароль?
+            .password-field
+              input#loginPassword(type='password', name='password', autocomplete='current-password', minlength='8', placeholder='Не менее 8 символов', required)
+              button.password-toggle(type='button', data-password-toggle='loginPassword', aria-label='Показать пароль')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#eye')
+          label.check-line
+            input(type='checkbox', name='remember')
+            span Запомнить меня на этом устройстве
+          button.btn.auth-submit(type='submit') Войти
+          p#authStatus.form-status(role='status', aria-live='polite', hidden)
+        p.auth-switch Нет аккаунта? <a href='register.html'>Зарегистрироваться</a>
+        p.auth-legal Продолжая, вы соглашаетесь с <a href='privacy.html'>политикой конфиденциальности</a>.
+  +siteFooter()
+  .toast#toast
+

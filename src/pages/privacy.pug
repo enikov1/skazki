@@ -1,0 +1,28 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Политика — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Конфиденциальность', href: null}])
+    h1.page-title Политика конфиденциальности
+    p.lead Несколько простых правил помогут сохранить личную информацию в безопасности.
+    section.page-panel
+      h2 Личная информация
+      p Не указывайте в сообщениях адрес, номер телефона, название школы или пароль. Перед отправкой фотографии попросите разрешения у взрослого. Для общения на сайте достаточно имени или доброго вымышленного имени.
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

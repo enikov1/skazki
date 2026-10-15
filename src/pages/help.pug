@@ -1,0 +1,38 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Помощь — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Помощь', href: null}])
+    h1.page-title Помощь
+    p.lead Ответы на частые вопросы о библиотеке.
+    section.page-panel
+      details(style='padding:12px;border-bottom:1px solid var(--line)')
+        summary Как найти сказку?
+        p Используйте строку поиска или фильтры каталога.
+      details(style='padding:12px;border-bottom:1px solid var(--line)')
+        summary Можно ли читать без регистрации?
+        p Да. Читать истории можно без регистрации.
+      details(style='padding:12px;border-bottom:1px solid var(--line)')
+        summary Сохраняются ли книги на полке?
+        p Нажмите «В мою полку» на странице сказки, чтобы добавить её в список любимых.
+      details(style='padding:12px;border-bottom:1px solid var(--line)')
+        summary Как работает озвучивание?
+        p У некоторых сказок есть аудиоверсии. Если записи пока нет, можно прочитать историю.
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

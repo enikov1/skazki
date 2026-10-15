@@ -1,0 +1,122 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Отзывы читателей — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Отзывы читателей', href: null}])
+    .comments-heading
+      span.eyebrow
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#heart')
+        |  Клуб читателей
+      h1.page-title Отзывы читателей
+      p.lead Здесь семьи делятся впечатлениями о сказках и чтении вместе.
+    section.page-panel.comments-page-panel
+      .section-head
+        div
+          h2 Добрые слова о прочитанном
+          p.comments-subtitle Выберите сказку, чтобы прочитать её тоже.
+        span.comments-total 8 отзывов
+      .all-comments#allComments
+        article.comment.comment-featured(data-comment-page='1')
+          .comment-heading
+            .comment-avatar.note-peach М
+            div
+              b Маша
+              span.comment-context о сказке «Колобок»
+            span.comment-rating ★★★★★
+          p «Очень добрая сказка! Читали всей семьёй — даже папа вспомнил, как ему читали в детстве».
+          .comment-card-footer
+            +commentReactions(12, 1)
+            a(href='story.html?id=kolobok') Читать сказку →
+        article.comment.comment-featured(data-comment-page='1')
+          .comment-heading
+            .comment-avatar.note-mint И
+            div
+              b Илья
+              span.comment-context о сказке «Три поросёнка»
+            span.comment-rating ★★★★★
+          p «Читали всей семьёй. Теперь сын каждый вечер строит домики для своих игрушек».
+          .comment-card-footer
+            +commentReactions(8, 0)
+            a(href='story.html?id=three-pigs') Читать сказку →
+        article.comment.comment-featured(data-comment-page='1')
+          .comment-heading
+            .comment-avatar.note-lilac С
+            div
+              b Соня
+              span.comment-context о сказке «Маша и медведь»
+            span.comment-rating ★★★★★
+          p «Понравился медведь, а Маша такая находчивая. Хочу послушать эту сказку ещё раз!»
+          .comment-card-footer
+            +commentReactions(6, 0)
+            a(href='story.html?id=masha') Читать сказку →
+        article.comment.comment-featured(data-comment-page='1')
+          .comment-heading
+            .comment-avatar.note-blue А
+            div
+              b Артём
+              span.comment-context о сказке «Репка»
+            span.comment-rating ★★★★★
+          p «Мышка маленькая, а помогла всем! Мне понравилось, что герои не бросили друг друга».
+          .comment-card-footer
+            +commentReactions(4, 0)
+            a(href='story.html?id=repka') Читать сказку →
+        article.comment.comment-featured(data-comment-page='2')
+          .comment-heading
+            .comment-avatar.note-yellow О
+            div
+              b Оля
+              span.comment-context о раскраске «Колобок»
+            span.comment-rating ★★★★★
+          p «Очень здорово, что можно раскрашивать прямо на сайте! Я выбрала Колобку оранжевый цвет».
+          .comment-card-footer
+            +commentReactions(4, 0)
+            a(href='coloring-task.html?id=kolobok') Открыть раскраску →
+        article.comment.comment-featured(data-comment-page='2')
+          .comment-heading
+            .comment-avatar.note-peach Л
+            div
+              b Лиза
+              span.comment-context о сказке «Красная Шапочка»
+            span.comment-rating ★★★★☆
+          p «Бабушке я бы принесла не пирожки, а большой букет цветов!»
+          .comment-card-footer
+            +commentReactions(3, 0)
+            a(href='story.html?id=little-red') Читать сказку →
+        article.comment.comment-featured(data-comment-page='2')
+          .comment-heading
+            .comment-avatar.note-mint Н
+            div
+              b Настя
+              span.comment-context о сказке «Дюймовочка»
+            span.comment-rating ★★★★★
+          p «Мне понравилась ласточка. Она добрая и помогла Дюймовочке найти друзей».
+          .comment-card-footer
+            +commentReactions(5, 0)
+            a(href='story.html?id=thumbelina') Читать сказку →
+        article.comment.comment-featured(data-comment-page='2')
+          .comment-heading
+            .comment-avatar.note-blue П
+            div
+              b Полина
+              span.comment-context о статье «Читаем вместе»
+            span.comment-rating ★★★★★
+          p «Попробовали читать по ролям. Получилось весело, будем продолжать».
+          .comment-card-footer
+            +commentReactions(7, 0)
+            a(href='parent-article.html?id=family-reading') Читать статью →
+      nav.pagination#commentsPagination(aria-label='Страницы отзывов')
+        button.active(type='button', data-comments-page='1', aria-current='page') 1
+        button(type='button', data-comments-page='2') 2
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast

@@ -1,0 +1,52 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Достижения — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Профиль', href: 'profile.html'}, {label: 'Достижения', href: null}])
+    h1.page-title Мои достижения
+    p.lead Маленькие шаги тоже важны. Отмечайте прочитанные истории и пройденные викторины.
+    section.page-panel
+      h2 Читательские значки
+      .activity-row
+        .activity-card.achievement-card-earned
+          span.activity-icon.achievement-earned
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#leaf')
+          b Первый шаг
+          p Откройте первую сказку
+        .activity-card.achievement-card-earned
+          span.activity-icon.achievement-earned
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#book')
+          b Любознательный читатель
+          p Прочитайте 5 историй
+        .activity-card.achievement-card-locked
+          span.activity-icon
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#bulb')
+          b Знаток историй
+          p Пройдите викторину
+        .activity-card.achievement-card-locked
+          span.activity-icon
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#pencil')
+          b Сказочник
+          p Создайте черновик
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

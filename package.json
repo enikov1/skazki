@@ -1,0 +1,19 @@
+{
+  "name": "skazkomir",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Исходная вёрстка сайта на Gulp, Pug и SCSS",
+  "scripts": {
+    "build": "gulp build",
+    "dev": "gulp serve",
+    "clean": "gulp clean"
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.4",
+    "gulp": "^5.0.0",
+    "gulp-pug": "^5.0.0",
+    "gulp-sass": "^6.0.1",
+    "pug": "^3.0.3",
+    "sass": "^1.89.2"
+  }
+}

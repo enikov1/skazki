@@ -1,0 +1,38 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Контакты — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Контакты', href: null}])
+    h1.page-title Контакты
+    p.lead Напишите нам идею, вопрос или сообщение об ошибке.
+    section.page-panel
+      form.form-grid.demo-form
+        .field
+          label Ваше имя
+          input(required)
+        .field
+          label Электронная почта
+          input(type='email', placeholder='ваша почта', required)
+        .field.full
+          label Сообщение
+          textarea(required)
+        .field.full
+          button.btn Отправить
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

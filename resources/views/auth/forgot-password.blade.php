@@ -1,0 +1,4 @@
+@extends('layouts.app')
+@section('title', 'Восстановление пароля — СказкоМир')
+@section('content')<section class="auth-panel"><p class="eyebrow">Поможем вернуться</p><h1>Восстановить пароль</h1><p class="lead">Отправим письмо со ссылкой для смены пароля.</p>@if($errors->any())<div class="form-errors" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
+<form method="post" action="{{ route('password.email') }}" class="stack-form">@csrf<label class="field"><span>Электронная почта</span><input type="email" name="email" value="{{ old('email') }}" autocomplete="email" required autofocus></label><button class="button button-wide" type="submit">Отправить ссылку</button></form><p class="form-foot"><a href="{{ route('login') }}">Вернуться ко входу</a></p></section>@endsection

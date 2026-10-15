@@ -1,0 +1,73 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Найди отличия — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Занятия', href: 'activities.html'}, {label: 'Найди отличия', href: 'differences.html'}, {label: 'Задание', href: null}])
+    h1.page-title Найди отличия: Колобок
+    p.lead Русская народная сказка · 3–5 лет
+    p
+      a.pill(href='differences.html') ← Все задания «Найди отличия»
+    section.page-panel
+      img.task-intro-image(src='/assets/illustrations/find-differences.webp', alt='Девочка с лупой внимательно сравнивает две картинки')
+      p Найди пять отличий на правой картинке и нажми на них.
+      .difference-board
+        div
+          h2 Картинка 1
+          svg.difference-art(viewBox='0 0 300 220', role='img', aria-label='Домик в саду')
+            rect(width='300', height='220', rx='18', fill='#e8f5fb')
+            circle(cx='250', cy='40', r='22', fill='#ffd56c')
+            path(d='M0 170 Q80 145 150 170T300 164V220H0', fill='#a9d39b')
+            path(d='M85 105 150 55l70 50v82H85z', fill='#fff4db', stroke='#6b6459', stroke-width='4')
+            path(d='M72 105 150 43l83 62', fill='#719bc4', stroke='#6b6459', stroke-width='5')
+            rect(x='108', y='125', width='30', height='31', fill='#a9d8eb', stroke='#6b6459', stroke-width='3')
+            rect(x='161', y='125', width='30', height='31', fill='#a9d8eb', stroke='#6b6459', stroke-width='3')
+            rect(x='137', y='145', width='29', height='42', fill='#be8d62', stroke='#6b6459', stroke-width='3')
+            circle(cx='159', cy='166', r='2.5', fill='#514b45')
+            path(d='M52 176v-26m-13 12h26m-26 0-10-10m36 0-10 10', stroke='#528d59', stroke-width='4')
+            circle(cx='250', cy='126', r='7', fill='#fff')
+            path(d='M220 196q8-19 16 0q9-18 17 0q9-18 17 0', fill='none', stroke='#e27a82', stroke-width='5')
+        div
+          h2 Картинка 2
+          .difference-targets
+            svg.difference-art(viewBox='0 0 300 220', role='img', aria-label='Домик в саду')
+              rect(width='300', height='220', rx='18', fill='#e8f5fb')
+              circle(cx='250', cy='40', r='17', fill='#ffd56c')
+              path(d='M0 170 Q80 145 150 170T300 164V220H0', fill='#a9d39b')
+              path(d='M85 105 150 55l70 50v82H85z', fill='#fff4db', stroke='#6b6459', stroke-width='4')
+              path(d='M72 105 150 43l83 62', fill='#ec946f', stroke='#6b6459', stroke-width='5')
+              rect(x='108', y='125', width='30', height='31', fill='#a9d8eb', stroke='#6b6459', stroke-width='3')
+              rect(x='161', y='125', width='30', height='31', fill='#a9d8eb', stroke='#6b6459', stroke-width='3')
+              rect(x='137', y='145', width='29', height='42', fill='#be8d62', stroke='#6b6459', stroke-width='3')
+              circle(cx='159', cy='166', r='2.5', fill='#514b45')
+              rect(x='183', y='61', width='16', height='35', fill='#c97055', stroke='#6b6459', stroke-width='3')
+              path(d='M49 176v-26m-13 12h26m-26 0-10-10m36 0-10 10', stroke='#528d59', stroke-width='4')
+              circle(cx='250', cy='126', r='7', fill='#fff')
+              path(d='M220 196q8-19 16 0q9-18 17 0q9-18 17 0', fill='none', stroke='#825aa8', stroke-width='5')
+            button.diff-target(aria-label='Отличие 1', style='left:70%;top:33%', data-diff='0')
+            button.diff-target(aria-label='Отличие 2', style='left:31%;top:51%', data-diff='1')
+            button.diff-target(aria-label='Отличие 3', style='left:71%;top:67%', data-diff='2')
+            button.diff-target(aria-label='Отличие 4', style='left:46%;top:81%', data-diff='3')
+            button.diff-target(aria-label='Отличие 5', style='left:87%;top:53%', data-diff='4')
+      p#diffResult.notice(aria-live='polite')
+        | Найдено: 
+        b#diffCount 0
+        |  из 5
+      button.pill#resetDiff Начать заново
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

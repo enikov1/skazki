@@ -1,0 +1,177 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Логические задачки — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Занятия', href: 'activities.html'}, {label: 'Логические задачи', href: null}])
+    .page-heading-art
+      div
+        h1.page-title Логические задачки
+        p.lead Выберите сказку и потренируйте внимание вместе с любимыми героями.
+      img(src='/assets/illustrations/logic-puzzles.webp', alt='Ребёнок собирает головоломку с лесными зверятами')
+    section.page-panel.catalog-filters
+      .filters
+        span.filter-label Возраст
+        button.pill.active(data-task-age='Все') Все
+        button.pill(data-task-age='3–5 лет') 3–5 лет
+        button.pill(data-task-age='5–8 лет') 5–8 лет
+        button.pill(data-task-age='9–12 лет') 9–12 лет
+      .field
+        label(for='taskStory') Сказка
+        select#taskStory
+          option(value='Все') Все сказки
+          option(value='kolobok') Колобок
+          option(value='repka') Репка
+          option(value='three-pigs') Три поросёнка
+          option(value='masha') Маша и медведь
+          option(value='sivka') Сивка-Бурка
+          option(value='little-red') Красная Шапочка
+          option(value='thumbelina') Дюймовочка
+          option(value='turnip') Лисичка со скалочкой
+          option(value='aybolit') Доктор Айболит
+          option(value='moydodyr') Мойдодыр
+          option(value='fox-crane') Лиса и журавль
+          option(value='cat-house') Кошкин дом
+      p.catalog-count Показано 1–6 из 12 заданий
+    section.page-panel
+      .task-grid
+        a.task-card(href='logic-task.html?id=kolobok', data-story='kolobok', data-age='3–5 лет')
+          img(src='/assets/covers/kolobok.jpg', alt)
+          div
+            span.task-age 3–5 лет · Народные
+            h2 Задачки по сказке «Колобок»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=repka', data-story='repka', data-age='3–5 лет')
+          img(src='/assets/covers/repka.jpg', alt)
+          div
+            span.task-age 3–5 лет · Народные
+            h2 Задачки по сказке «Репка»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=three-pigs', data-story='three-pigs', data-age='5–8 лет')
+          img(src='/assets/covers/three-pigs.jpg', alt)
+          div
+            span.task-age 5–8 лет · Про животных
+            h2 Задачки по сказке «Три поросёнка»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=masha', data-story='masha', data-age='5–8 лет')
+          img(src='/assets/covers/masha.jpg', alt)
+          div
+            span.task-age 5–8 лет · Народные
+            h2 Задачки по сказке «Маша и медведь»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=sivka', data-story='sivka', data-age='5–8 лет')
+          img(src='/assets/covers/sivka-burka.jpg', alt)
+          div
+            span.task-age 5–8 лет · Народные
+            h2 Задачки по сказке «Сивка-Бурка»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=little-red', data-story='little-red', data-age='5–8 лет')
+          img(src='/assets/covers/red-riding-hood.jpg', alt)
+          div
+            span.task-age 5–8 лет · Авторские
+            h2 Задачки по сказке «Красная Шапочка»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=thumbelina', data-story='thumbelina', data-age='9–12 лет')
+          img(src='/assets/covers/thumbelina.jpg', alt)
+          div
+            span.task-age 9–12 лет · Авторские
+            h2 Задачки по сказке «Дюймовочка»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=turnip', data-story='turnip', data-age='5–8 лет')
+          img(src='/assets/covers/fox-rolling-pin.jpg', alt)
+          div
+            span.task-age 5–8 лет · Про животных
+            h2 Задачки по сказке «Лисичка со скалочкой»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=aybolit', data-story='aybolit', data-age='5–8 лет')
+          img(src='/assets/covers/aybolit.jpg', alt)
+          div
+            span.task-age 5–8 лет · Стихи
+            h2 Задачки по сказке «Доктор Айболит»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=moydodyr', data-story='moydodyr', data-age='3–5 лет')
+          img(src='/assets/covers/moidodyr.jpg', alt)
+          div
+            span.task-age 3–5 лет · Стихи
+            h2 Задачки по сказке «Мойдодыр»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=fox-crane', data-story='fox-crane', data-age='3–5 лет')
+          img(src='/assets/covers/fox-and-crane.jpg', alt)
+          div
+            span.task-age 3–5 лет · Народные
+            h2 Задачки по сказке «Лиса и журавль»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='logic-task.html?id=cat-house', data-story='cat-house', data-age='5–8 лет')
+          img(src='/assets/covers/koshkin-dom.jpg', alt)
+          div
+            span.task-age 5–8 лет · Стихи
+            h2 Задачки по сказке «Кошкин дом»
+            p Вспомни героев и события, решая задачи по сюжету.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+      nav.pagination(aria-label='Страницы')
+        a.active(href='?age=%D0%92%D1%81%D0%B5&story=%D0%92%D1%81%D0%B5&page=1', aria-current='page') 1
+        a(href='?age=%D0%92%D1%81%D0%B5&story=%D0%92%D1%81%D0%B5&page=2') 2
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

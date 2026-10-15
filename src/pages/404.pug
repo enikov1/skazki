@@ -1,0 +1,26 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Страница не найдена — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Страница не найдена', href: null}])
+    h1.page-title Страница не найдена
+    p.lead Кажется, эта история потерялась. Вернитесь в библиотеку или попробуйте поиск.
+    a.btn(href='index.html') На главную
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

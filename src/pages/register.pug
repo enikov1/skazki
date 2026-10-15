@@ -1,0 +1,51 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Регистрация — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap.auth-page
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Регистрация', href: null}])
+    .auth-layout
+      +authIntro('Начните читать', 'Добро пожаловать в СказкоМир', 'Познакомьтесь с новыми историями, выберите любимые книги и читайте вместе.', '/assets/illustrations/auth-register.webp', 'Дети знакомятся и вместе рассматривают новую книжку')
+      section.auth-card(aria-labelledby='authTitle')
+        span.auth-kicker Новый читатель
+        h2#authTitle Создать аккаунт
+        p.auth-description Это займёт всего пару минут.
+        +socialAuthButtons()
+        .auth-divider
+          span или заполните форму
+        form#registerForm.auth-form(action='#', method='post')
+          .field
+            label(for='registerName') Ваше имя
+            input#registerName(type='text', name='name', autocomplete='name', placeholder='Как к вам обращаться', minlength='2', maxlength='60', required)
+          .field
+            label(for='registerEmail') Электронная почта
+            input#registerEmail(type='email', name='email', autocomplete='email', placeholder='ваша почта', required)
+          .field
+            label(for='registerPassword') Пароль
+            .password-field
+              input#registerPassword(type='password', name='password', autocomplete='new-password', minlength='8', placeholder='Не менее 8 символов', required)
+              button.password-toggle(type='button', data-password-toggle='registerPassword', aria-label='Показать пароль')
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#eye')
+          .field
+            label(for='registerPasswordConfirm') Повторите пароль
+            .password-field
+              input#registerPasswordConfirm(type='password', name='passwordConfirm', autocomplete='new-password', minlength='8', placeholder='Введите пароль ещё раз', required)
+              button.password-toggle(type='button', data-password-toggle='registerPasswordConfirm', aria-label='Показать пароль')
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#eye')
+          label.check-line
+            input#acceptTerms(type='checkbox', name='terms', required)
+            span Я принимаю <a href='privacy.html'>условия и политику конфиденциальности</a>
+          button.btn.auth-submit(type='submit') Зарегистрироваться
+          p#authStatus.form-status(role='status', aria-live='polite', hidden)
+        p.auth-switch Уже есть аккаунт? <a href='login.html'>Войти</a>
+  +siteFooter()
+  .toast#toast
+
