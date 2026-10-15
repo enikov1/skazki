@@ -498,7 +498,7 @@ class LibraryTest extends TestCase
         $this->assertDatabaseCount('story_ratings', 1);
         $this->assertDatabaseHas('story_ratings', ['story_id' => $story->id, 'user_id' => $reader->id, 'rating' => 4]);
         $this->postJson(route('stories.rate', $story), ['rating' => 6])->assertUnprocessable()->assertJsonValidationErrors('rating');
-        $this->get(route('stories.show', $story))->assertOk()->assertSee('Оцените сказку')->assertSee('1 оценка');
+        $this->get(route('stories.show', $story))->assertOk()->assertSee('Ваша оценка: 4 из 5')->assertSee('1 оценка');
     }
 
     public function test_editors_manage_articles_but_only_administrators_publish_them(): void
