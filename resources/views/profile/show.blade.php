@@ -2,10 +2,55 @@
 @section('title', 'Мой профиль — СказкоМир')
 @section('robots', 'noindex,nofollow')
 @section('content')
-<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><span>Мой профиль</span></nav>
-<section class="profile-welcome"><div class="profile-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}</div><div><p class="eyebrow">Ваше пространство</p><h1>Здравствуйте, {{ $user->name }}!</h1><p class="profile-subtitle">Здесь собраны ваши данные и недавно открытые сказки.</p></div><div class="profile-stat"><strong>{{ $history->total() }}</strong><span>сказок в истории</span></div></section>
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><span aria-current="page">Мой профиль</span></nav>
+
+<section class="profile-welcome">
+  @if($avatarUrl)
+    <img class="profile-avatar profile-avatar-image" src="{{ $avatarUrl }}" alt="Фото профиля {{ $user->name }}" width="68" height="68">
+  @else
+    <div class="profile-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($user->name, 0, 1)) }}</div>
+  @endif
+  <div><p class="eyebrow">Ваше пространство</p><h1>Здравствуйте, {{ $user->name }}!</h1><p class="profile-subtitle">Настройки, безопасность и недавно открытые сказки — всё рядом.</p></div>
+  <div class="profile-stat"><strong>{{ $history->total() }}</strong><span>сказок в истории</span></div>
+</section>
+
 @if($errors->any())<div class="form-errors" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
-<div class="profile-grid"><section class="profile-panel"><div class="profile-panel-heading"><span class="profile-panel-icon" aria-hidden="true">☺</span><div><p class="eyebrow">Личные данные</p><h2>Информация о вас</h2></div></div><div class="profile-email"><span>Электронная почта</span><strong>{{ $user->email }}</strong><span class="email-status {{ $user->hasVerifiedEmail() ? 'verified' : '' }}">{{ $user->hasVerifiedEmail() ? 'Адрес подтверждён' : 'Нужно подтвердить адрес' }}</span></div><form class="stack-form" method="post" action="{{ route('profile.update') }}">@csrf @method('put')<label class="field"><span>Как к вам обращаться</span><input name="name" value="{{ old('name', $user->name) }}" minlength="2" maxlength="80" required autocomplete="name"></label><button class="button" type="submit">Сохранить имя</button></form>@unless($user->hasVerifiedEmail())<a class="text-link profile-verify-link" href="{{ route('verification.notice') }}">Подтвердить почту →</a>@endunless</section>
-<section class="profile-panel"><div class="profile-panel-heading"><span class="profile-panel-icon" aria-hidden="true">♧</span><div><p class="eyebrow">Безопасность</p><h2>Изменить пароль</h2></div></div><form class="stack-form" method="post" action="{{ route('profile.password') }}">@csrf @method('put')<label class="field"><span>Текущий пароль</span><input type="password" name="current_password" required autocomplete="current-password"></label><label class="field"><span>Новый пароль</span><input type="password" name="password" minlength="12" required autocomplete="new-password"><small class="field-help">Не менее 12 символов, с заглавными и строчными буквами и цифрами.</small></label><label class="field"><span>Повторите новый пароль</span><input type="password" name="password_confirmation" minlength="12" required autocomplete="new-password"></label><button class="button button-soft" type="submit">Обновить пароль</button></form></section></div>
+
+<div class="profile-grid">
+  <section class="profile-panel">
+    <div class="profile-panel-heading"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.5-3.5 3.1-5.5 7-5.5s6.5 2 7 5.5"/></svg></span><div><p class="eyebrow">Личные данные</p><h2>Информация о вас</h2></div></div>
+    <div class="profile-email"><span>Электронная почта</span><strong>{{ $user->email }}</strong><span class="email-status {{ $user->hasVerifiedEmail() ? 'verified' : '' }}">{{ $user->hasVerifiedEmail() ? 'Адрес подтверждён' : 'Нужно подтвердить адрес' }}</span></div>
+    <form class="stack-form" method="post" action="{{ route('profile.update') }}">@csrf @method('put')<label class="field"><span>Как к вам обращаться</span><input name="name" value="{{ old('name', $user->name) }}" minlength="2" maxlength="80" required autocomplete="name"></label><button class="button" type="submit">Сохранить имя</button></form>
+    @unless($user->hasVerifiedEmail())<a class="text-link profile-verify-link" href="{{ route('verification.notice') }}">Подтвердить почту →</a>@endunless
+    <div class="profile-divider"></div>
+    <h3 class="profile-subheading">Фото профиля</h3><p class="profile-note">Загрузите портрет или любимую картинку до 2 МБ.</p>
+    <form class="avatar-form" method="post" action="{{ route('profile.avatar.update') }}" enctype="multipart/form-data">@csrf @method('put')<label class="field"><span>Выберите изображение</span><input type="file" name="avatar" accept="image/jpeg,image/png,image/webp" required></label><button class="button button-soft" type="submit">Обновить фото</button></form>
+    @if($avatarUrl)<form class="avatar-remove-form" method="post" action="{{ route('profile.avatar.destroy') }}">@csrf @method('delete')<button class="text-link text-link-danger" type="submit">Удалить фото</button></form>@endif
+  </section>
+
+  <section class="profile-panel">
+    <div class="profile-panel-heading"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg></span><div><p class="eyebrow">Безопасность</p><h2>Изменить пароль</h2></div></div>
+    <form class="stack-form" method="post" action="{{ route('profile.password') }}">@csrf @method('put')<label class="field"><span>Текущий пароль</span><input type="password" name="current_password" required autocomplete="current-password"></label><label class="field"><span>Новый пароль</span><input type="password" name="password" minlength="12" required autocomplete="new-password"><small class="field-help">Не менее 12 символов, с заглавными и строчными буквами и цифрами.</small></label><label class="field"><span>Повторите новый пароль</span><input type="password" name="password_confirmation" minlength="12" required autocomplete="new-password"></label><button class="button button-soft" type="submit">Обновить пароль</button></form>
+  </section>
+
+  <section class="profile-panel">
+    <div class="profile-panel-heading"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10m-7 6h4"/><circle cx="8" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="11" cy="18" r="1.5"/></svg></span><div><p class="eyebrow">Для чтения</p><h2>Внешний вид сказок</h2></div></div>
+    <p class="profile-note">Выберите удобные буквы и фон. Настройки применятся к тексту сказок.</p>
+    <form class="stack-form" method="post" action="{{ route('profile.preferences') }}">@csrf @method('put')
+      <label class="field"><span>Размер букв</span><select name="reader_font_size"><option value="16" @selected((int) $preferences['reader_font_size'] === 16)>Небольшой</option><option value="18" @selected((int) $preferences['reader_font_size'] === 18)>Чуть больше</option><option value="20" @selected((int) $preferences['reader_font_size'] === 20)>Обычный</option><option value="22" @selected((int) $preferences['reader_font_size'] === 22)>Крупный</option><option value="24" @selected((int) $preferences['reader_font_size'] === 24)>Очень крупный</option></select></label>
+      <label class="field"><span>Цвет страницы</span><select name="reader_theme"><option value="cream" @selected($preferences['reader_theme'] === 'cream')>Тёплый</option><option value="white" @selected($preferences['reader_theme'] === 'white')>Белый</option><option value="green" @selected($preferences['reader_theme'] === 'green')>Мягкий зелёный</option></select></label>
+      <label class="field"><span>Ширина текста</span><select name="reader_width"><option value="narrow" @selected($preferences['reader_width'] === 'narrow')>Узкая</option><option value="medium" @selected($preferences['reader_width'] === 'medium')>Средняя</option><option value="wide" @selected($preferences['reader_width'] === 'wide')>Широкая</option></select></label>
+      <button class="button" type="submit">Сохранить настройки</button>
+    </form>
+  </section>
+
+  <section class="profile-panel">
+    <div class="profile-panel-heading"><span class="profile-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z"/></svg></span><div><p class="eyebrow">Ваш выбор</p><h2>Согласия</h2></div></div>
+    <div class="consent-status-list"><div class="consent-status-row"><span>Правила сайта</span><strong>{{ isset($consentEvents['terms']) ? 'Принято' : 'Не указано' }}</strong>@if(isset($consentEvents['terms']))<time datetime="{{ $consentEvents['terms']->recorded_at->toAtomString() }}">{{ $consentEvents['terms']->recorded_at->translatedFormat('j F Y') }}</time>@endif</div><div class="consent-status-row"><span>Политика конфиденциальности</span><strong>{{ isset($consentEvents['privacy_notice']) ? 'Принято' : 'Не указано' }}</strong>@if(isset($consentEvents['privacy_notice']))<time datetime="{{ $consentEvents['privacy_notice']->recorded_at->toAtomString() }}">{{ $consentEvents['privacy_notice']->recorded_at->translatedFormat('j F Y') }}</time>@endif</div></div>
+    @php($newsletterEnabled = $newsletterConsent?->action === 'granted')
+    <form class="newsletter-consent" method="post" action="{{ route('profile.newsletter') }}">@csrf @method('put')<input type="hidden" name="newsletter" value="0"><label class="check-line"><input type="checkbox" name="newsletter" value="1" @checked($newsletterEnabled)><span><strong>Новости проекта по почте</strong><small>Можно изменить выбор в любой момент.</small></span></label><button class="button button-soft" type="submit">Сохранить выбор</button></form>
+  </section>
+</div>
+
 <section class="profile-history"><div class="section-heading"><div><p class="eyebrow">Недавно читали</p><h2>История сказок</h2></div><span class="result-count">{{ $history->total() }} {{ trans_choice('история|истории|историй', $history->total()) }}</span></div>@if($history->count())<div class="history-list">@foreach($history as $entry)<a class="history-item" href="{{ route('stories.show', $entry->story) }}"><span class="history-cover">@if($entry->story->cover_path)<img src="{{ asset($entry->story->cover_path) }}" alt="" width="96" height="72" loading="lazy">@else<span aria-hidden="true">📖</span>@endif</span><span class="history-title"><strong>{{ $entry->story->title }}</strong><small>{{ $entry->story->author ?: $entry->story->genre }} · {{ $entry->story->reading_minutes }} мин</small></span><time datetime="{{ $entry->last_read_at->toIso8601String() }}">Открывали {{ $entry->last_read_at->translatedFormat('j F Y') }}</time><span class="history-arrow" aria-hidden="true">→</span></a>@endforeach</div>{{ $history->links('pagination::simple-tailwind') }}@else<div class="empty-state"><span aria-hidden="true">📚</span><h2>История пока пуста</h2><p>Откройте любую сказку, и она появится здесь.</p><a class="button button-soft" href="{{ route('home') }}">Выбрать сказку</a></div>@endif</section>
 @endsection
