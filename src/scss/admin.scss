@@ -47,6 +47,8 @@
 .admin-area .editor-aside { border-color: var(--admin-line); border-radius: 18px; box-shadow: var(--admin-shadow); }
 .admin-area .moderation-card { border-color: var(--admin-line); border-radius: 16px; box-shadow: var(--admin-shadow); }
 .admin-area .empty-state { border-color: #d9e3d9; background: #fbfcfa; }
+.admin-area .admin-ajax-results { transition: opacity .16s ease; }
+.admin-area .admin-ajax-results.is-loading { opacity: .5; pointer-events: none; }
 .admin-area .bbeditor { overflow: hidden; border: 1px solid var(--admin-line); border-radius: 14px; background: var(--admin-surface); }
 .admin-area .bbeditor-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--admin-line); background: #f8faf7; }
 .admin-area .bbeditor-label { color: #46584e; font-size: 13px; font-weight: 800; }

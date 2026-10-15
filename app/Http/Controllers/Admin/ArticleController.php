@@ -9,6 +9,7 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -17,7 +18,7 @@ use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         Gate::authorize('viewAny', Article::class);
         $filters = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'status' => ['nullable', Rule::in(EditorialStatus::values())], 'category' => ['nullable', 'string', 'max:100']]);
@@ -26,6 +27,9 @@ class ArticleController extends Controller
             ->when(filled($filters['status'] ?? null), fn ($query) => $query->where('status', $filters['status']))
             ->when(filled($filters['category'] ?? null), fn ($query) => $query->where('category', $filters['category']))
             ->latest()->paginate(20)->withQueryString();
+        if ($request->expectsJson()) {
+            return response()->json(['html' => view('admin.articles.results', compact('articles'))->render(), 'count' => $articles->total()]);
+        }
         $categories = Article::query()->whereNotNull('category')->distinct()->orderBy('category')->pluck('category');
         return view('admin.articles.index', compact('articles', 'filters', 'categories'));
     }

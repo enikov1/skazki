@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Story;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Cache;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 
 class StoryController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|JsonResponse
     {
         Gate::authorize('viewAny', Story::class);
         $filters = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'status' => ['nullable', Rule::in(EditorialStatus::values())], 'genre' => ['nullable', 'string', 'max:80']]);
@@ -25,6 +26,9 @@ class StoryController extends Controller
             ->when(filled($filters['status'] ?? null), fn ($query) => $query->where('status', $filters['status']))
             ->when(filled($filters['genre'] ?? null), fn ($query) => $query->where('genre', $filters['genre']))
             ->latest()->paginate(20)->withQueryString();
+        if ($request->expectsJson()) {
+            return response()->json(['html' => view('admin.stories.results', compact('stories'))->render(), 'count' => $stories->total()]);
+        }
         $genres = Story::query()->whereNotNull('genre')->distinct()->orderBy('genre')->pluck('genre');
         return view('admin.stories.index', compact('stories', 'filters', 'genres'));
     }

@@ -115,6 +115,12 @@ class LibraryTest extends TestCase
             ->assertOk()->assertSee('Запланированная сказка')->assertDontSee('Другая сказка');
         $this->get(route('admin.articles.index', ['q' => 'scheduled', 'status' => 'draft', 'category' => 'Развитие']))
             ->assertOk()->assertSee('Запланированная статья')->assertDontSee('Другая статья');
+        $storyResults = $this->getJson(route('admin.stories.index', ['q' => 'scheduled', 'status' => 'draft', 'genre' => 'Приключения']));
+        $storyResults->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Запланированная сказка', $storyResults->json('html'));
+        $articleResults = $this->getJson(route('admin.articles.index', ['q' => 'scheduled', 'status' => 'draft', 'category' => 'Развитие']));
+        $articleResults->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Запланированная статья', $articleResults->json('html'));
 
         $this->patch(route('admin.stories.status', $story), ['status' => 'published', 'publish_at' => $publishAt->format('Y-m-d\\TH:i')])->assertRedirect();
         $this->patch(route('admin.articles.status', $article), ['status' => 'published', 'publish_at' => $publishAt->format('Y-m-d\\TH:i')])->assertRedirect();

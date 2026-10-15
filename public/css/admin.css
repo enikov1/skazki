@@ -180,6 +180,15 @@
   background: #fbfcfa;
 }
 
+.admin-area .admin-ajax-results {
+  transition: opacity 0.16s ease;
+}
+
+.admin-area .admin-ajax-results.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .admin-area .bbeditor {
   overflow: hidden;
   border: 1px solid var(--admin-line);

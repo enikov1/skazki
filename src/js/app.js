@@ -245,3 +245,41 @@ document.querySelectorAll('[data-bbeditor]').forEach(editor=>{
   }));
   input.addEventListener('input',()=>{if(!preview.hidden)renderPreview()});
 });
+
+// Administrative content searches and pagination replace only their result region.
+const ajaxResultError=(container,message)=>{const notice=document.createElement('p');notice.className='form-errors';notice.setAttribute('role','alert');notice.textContent=message;container.prepend(notice)};
+const loadAdminResults=async(url,container)=>{
+  if(!container)return;
+  container.setAttribute('aria-busy','true');container.classList.add('is-loading');
+  try{
+    const response=await fetch(url,{headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});
+    const data=await response.json();
+    if(!response.ok)throw new Error(Object.values(data.errors||{}).flat()[0]||'Не удалось обновить список. Проверьте фильтры и попробуйте ещё раз.');
+    container.innerHTML=data.html;
+    history.pushState({},'',url);
+  }catch(error){ajaxResultError(container,error.message||'Не удалось обновить список. Проверьте соединение и повторите попытку.');}
+  finally{container.removeAttribute('aria-busy');container.classList.remove('is-loading');}
+};
+document.addEventListener('submit',event=>{
+  const form=event.target.closest('[data-ajax-filter]');if(!form)return;
+  event.preventDefault();
+  const url=new URL(form.action,location.href);
+  new FormData(form).forEach((value,key)=>{if(String(value).trim())url.searchParams.set(key,String(value));else url.searchParams.delete(key)});
+  loadAdminResults(url.toString(),form.nextElementSibling?.matches('[data-ajax-results]')?form.nextElementSibling:null);
+});
+document.addEventListener('click',event=>{
+  const reset=event.target.closest('[data-ajax-filter] a');
+  if(reset){
+    event.preventDefault();const form=reset.closest('[data-ajax-filter]');
+    form.querySelectorAll('input').forEach(input=>input.value='');form.querySelectorAll('select').forEach(select=>select.selectedIndex=0);
+    loadAdminResults(reset.href,form.nextElementSibling?.matches('[data-ajax-results]')?form.nextElementSibling:null);return;
+  }
+  const link=event.target.closest('[data-ajax-results] .pagination a');if(!link)return;
+  event.preventDefault();loadAdminResults(link.href,link.closest('[data-ajax-results]'));
+});
+window.addEventListener('popstate',()=>{
+  const container=document.querySelector('[data-ajax-results]');if(!container)return;
+  const form=container.previousElementSibling?.matches('[data-ajax-filter]')?container.previousElementSibling:null;
+  if(form){const params=new URL(location.href).searchParams;form.querySelectorAll('[name]').forEach(field=>{if(field.type==='search'||field.type==='text')field.value=params.get(field.name)||'';else if(field.tagName==='SELECT')field.value=params.get(field.name)||''})}
+  loadAdminResults(location.href,container);
+});
