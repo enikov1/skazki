@@ -103,7 +103,15 @@ class StoryController extends Controller
         }
         $data = $request->validate([
             'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('stories', 'slug')->ignore($story?->id)],
-            'author' => ['nullable', 'string', 'max:160'], 'genre' => ['required', 'string', 'max:80', Rule::exists('genres', 'name')], 'summary' => ['required', 'string', 'max:1200'],
+            'author' => ['nullable', 'string', 'max:160'], 'series_name' => ['nullable', 'string', 'max:160'],
+            'source_name' => ['nullable', 'string', 'max:180'], 'source_url' => ['nullable', 'url', 'max:500', function (string $attribute, mixed $value, $fail): void {
+                if (filled($value) && ! in_array(parse_url($value, PHP_URL_SCHEME), ['http', 'https'], true)) {
+                    $fail('Ссылка на источник должна начинаться с http:// или https://.');
+                }
+            }],
+            'rights_holder' => ['nullable', 'string', 'max:180'], 'rights_note' => ['nullable', 'string', 'max:4000'],
+            'tags' => ['nullable', 'string', 'max:1000'],
+            'genre' => ['required', 'string', 'max:80', Rule::exists('genres', 'name')], 'summary' => ['required', 'string', 'max:1200'],
             'body' => ['required', 'string', 'max:500000'], 'age_min' => ['required', 'integer', 'between:0,18'], 'age_max' => ['required', 'integer', 'between:0,18', 'gte:age_min'],
             'reading_minutes' => ['required', 'integer', 'between:1,600'], 'cover_path' => ['nullable', 'string', 'max:255'],
             'audio_path' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, $fail): void {
@@ -117,6 +125,13 @@ class StoryController extends Controller
         ]);
         $data['slug'] = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['title']);
         $data['allow_download'] = filled($data['audio_path'] ?? null) && $request->boolean('allow_download');
+        $data['tags'] = collect(explode(',', $data['tags'] ?? ''))
+            ->map(fn (string $tag) => trim($tag))
+            ->filter()
+            ->unique(fn (string $tag) => mb_strtolower($tag))
+            ->take(20)
+            ->values()
+            ->all();
         return $data;
     }
 }

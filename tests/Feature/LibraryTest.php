@@ -239,6 +239,33 @@ class LibraryTest extends TestCase
         $this->actingAs($editor)->get(route('admin.genres.index'))->assertForbidden();
     }
 
+    public function test_story_editor_saves_series_source_rights_and_public_tags(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+
+        $this->actingAs($admin)->get(route('admin.stories.create'))
+            ->assertOk()->assertSee('name="series_name"', false)->assertSee('name="source_url"', false)->assertSee('name="rights_note"', false)->assertSee('name="tags"', false);
+        $this->postJson(route('admin.stories.store'), [
+            'title' => 'Сказка с карточкой', 'slug' => 'story-with-editorial-card', 'author' => 'Автор сказки', 'genre' => 'Тест',
+            'series_name' => 'Лесные истории', 'source_name' => 'Книга сказок', 'source_url' => 'https://example.org/book/story',
+            'rights_holder' => 'Издательство', 'rights_note' => 'Проверить разрешение на иллюстрацию.', 'tags' => 'лес, дружба, лес',
+            'summary' => 'Короткое описание', 'body' => 'Полный текст', 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5, 'allow_download' => '0',
+        ])->assertOk();
+
+        $story = Story::where('slug', 'story-with-editorial-card')->firstOrFail();
+        $this->assertSame(['лес', 'дружба'], $story->tags);
+        $this->assertSame('Проверить разрешение на иллюстрацию.', $story->rights_note);
+        $this->patchJson(route('admin.stories.status', $story), ['status' => 'published'])->assertOk();
+        $this->get(route('stories.show', $story))->assertOk()->assertSee('Лесные истории')->assertSee('Книга сказок')->assertSee('Издательство')->assertSee('дружба')->assertSee('лес');
+
+        $this->putJson(route('admin.stories.update', $story), [
+            'title' => $story->title, 'slug' => $story->slug, 'genre' => 'Тест', 'summary' => $story->summary, 'body' => $story->body,
+            'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5, 'allow_download' => '0', 'source_url' => 'not-a-url',
+        ])->assertUnprocessable()->assertJsonValidationErrors('source_url');
+    }
+
     public function test_editors_can_preview_drafts_and_status_changes_record_authorship(): void
     {
         $this->seed();
