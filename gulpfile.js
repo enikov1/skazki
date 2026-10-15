@@ -48,6 +48,12 @@ async function syncDemo() {
   await fs.mkdir(PUBLIC_JS, { recursive: true });
   await fs.copyFile(path.join(DIST, 'app.js'), path.join(PUBLIC_JS, 'app.js'));
   await fs.cp(path.join(DIST, 'assets'), path.join(__dirname, 'public', 'assets'), { recursive: true, force: true });
+  const quillDist = path.join(__dirname, 'node_modules', 'quill', 'dist');
+  const quillPublic = path.join(__dirname, 'public', 'vendor', 'quill');
+  await fs.mkdir(quillPublic, { recursive: true });
+  for (const file of ['quill.js', 'quill.snow.css', 'quill.js.LICENSE.txt']) {
+    await fs.copyFile(path.join(quillDist, file), path.join(quillPublic, file));
+  }
   async function rewrite(dir) {
     for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
       const target = path.join(dir, entry.name);

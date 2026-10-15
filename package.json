@@ -15,5 +15,8 @@
     "gulp-sass": "^6.0.1",
     "pug": "^3.0.3",
     "sass": "^1.89.2"
+  },
+  "dependencies": {
+    "quill": "^2.0.3"
   }
 }

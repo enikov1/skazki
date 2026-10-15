@@ -208,43 +208,57 @@ window.addEventListener('message',event=>{if(event.origin!==location.origin||eve
 document.addEventListener('click',event=>{const button=event.target.closest('[data-audio-select]');if(!button)return;const message={type:'skazkomir:media-selected',field:'audio_path',path:button.dataset.audioPath};if(window.opener&&!window.opener.closed){window.opener.postMessage(message,location.origin);window.close();return}try{navigator.clipboard.writeText(message.path).then(()=>notify('Путь скопирован')).catch(()=>notify(message.path))}catch{notify(message.path)}});
 document.querySelectorAll('[data-media-select]').forEach(button=>button.addEventListener('click',async()=>{const message={type:'skazkomir:media-selected',field:button.dataset.mediaField,path:button.dataset.mediaPath};if(window.opener&&!window.opener.closed){window.opener.postMessage(message,location.origin);window.close();return}try{await navigator.clipboard.writeText(message.path);notify('Путь скопирован')}catch{notify(message.path)}}));
 
-// BBEditor stores a small safe BBCode vocabulary; only supported tags become HTML.
-document.querySelectorAll('[data-bbeditor]').forEach(editor=>{
-  const input=editor.querySelector('[data-bbe-input]');
-  const panes=[...editor.querySelectorAll('[data-bbe-pane]')];
-  const tabs=[...editor.querySelectorAll('[data-bbe-tab]')];
-  const preview=editor.querySelector('[data-bbe-pane="preview"]');
-  if(!input||!preview)return;
+// Quill provides the visual editing experience; submitted content is converted to the site's safe BBCode subset.
+document.querySelectorAll('[data-rich-editor]').forEach(editor=>{
+  const source=editor.querySelector('[data-rich-source]'),host=editor.querySelector('[data-rich-host]'),preview=editor.querySelector('[data-rich-pane="preview"]'),tabs=[...editor.querySelectorAll('[data-rich-tab]')];
+  if(!source||!host||!window.Quill)return;
+  const quill=new Quill(host,{theme:'snow',formats:['bold','italic','underline','header','blockquote','list'],modules:{toolbar:[[{header:[2,false]}],['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],['blockquote'],['clean']]},placeholder:'Напишите текст сказки…'});
+  quill.root.setAttribute('aria-labelledby',source.getAttribute('aria-labelledby')||'');
+  quill.root.setAttribute('aria-required','true');
+  source.addEventListener('focus',()=>quill.focus());
+  const initial=editor.dataset.initialHtml||'';
+  if(initial)quill.clipboard.dangerouslyPasteHTML(initial,'silent');
+  const convert=node=>{
+    if(node.nodeType===Node.TEXT_NODE)return node.nodeValue||'';
+    if(node.nodeType!==Node.ELEMENT_NODE)return '';
+    const tag=node.tagName.toLowerCase(),content=[...node.childNodes].map(convert).join('');
+    if(tag==='br')return '\n';
+    if(tag==='strong'||tag==='b')return '[b]'+content+'[/b]';
+    if(tag==='em'||tag==='i')return '[i]'+content+'[/i]';
+    if(tag==='u')return '[u]'+content+'[/u]';
+    if(tag==='h2')return '[h2]'+content.trim()+'[/h2]\n\n';
+    if(tag==='blockquote')return '[quote]'+content.trim()+'[/quote]\n\n';
+    if(tag==='li')return '[li]'+content.trim()+'[/li]';
+    if(tag==='ul')return '[list]'+content+'[/list]\n\n';
+    if(tag==='ol')return (node.querySelector('li[data-list=\"bullet\"]')?'[list]':'[olist]')+content+(node.querySelector('li[data-list=\"bullet\"]')?'[/list]':'[/olist]')+'\n\n';
+    if(tag==='p'||tag==='div')return content.trim()+'\n\n';
+    return content;
+  };
+  const sync=()=>{source.value=[...quill.root.childNodes].map(convert).join('').replace(/\n{3,}/g,'\n\n').trim();source.dispatchEvent(new Event('input',{bubbles:true}))};
+  quill.on('text-change',sync);sync();
+  source.addEventListener('invalid',()=>quill.focus(),true);
+  editor.classList.add('is-enhanced');
   const renderPreview=()=>{
-    const escaped=document.createElement('div');
-    escaped.textContent=input.value;
-    preview.innerHTML=escaped.innerHTML
-      .replace(/\[b\](.*?)\[\/b\]/gis,'<strong>$1</strong>')
-      .replace(/\[i\](.*?)\[\/i\]/gis,'<em>$1</em>')
-      .replace(/\[u\](.*?)\[\/u\]/gis,'<u>$1</u>')
-      .replace(/\[h2\](.*?)\[\/h2\]/gis,'<h2>$1</h2>')
-      .replace(/\[quote\](.*?)\[\/quote\]/gis,'<blockquote>$1</blockquote>')
-      .replace(/\[list\]/gi,'<ul>').replace(/\[\/list\]/gi,'</ul>')
-      .replace(/\[li\](.*?)\[\/li\]/gis,'<li>$1</li>').replace(/\n/g,'<br>');
-    if(!input.value.trim())preview.innerHTML='<p class="bbeditor-empty">Предпросмотр появится здесь.</p>';
+    const escaped=document.createElement('div');escaped.textContent=source.value;
+    preview.innerHTML=escaped.innerHTML.replace(/\[b\](.*?)\[\/b\]/gis,'<strong>$1</strong>').replace(/\[i\](.*?)\[\/i\]/gis,'<em>$1</em>').replace(/\[u\](.*?)\[\/u\]/gis,'<u>$1</u>').replace(/\[h2\](.*?)\[\/h2\]/gis,'<h2>$1</h2>').replace(/\[quote\](.*?)\[\/quote\]/gis,'<blockquote>$1</blockquote>').replace(/\[list\]/gi,'<ul>').replace(/\[\/list\]/gi,'</ul>').replace(/\[olist\]/gi,'<ol>').replace(/\[\/olist\]/gi,'</ol>').replace(/\[li\](.*?)\[\/li\]/gis,'<li>$1</li>').replace(/\n/g,'<br>');
+    if(!source.value.trim())preview.innerHTML='<p class="rich-editor-empty">Предпросмотр появится здесь.</p>';
   };
-  const showPane=name=>{
-    panes.forEach(pane=>pane.hidden=pane.dataset.bbePane!==name);
-    tabs.forEach(tab=>{const active=tab.dataset.bbeTab===name;tab.classList.toggle('is-active',active);tab.setAttribute('aria-selected',String(active))});
-    if(name==='preview')renderPreview();
-  };
-  tabs.forEach(tab=>tab.addEventListener('click',()=>showPane(tab.dataset.bbeTab)));
-  editor.querySelectorAll('[data-bbe-command]').forEach(button=>button.addEventListener('click',()=>{
-    const command=button.dataset.bbeCommand,start=input.selectionStart,end=input.selectionEnd,selected=input.value.slice(start,end)||'Текст';
-    const templates={b:['[b]','[/b]'],i:['[i]','[/i]'],u:['[u]','[/u]'],h2:['[h2]','[/h2]'],quote:['[quote]','[/quote]'],list:['[list][li]','[/li][/list]']};
-    const [open,close]=templates[command]||[];
-    if(!open)return;
-    const replacement=open+selected+close;
-    input.setRangeText(replacement,start,end,'select');
-    input.focus();
-    input.dispatchEvent(new Event('input',{bubbles:true}));
-  }));
-  input.addEventListener('input',()=>{if(!preview.hidden)renderPreview()});
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{const selected=tab.dataset.richTab;editor.querySelectorAll('[data-rich-pane]').forEach(pane=>pane.hidden=pane.dataset.richPane!==selected);tabs.forEach(item=>{const active=item===tab;item.classList.toggle('is-active',active);item.setAttribute('aria-selected',String(active))});if(selected==='preview'){sync();renderPreview()}}));
+});
+
+// Searchable genre control retains a native select as the form and validation source.
+document.querySelectorAll('[data-custom-select]').forEach(control=>{
+  const select=control.querySelector('[data-custom-select-native]'),trigger=control.querySelector('[data-custom-select-trigger]'),value=control.querySelector('[data-custom-select-value]'),menu=control.querySelector('[data-custom-select-menu]'),search=control.querySelector('[data-custom-select-search]'),options=[...control.querySelectorAll('[data-custom-select-option]')];
+  if(!select||!trigger||!menu)return;
+  const close=()=>{menu.hidden=true;trigger.setAttribute('aria-expanded','false')};
+  trigger.addEventListener('click',()=>{menu.hidden=!menu.hidden;trigger.setAttribute('aria-expanded',String(!menu.hidden));if(!menu.hidden){search.value='';options.forEach(option=>option.hidden=false);search.focus()}});
+  search?.addEventListener('input',()=>{const query=search.value.trim().toLocaleLowerCase('ru');options.forEach(option=>option.hidden=!option.textContent.trim().toLocaleLowerCase('ru').includes(query))});
+  search?.addEventListener('keydown',event=>{if(event.key==='Escape'){close();trigger.focus()}if(event.key==='ArrowDown'){event.preventDefault();options.find(option=>!option.hidden)?.focus()}});
+  options.forEach(option=>option.addEventListener('click',()=>{select.value=option.dataset.value;value.textContent=option.textContent.trim();options.forEach(item=>item.setAttribute('aria-selected',String(item===option)));select.dispatchEvent(new Event('change',{bubbles:true}));close();trigger.focus()}));
+  options.forEach(option=>option.addEventListener('keydown',event=>{const visible=options.filter(item=>!item.hidden),current=visible.indexOf(option);if(event.key==='Escape'){close();trigger.focus()}if(event.key==='ArrowDown'){event.preventDefault();visible[Math.min(current+1,visible.length-1)]?.focus()}if(event.key==='ArrowUp'){event.preventDefault();if(current===0)search.focus();else visible[current-1]?.focus()}}));
+  trigger.addEventListener('keydown',event=>{if(event.key==='Escape')close()});
+  select.addEventListener('invalid',()=>trigger.focus(),true);
+  document.addEventListener('click',event=>{if(!control.contains(event.target))close()});
 });
 
 // Administrative content searches and pagination replace only their result region.
@@ -333,6 +347,28 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
         first?.focus();return;
       }
       setFeedback(data.message||'Изменения сохранены.','success');
+      if(form.hasAttribute('data-genre-create')&&data.genre){
+        const list=document.querySelector('[data-genre-list]');
+        if(list){
+          const row=document.createElement('article');row.className='genre-row';row.dataset.genreRow='';row.dataset.genreId=String(data.genre.id);
+          const copy=document.createElement('div'),name=document.createElement('strong'),count=document.createElement('span');copy.className='genre-row-copy';name.textContent=data.genre.name;count.textContent='0 сказок';copy.append(name,count);
+          const token=form.querySelector('[name="_token"]')?.value||'';
+          const edit=document.createElement('form');edit.className='genre-edit-form';edit.method='post';edit.action=data.genre.update_url;edit.dataset.ajaxForm='';edit.dataset.genreEdit='';
+          const editToken=document.createElement('input');editToken.type='hidden';editToken.name='_token';editToken.value=token;
+          const method=document.createElement('input');method.type='hidden';method.name='_method';method.value='patch';
+          const label=document.createElement('label');label.className='field';const field=document.createElement('input');field.name='name';field.value=data.genre.name;field.maxLength=80;field.required=true;label.append(field);
+          const save=document.createElement('button');save.className='button button-soft button-small';save.type='submit';save.textContent='Сохранить';edit.append(editToken,method,label,save);
+          const remove=document.createElement('form');remove.method='post';remove.action=data.genre.delete_url;remove.dataset.ajaxForm='';remove.dataset.genreDelete='';
+          const removeToken=document.createElement('input');removeToken.type='hidden';removeToken.name='_token';removeToken.value=token;
+          const removeMethod=document.createElement('input');removeMethod.type='hidden';removeMethod.name='_method';removeMethod.value='delete';
+          const removeButton=document.createElement('button');removeButton.className='button button-danger button-small';removeButton.type='submit';removeButton.textContent='Удалить';remove.append(removeToken,removeMethod,removeButton);
+          row.append(copy,edit,remove);list.prepend(row);bindAjaxForms(row);
+          const total=document.querySelector('[data-genre-count]');if(total)total.textContent=String(Number(total.textContent||0)+1);
+        }
+        form.reset();
+      }
+      if(form.hasAttribute('data-genre-edit')&&data.genre){const row=form.closest('[data-genre-row]');const label=row?.querySelector('.genre-row-copy strong');if(label)label.textContent=data.genre.name}
+      if(form.hasAttribute('data-genre-delete')){const row=form.closest('[data-genre-row]');const total=document.querySelector('[data-genre-count]');if(total)total.textContent=String(Math.max(0,Number(total.textContent||0)-1));if(row){row.classList.add('is-removing');window.setTimeout(()=>row.remove(),180)}}
       if(form.hasAttribute('data-audio-upload')&&data.audio){
         const section=document.querySelector('[data-audio-section]');
         let list=section?.querySelector('.audio-library-list');

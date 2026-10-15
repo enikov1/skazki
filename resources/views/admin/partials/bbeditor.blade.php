@@ -1,11 +1,13 @@
-<div class="bbeditor" data-bbeditor>
-    <div class="bbeditor-topbar"><span class="bbeditor-label" id="{{ $id }}Label">{{ $label }}</span><div class="bbeditor-tabs" role="tablist" aria-label="Режим редактора"><button class="bbeditor-tab is-active" type="button" role="tab" aria-selected="true" data-bbe-tab="write">Текст</button><button class="bbeditor-tab" type="button" role="tab" aria-selected="false" data-bbe-tab="preview">Предпросмотр</button></div></div>
-    <div class="bbeditor-pane" data-bbe-pane="write">
-        <div class="bbeditor-toolbar" role="toolbar" aria-label="Форматирование текста">
-            <button type="button" data-bbe-command="b" aria-label="Жирный"><strong>B</strong></button><button type="button" data-bbe-command="i" aria-label="Курсив"><em>I</em></button><button type="button" data-bbe-command="u" aria-label="Подчёркнутый"><u>U</u></button><span aria-hidden="true"></span><button type="button" data-bbe-command="h2">Заголовок</button><button type="button" data-bbe-command="quote">Цитата</button><button type="button" data-bbe-command="list">Список</button>
+<div class="field rich-editor-field" data-rich-editor data-initial-html="{{ app(\App\Support\BBEditor::class)->render($value) }}">
+    <label class="rich-editor-label" id="{{ $id }}Label">{{ $label }} <span aria-hidden="true">*</span></label>
+    <textarea id="{{ $id }}" class="rich-editor-source" name="{{ $name }}" rows="14" required data-rich-source aria-labelledby="{{ $id }}Label" aria-describedby="{{ $id }}Help">{{ $value }}</textarea>
+    <div class="rich-editor-shell">
+        <div class="rich-editor-tabs" role="tablist" aria-label="Режим редактирования">
+            <button class="rich-editor-tab is-active" type="button" role="tab" aria-selected="true" data-rich-tab="edit">Редактор</button>
+            <button class="rich-editor-tab" type="button" role="tab" aria-selected="false" data-rich-tab="preview">Предпросмотр</button>
         </div>
-        <textarea id="{{ $id }}" class="story-body-input bbeditor-input" name="{{ $name }}" rows="18" required data-bbe-input aria-labelledby="{{ $id }}Label" aria-describedby="{{ $id }}Help">{{ $value }}</textarea>
-        <small class="field-help" id="{{ $id }}Help">Поддерживаются абзацы, жирный и курсивный текст, подчёркивание, заголовки, цитаты и списки.</small>
+        <div class="rich-editor-canvas" data-rich-pane="edit"><div id="{{ $id }}Visual" data-rich-host></div></div>
+        <div class="rich-editor-preview" data-rich-pane="preview" hidden aria-live="polite"></div>
     </div>
-    <div class="bbeditor-preview" data-bbe-pane="preview" hidden aria-live="polite"></div>
+    <small class="field-help" id="{{ $id }}Help">Форматируйте текст кнопками над полем. Списки, цитаты, заголовки и базовое выделение сохраняются при публикации.</small>
 </div>

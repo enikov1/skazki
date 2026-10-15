@@ -16,6 +16,7 @@ use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+use App\Http\Controllers\Admin\GenreController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -108,6 +109,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'r
     Route::post('/media', [MediaLibraryController::class, 'store'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('media.store');
     Route::post('/audio', [MediaLibraryController::class, 'storeAudio'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('audio.store');
     Route::get('/audio/{filename}', [MediaLibraryController::class, 'previewAudio'])->where('filename', '[A-Za-z0-9._-]+')->middleware('role:admin,editor')->name('audio.preview');
+    Route::get('/genres', [GenreController::class, 'index'])->middleware('role:admin')->name('genres.index');
+    Route::post('/genres', [GenreController::class, 'store'])->middleware('role:admin')->name('genres.store');
+    Route::patch('/genres/{genre}', [GenreController::class, 'update'])->middleware('role:admin')->name('genres.update');
+    Route::delete('/genres/{genre}', [GenreController::class, 'destroy'])->middleware('role:admin')->name('genres.destroy');
 });
 
 Route::redirect('/prototype', '/demo/')->name('prototype');

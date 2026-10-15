@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Role;
 use App\Models\Story;
+use App\Models\Genre;
 use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\User;
@@ -19,6 +20,14 @@ use Tests\TestCase;
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        foreach (['Народные сказки', 'Приключения', 'Басни', 'Тест', 'Проверка'] as $name) {
+            Genre::firstOrCreate(['name' => $name]);
+        }
+    }
 
     public function test_initial_admin_seed_updates_existing_credentials_and_login_uses_email(): void
     {
@@ -49,6 +58,7 @@ class LibraryTest extends TestCase
         $html = app(\App\Support\BBEditor::class)->render('[h2]Заголовок[/h2][b]Жирный[/b] <script>alert(1)</script>');
 
         $this->assertStringContainsString('<h2>Заголовок</h2>', $html);
+        $this->assertStringContainsString('<ol><li>Первый</li></ol>', app(\App\Support\BBEditor::class)->render('[olist][li]Первый[/li][/olist]'));
         $this->assertStringContainsString('<strong>Жирный</strong>', $html);
         $this->assertStringContainsString('&lt;script&gt;alert(1)&lt;/script&gt;', $html);
         $this->assertStringNotContainsString('<script>', $html);
@@ -100,6 +110,34 @@ class LibraryTest extends TestCase
         $this->get(route('stories.audio', $published))->assertOk()->assertHeader('Content-Type', 'audio/mpeg');
 
         $this->postJson(route('admin.audio.store'), ['audio' => UploadedFile::fake()->create('track.txt', 10, 'text/plain')])->assertUnprocessable();
+    }
+
+    public function test_admin_can_manage_genres_and_story_editor_uses_the_genre_catalog(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $genre = Genre::create(['name' => 'Старое название']);
+        $story = Story::create(['title' => 'История с жанром', 'slug' => 'genre-story', 'genre' => $genre->name, 'summary' => 'Описание', 'body' => 'Текст']);
+
+        $this->actingAs($admin)->get(route('admin.genres.index'))->assertOk()->assertSee('Жанры сказок')->assertSee('Старое название');
+        $this->get(route('admin.stories.create'))->assertOk()->assertSee('data-custom-select')->assertSee('Народные сказки');
+        $this->postJson(route('admin.genres.store'), ['name' => 'Сказки о животных'])
+            ->assertOk()->assertJsonPath('genre.name', 'Сказки о животных');
+        $this->postJson(route('admin.genres.store'), ['name' => 'Сказки о животных'])->assertUnprocessable();
+        $this->patchJson(route('admin.genres.update', $genre), ['name' => 'Фольклор'])
+            ->assertOk()->assertJsonPath('genre.name', 'Фольклор');
+        $this->assertSame('Фольклор', $story->fresh()->genre);
+        $this->deleteJson(route('admin.genres.destroy', $genre))->assertUnprocessable();
+        $this->postJson(route('admin.stories.store'), ['title' => 'Неизвестный жанр', 'genre' => 'Несуществующий', 'summary' => 'Описание', 'body' => 'Текст', 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5])->assertUnprocessable();
+
+        $story->update(['genre' => 'Народные сказки']);
+        $this->deleteJson(route('admin.genres.destroy', $genre))->assertOk()->assertJsonPath('message', 'Жанр удалён.');
+
+        auth()->logout();
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($editor)->get(route('admin.genres.index'))->assertForbidden();
     }
 
     public function test_editors_can_preview_drafts_and_status_changes_record_authorship(): void
@@ -170,7 +208,7 @@ class LibraryTest extends TestCase
         $story = Story::create(['title' => 'Редактируемая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Текст', 'status' => 'draft', 'created_by' => $admin->id]);
         $reader = User::factory()->create();
 
-        $this->actingAs($admin)->get(route('admin.stories.edit', $story))->assertOk()->assertSee('data-ajax-form');
+        $this->actingAs($admin)->get(route('admin.stories.edit', $story))->assertOk()->assertSee('data-ajax-form')->assertSee('data-rich-editor')->assertSee('data-custom-select');
         $this->putJson(route('admin.stories.update', $story), ['title' => 'Изменённая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Новый текст', 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5])
             ->assertOk()->assertJsonPath('message', 'Изменения сохранены.');
         $this->assertSame('Изменённая сказка', $story->fresh()->title);

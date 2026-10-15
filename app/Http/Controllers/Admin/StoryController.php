@@ -6,6 +6,7 @@ use App\Enums\EditorialStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\AuditLog;
+use App\Models\Genre;
 use App\Models\Story;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +24,7 @@ class StoryController extends Controller
     public function index(Request $request): View|JsonResponse
     {
         Gate::authorize('viewAny', Story::class);
-        $filters = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'status' => ['nullable', Rule::in(EditorialStatus::values())], 'genre' => ['nullable', 'string', 'max:80']]);
+        $filters = $request->validate(['q' => ['nullable', 'string', 'max:120'], 'status' => ['nullable', Rule::in(EditorialStatus::values())], 'genre' => ['nullable', 'string', 'max:80', Rule::exists('genres', 'name')]]);
         $stories = Story::with(['creator:id,name', 'updater:id,name'])
             ->when(filled($filters['q'] ?? null), fn ($query) => $query->where(fn ($query) => $query->where('title', 'like', '%'.$filters['q'].'%')->orWhere('slug', 'like', '%'.$filters['q'].'%')))
             ->when(filled($filters['status'] ?? null), fn ($query) => $query->where('status', $filters['status']))
@@ -32,11 +33,11 @@ class StoryController extends Controller
         if ($request->expectsJson()) {
             return response()->json(['html' => view('admin.stories.results', compact('stories'))->render(), 'count' => $stories->total()]);
         }
-        $genres = Story::query()->whereNotNull('genre')->distinct()->orderBy('genre')->pluck('genre');
+        $genres = Genre::query()->orderBy('name')->pluck('name');
         return view('admin.stories.index', compact('stories', 'filters', 'genres'));
     }
 
-    public function create(): View { Gate::authorize('create', Story::class); return view('admin.stories.form', ['story' => new Story(), 'lastEdit' => null]); }
+    public function create(): View { Gate::authorize('create', Story::class); return view('admin.stories.form', ['story' => new Story(), 'lastEdit' => null, 'genres' => Genre::query()->orderBy('name')->get()]); }
 
     public function store(Request $request): RedirectResponse|JsonResponse
     {
@@ -52,7 +53,8 @@ class StoryController extends Controller
     {
         Gate::authorize('update', $story);
         $lastEdit = $this->lastEdit($story);
-        return view('admin.stories.form', compact('story', 'lastEdit'));
+        $genres = Genre::query()->orderBy('name')->get();
+        return view('admin.stories.form', compact('story', 'lastEdit', 'genres'));
     }
 
     public function update(Request $request, Story $story): RedirectResponse|JsonResponse
@@ -101,7 +103,7 @@ class StoryController extends Controller
         }
         $data = $request->validate([
             'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('stories', 'slug')->ignore($story?->id)],
-            'author' => ['nullable', 'string', 'max:160'], 'genre' => ['required', 'string', 'max:80'], 'summary' => ['required', 'string', 'max:1200'],
+            'author' => ['nullable', 'string', 'max:160'], 'genre' => ['required', 'string', 'max:80', Rule::exists('genres', 'name')], 'summary' => ['required', 'string', 'max:1200'],
             'body' => ['required', 'string', 'max:500000'], 'age_min' => ['required', 'integer', 'between:0,18'], 'age_max' => ['required', 'integer', 'between:0,18', 'gte:age_min'],
             'reading_minutes' => ['required', 'integer', 'between:1,600'], 'cover_path' => ['nullable', 'string', 'max:255'],
             'audio_path' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, $fail): void {

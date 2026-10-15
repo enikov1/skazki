@@ -14,6 +14,7 @@ class BBEditor
             '/\[h2\](.*?)\[\/h2\]/is' => '<h2>$1</h2>',
             '/\[quote\](.*?)\[\/quote\]/is' => '<blockquote>$1</blockquote>',
             '/\[list\](.*?)\[\/list\]/is' => '<ul>$1</ul>',
+            '/\[olist\](.*?)\[\/olist\]/is' => '<ol>$1</ol>',
             '/\[li\](.*?)\[\/li\]/is' => '<li>$1</li>',
         ];
 

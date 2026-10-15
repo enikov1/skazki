@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
+use App\Models\Genre;
 use App\Models\Story;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -14,6 +15,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RolePermissionSeeder::class);
+        Genre::firstOrCreate(['name' => 'Народные сказки']);
         $adminName = trim((string) config('initial-admin.name'));
         $adminEmail = Str::lower(trim((string) config('initial-admin.email')));
         $adminPassword = (string) config('initial-admin.password');
