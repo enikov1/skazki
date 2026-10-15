@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\StoryController as AdminStoryController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OAuthController;
@@ -21,12 +22,12 @@ Route::get('/', [StoryController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
-Route::post('/roditelyam/{article:slug}/rating', [ArticleCommentController::class, 'rate'])->middleware(['auth', 'throttle:public-write'])->name('articles.rate');
-Route::post('/roditelyam/{article:slug}/comments', [ArticleCommentController::class, 'store'])->middleware(['auth', 'throttle:public-write'])->name('article-comments.store');
-Route::post('/article-comments/{comment}/vote', [ArticleCommentController::class, 'vote'])->middleware(['auth', 'throttle:public-write'])->name('article-comments.vote');
+Route::post('/roditelyam/{article:slug}/rating', [ArticleCommentController::class, 'rate'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('articles.rate');
+Route::post('/roditelyam/{article:slug}/comments', [ArticleCommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('article-comments.store');
+Route::post('/article-comments/{comment}/vote', [ArticleCommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('article-comments.vote');
 Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->name('stories.show');
-Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'throttle:public-write'])->name('comments.store');
-Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'throttle:public-write'])->name('comments.vote');
+Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.store');
+Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/vhod', [LoginController::class, 'create'])->name('login');
@@ -39,8 +40,8 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/sbros-parol', [PasswordController::class, 'reset'])->middleware('throttle:login')->name('password.update');
     Route::get('/oauth/{provider}', [OAuthController::class, 'redirect'])->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.redirect');
 });
-Route::get('/oauth/{provider}/callback', [OAuthController::class, 'callback'])->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.callback');
-Route::middleware('auth')->group(function (): void {
+Route::get('/oauth/{provider}/callback', [OAuthController::class, 'callback'])->middleware('account.active')->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.callback');
+Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/podtverdit-email', fn () => view('auth.verify-email'))->name('verification.notice');
     Route::get('/podtverdit-email/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
         $request->fulfill();
@@ -51,8 +52,8 @@ Route::middleware('auth')->group(function (): void {
         return back()->with('status', 'Письмо для подтверждения отправлено.');
     })->middleware('throttle:6,1')->name('verification.send');
 });
-Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
-Route::middleware('auth')->group(function (): void {
+Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware(['auth', 'account.active'])->name('logout');
+Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:login')->name('profile.password');
@@ -64,7 +65,7 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/profile/social-accounts/{socialAccount}', [ProfileController::class, 'removeSocialAccount'])->name('profile.social-accounts.destroy');
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderator,editor'])->group(function (): void {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'role:admin,moderator,editor'])->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::resource('stories', AdminStoryController::class)->except(['show', 'destroy']);
     Route::resource('articles', AdminArticleController::class)->except(['show', 'destroy']);
@@ -76,6 +77,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderato
     Route::patch('/moderation/{comment}', [ModerationController::class, 'update'])->middleware('role:admin,moderator')->name('moderation.update');
     Route::get('/users', [RoleController::class, 'index'])->middleware('role:admin')->name('users.index');
     Route::patch('/users/{user}/role', [RoleController::class, 'update'])->middleware('role:admin')->name('users.role');
+    Route::patch('/users/{user}/block', [RoleController::class, 'block'])->middleware('role:admin')->name('users.block');
+    Route::patch('/users/{user}/unblock', [RoleController::class, 'unblock'])->middleware('role:admin')->name('users.unblock');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->middleware('role:admin')->name('audit-logs.index');
 });
 
 Route::redirect('/prototype', '/demo/')->name('prototype');

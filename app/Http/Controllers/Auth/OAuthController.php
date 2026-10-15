@@ -65,6 +65,10 @@ class OAuthController extends Controller
 
         $account = SocialAccount::with('user')->where('provider', $provider)->where('provider_user_id', $externalId)->first();
         if ($account) {
+            if ($account->user->isBlocked()) {
+                return $this->oauthError($request, 'Доступ к аккаунту временно ограничен. Обратитесь в поддержку сайта.');
+            }
+
             auth()->login($account->user, true);
             $request->session()->regenerate();
 

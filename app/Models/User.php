@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -18,7 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected function casts(): array
     {
-        return ['email_verified_at' => 'datetime', 'password' => 'hashed', 'profile_preferences' => 'array', 'password_login_enabled' => 'boolean'];
+        return ['email_verified_at' => 'datetime', 'blocked_at' => 'datetime', 'password' => 'hashed', 'profile_preferences' => 'array', 'password_login_enabled' => 'boolean'];
     }
 
     public function roles(): BelongsToMany
@@ -39,6 +40,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function socialAccounts(): HasMany
     {
         return $this->hasMany(SocialAccount::class);
+    }
+
+    public function blocker(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'blocked_by');
+    }
+
+    public function auditEntries(): HasMany
+    {
+        return $this->hasMany(AuditLog::class, 'actor_id');
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
     }
 
     public function hasRole(string $role): bool

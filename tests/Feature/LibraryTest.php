@@ -8,6 +8,8 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\User;
 use App\Models\Comment;
+use App\Models\AuditLog;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -221,4 +223,77 @@ class LibraryTest extends TestCase
         $this->delete(route('profile.social-accounts.destroy', $account))->assertRedirect();
         $this->assertDatabaseMissing('social_accounts', ['id' => $account->id]);
     }
+
+    public function test_administrator_can_search_block_restore_and_review_account_audit(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $reader = User::factory()->create(['name' => 'Тестовый читатель']);
+
+        $this->actingAs($admin)->get(route('admin.users.index', ['q' => 'Тестовый']))->assertOk()->assertSee($reader->email)->assertSee('Заблокировать');
+        $this->patch(route('admin.users.block', $reader), ['block_reason' => 'Нарушение правил общения'])->assertRedirect()->assertSessionHas('status');
+        $this->assertNotNull($reader->fresh()->blocked_at);
+        $this->assertDatabaseHas('audit_logs', ['actor_id' => $admin->id, 'action' => 'user.blocked', 'subject_id' => $reader->id]);
+        $this->get(route('admin.audit-logs.index', ['action' => 'user.blocked']))->assertOk()->assertSee('Нарушение правил общения');
+
+        $this->patch(route('admin.users.unblock', $reader))->assertRedirect()->assertSessionHas('status');
+        $this->assertNull($reader->fresh()->blocked_at);
+        $this->assertDatabaseHas('audit_logs', ['actor_id' => $admin->id, 'action' => 'user.unblocked', 'subject_id' => $reader->id]);
+    }
+
+    public function test_blocking_self_is_prevented_and_blocked_login_is_denied(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create(['email' => 'admin@example.test']);
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $this->actingAs($admin)->patch(route('admin.users.block', $admin), ['block_reason' => 'Проверка блокировки'])->assertSessionHasErrors('block_reason');
+        $this->assertNull($admin->fresh()->blocked_at);
+
+        auth()->logout();
+        $reader = User::factory()->create(['password' => Hash::make('Reader-password-2026'), 'blocked_at' => now(), 'block_reason' => 'Нарушение правил']);
+        $this->post(route('login.store'), ['email' => $reader->email, 'password' => 'Reader-password-2026'])->assertRedirect(route('login'))->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    public function test_blocked_account_session_is_ended_on_authenticated_requests(): void
+    {
+        $this->seed();
+        $reader = User::factory()->create(['blocked_at' => now(), 'block_reason' => 'Проверка']);
+        $this->actingAs($reader)->get(route('profile.show'))->assertRedirect(route('login'))->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
+    public function test_blocking_another_administrator_keeps_one_admin_and_revokes_existing_session(): void
+    {
+        $this->seed();
+        $operator = User::factory()->create();
+        $operator->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $target = User::factory()->create();
+        $target->roles()->attach(Role::where('slug', 'admin')->value('id'));
+
+        $this->actingAs($operator)->patch(route('admin.users.block', $target), ['block_reason' => 'Учётная запись проверяется'])->assertRedirect();
+        $this->assertTrue($target->fresh()->isBlocked());
+        $this->assertSame(1, Role::where('slug', 'admin')->firstOrFail()->users()->whereNull('blocked_at')->count());
+
+        $this->actingAs($target)->get(route('profile.show'))->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
+    public function test_blocked_oauth_account_cannot_start_a_session(): void
+    {
+        $this->seed();
+        config(['services.yandex.client_id' => 'test-client', 'services.yandex.client_secret' => 'test-secret']);
+        $reader = User::factory()->create(['blocked_at' => now()]);
+        $reader->socialAccounts()->create(['provider' => 'yandex', 'provider_user_id' => 'blocked-yandex-id']);
+        $external = \Mockery::mock();
+        $external->shouldReceive('getId')->andReturn('blocked-yandex-id');
+        $driver = \Mockery::mock();
+        $driver->shouldReceive('user')->once()->andReturn($external);
+        Socialite::shouldReceive('driver')->with('yandex')->once()->andReturn($driver);
+
+        $this->get(route('oauth.callback', 'yandex'))->assertRedirect(route('login'))->assertSessionHasErrors('oauth');
+        $this->assertGuest();
+    }
+
 }
