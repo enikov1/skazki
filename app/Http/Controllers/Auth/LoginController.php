@@ -20,13 +20,21 @@ class LoginController extends Controller
     public function store(Request $request): RedirectResponse|JsonResponse
     {
         $credentials = $request->validate(['email' => ['required', 'email', 'max:254'], 'password' => ['required', 'string', 'max:200']]);
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) throw ValidationException::withMessages(['email' => 'Проверьте адрес почты и пароль.']);
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            $message = 'Проверьте адрес почты и пароль.';
+            if ($request->expectsJson()) throw ValidationException::withMessages(['email' => $message]);
+
+            return back()->withErrors(['email' => $message])->onlyInput('email');
+        }
         if ($request->user()->isBlocked()) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            throw ValidationException::withMessages(['email' => 'Доступ к аккаунту временно ограничен. Обратитесь в поддержку сайта.']);
+            $message = 'Доступ к аккаунту временно ограничен. Обратитесь в поддержку сайта.';
+            if ($request->expectsJson()) throw ValidationException::withMessages(['email' => $message]);
+
+            return redirect()->route('login')->withErrors(['email' => $message]);
         }
         $request->session()->regenerate();
 
