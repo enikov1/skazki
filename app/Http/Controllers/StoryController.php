@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\EditorialStatus;
 use App\Models\Story;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
@@ -39,6 +40,24 @@ class StoryController extends Controller
             $query->with(['audioPlaybackStates' => fn ($states) => $states->where('user_id', $user->id)]);
         }
 
+        $audioQueue = $request->user()
+            ? $request->user()->audioPlaybackStates()->whereNotNull('queue_position')->with('story')->orderBy('queue_position')->get()
+                ->filter(fn ($state) => $state->story && $state->story->status === 'published' && $state->story->published_at?->isPast() && filled($state->story->audio_path))
+                ->map(function ($state): array {
+                    $story = $state->story;
+                    return [
+                        'id' => $story->slug,
+                        'title' => $story->title,
+                        'author' => $story->author ?: 'СказкоМир',
+                        'cover' => $story->cover_path ? asset($story->cover_path) : asset('assets/illustrations/audio-story.webp'),
+                        'src' => route('stories.audio', $story),
+                        'download' => $story->allow_download ? route('stories.audio.download', $story) : '',
+                        'progressUrl' => route('stories.audio.progress', $story),
+                        'position' => $state->position_seconds,
+                    ];
+                })->values()
+            : collect();
+
         $stories = $query->paginate(12)->withQueryString();
         $genres = Story::published()->whereNotNull('audio_path')->select('genre')->distinct()->orderBy('genre')->pluck('genre');
 
@@ -49,7 +68,7 @@ class StoryController extends Controller
             ]);
         }
 
-        return view('audio.index', compact('stories', 'genres', 'filters'));
+        return view('audio.index', compact('stories', 'genres', 'filters', 'audioQueue'));
     }
 
     public function index(Request $request): View
@@ -113,6 +132,34 @@ class StoryController extends Controller
         );
 
         return response()->json(['saved' => true]);
+    }
+
+    public function saveAudioQueue(Request $request)
+    {
+        $data = $request->validate([
+            'stories' => ['present', 'array', 'max:50'],
+            'stories.*' => ['required', 'string', 'max:200', 'distinct'],
+        ]);
+        $slugs = $data['stories'];
+        $stories = Story::published()->whereNotNull('audio_path')->whereIn('slug', $slugs)->get()->keyBy('slug');
+
+        if ($stories->count() !== count($slugs)) {
+            return response()->json(['message' => 'Очередь содержит недоступную аудиосказку.'], 422);
+        }
+
+        $user = $request->user();
+        DB::transaction(function () use ($user, $slugs, $stories): void {
+            $user->audioPlaybackStates()->whereNotNull('queue_position')->update(['queue_position' => null]);
+
+            foreach ($slugs as $position => $slug) {
+                $user->audioPlaybackStates()->updateOrCreate(
+                    ['story_id' => $stories[$slug]->id],
+                    ['queue_position' => $position, 'updated_at' => now()],
+                );
+            }
+        });
+
+        return response()->json(['saved' => true, 'count' => count($slugs)]);
     }
 
     public function preview(Story $story): View

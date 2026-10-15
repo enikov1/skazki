@@ -190,6 +190,27 @@ class LibraryTest extends TestCase
         $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $story->id, 'position_seconds' => 0]);
     }
 
+    public function test_audio_queue_is_saved_per_user_restored_in_player_and_cleared_over_ajax(): void
+    {
+        $first = Story::create(['title' => 'Первая в очереди', 'slug' => 'queue-first', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => 'audio/first.mp3', 'status' => 'published', 'published_at' => now()->subMinute()]);
+        $second = Story::create(['title' => 'Вторая в очереди', 'slug' => 'queue-second', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => 'audio/second.mp3', 'status' => 'published', 'published_at' => now()->subMinute()]);
+        $draft = Story::create(['title' => 'Черновик очереди', 'slug' => 'queue-draft', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => 'audio/draft.mp3']);
+
+        $this->postJson(route('audio.queue.save'), ['stories' => [$first->slug]])->assertUnauthorized();
+        $reader = User::factory()->create();
+        $this->actingAs($reader)->postJson(route('audio.queue.save'), ['stories' => [$second->slug, $first->slug]])
+            ->assertOk()->assertJsonPath('count', 2);
+        $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $second->id, 'queue_position' => 0]);
+        $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $first->id, 'queue_position' => 1]);
+        $this->postJson(route('audio.queue.save'), ['stories' => [$draft->slug]])->assertUnprocessable();
+
+        $this->get(route('audio.index'))->assertOk()->assertSee('data-queue-url=', false)->assertSee('&quot;id&quot;:&quot;queue-second&quot;', false)->assertSee('Вторая в очереди');
+        $this->get(route('profile.show'))->assertOk()->assertSee('Очередь аудиосказок')->assertSee('Первая в очереди')->assertSee('Вторая в очереди');
+        $this->postJson(route('audio.queue.save'), ['stories' => []])->assertOk()->assertJsonPath('count', 0);
+        $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $first->id, 'queue_position' => null]);
+        $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $second->id, 'queue_position' => null]);
+    }
+
     public function test_admin_can_manage_genres_and_story_editor_uses_the_genre_catalog(): void
     {
         $this->seed();

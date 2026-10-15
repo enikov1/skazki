@@ -9,11 +9,11 @@ class AudioPlaybackState extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['story_id', 'position_seconds', 'updated_at'];
+    protected $fillable = ['story_id', 'position_seconds', 'queue_position', 'updated_at'];
 
     protected function casts(): array
     {
-        return ['updated_at' => 'datetime', 'position_seconds' => 'integer'];
+        return ['updated_at' => 'datetime', 'position_seconds' => 'integer', 'queue_position' => 'integer'];
     }
 
     public function user(): BelongsTo
