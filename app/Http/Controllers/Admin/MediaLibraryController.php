@@ -94,7 +94,12 @@ class MediaLibraryController extends Controller
                 : back()->withErrors(['audio' => $message]);
         }
 
-        $item = ['path' => $path, 'name' => basename($path), 'size' => Storage::disk('local')->size($path)];
+        $item = [
+            'path' => $path,
+            'name' => basename($path),
+            'size' => Storage::disk('local')->size($path),
+            'url' => route('admin.audio.preview', ['filename' => basename($path)]),
+        ];
         if ($request->expectsJson()) {
             return response()->json(['message' => 'MP3 загружен в приватное хранилище.', 'audio' => $item]);
         }
