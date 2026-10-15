@@ -112,6 +112,39 @@ class LibraryTest extends TestCase
         $this->postJson(route('admin.audio.store'), ['audio' => UploadedFile::fake()->create('track.txt', 10, 'text/plain')])->assertUnprocessable();
     }
 
+    public function test_audio_catalog_lists_only_published_tracks_and_filters_them_over_ajax(): void
+    {
+        $available = Story::create([
+            'title' => 'Лесная история', 'slug' => 'lesnaya-istoriya', 'author' => 'Иван Автор', 'genre' => 'Приключения',
+            'summary' => 'Описание', 'body' => 'Текст', 'age_min' => 4, 'age_max' => 7, 'audio_path' => 'audio/forest.mp3',
+            'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+        Story::create([
+            'title' => 'Народная история', 'slug' => 'narodnaya-istoriya', 'genre' => 'Народные сказки',
+            'summary' => 'Описание', 'body' => 'Текст', 'age_min' => 3, 'age_max' => 5, 'audio_path' => 'audio/folk.mp3',
+            'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+        Story::create([
+            'title' => 'Черновой трек', 'slug' => 'draft-audio-track', 'genre' => 'Приключения',
+            'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => 'audio/draft.mp3',
+        ]);
+        Story::create([
+            'title' => 'История без аудио', 'slug' => 'no-audio-story', 'genre' => 'Приключения',
+            'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+
+        $this->get(route('audio.index'))->assertOk()
+            ->assertSee('Лесная история')->assertSee('Народная история')
+            ->assertDontSee('Черновой трек')->assertDontSee('История без аудио')
+            ->assertSee('data-audio-results', false)->assertSee('id="audioDock"', false);
+
+        $filtered = $this->getJson(route('audio.index', ['genre' => 'Приключения', 'age' => '5-8', 'q' => 'Лесная']));
+        $filtered->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString($available->slug, $filtered->json('html'));
+        $this->assertStringNotContainsString('narodnaya-istoriya', $filtered->json('html'));
+        $this->getJson(route('audio.index', ['age' => 'not-an-age']))->assertUnprocessable();
+    }
+
     public function test_admin_can_manage_genres_and_story_editor_uses_the_genre_catalog(): void
     {
         $this->seed();

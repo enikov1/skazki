@@ -21,6 +21,7 @@ use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoryController::class, 'index'])->name('home');
+Route::get('/audio', [StoryController::class, 'audioIndex'])->name('audio.index');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');

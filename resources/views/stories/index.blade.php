@@ -7,7 +7,6 @@
   $homeStories = $stories->getCollection();
   $heroStory = $homeStories->first();
   $audioStories = $homeStories->filter(fn ($story) => filled($story->audio_path))->take(6);
-  if ($audioStories->isEmpty()) $audioStories = $homeStories->take(6);
   $coverClasses = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'];
 @endphp
 <form class="searchbar" id="searchForm" role="search" action="{{ route('home') }}" method="get">
@@ -24,7 +23,7 @@
         <h1>Читайте и слушайте вместе</h1>
         <p>Любимые истории для маленьких читателей и их родителей.</p>
         @if($heroStory)<a class="btn" href="{{ route('stories.show', $heroStory) }}">Читать сказку →</a>@endif
-        <a class="btn secondary" href="{{ url('/demo/audio.html') }}">Слушать</a>
+        <a class="btn secondary" href="{{ route('audio.index') }}">Слушать</a>
       </div>
       <a class="hero-book" href="{{ $heroStory ? route('stories.show', $heroStory) : route('home') }}"><img src="{{ asset('assets/illustrations/family-reading.webp') }}" alt="Взрослый и ребёнок читают историю вместе"><small>Читаем вместе</small></a>
     </section>
@@ -52,11 +51,13 @@
       </div>
     </section>
     <section class="section bluebg">
-      <div class="section-head"><h2>Аудиосказки</h2><a href="{{ url('/demo/audio.html') }}">Все материалы <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></div>
+      <div class="section-head"><h2>Аудиосказки</h2><a href="{{ route('audio.index') }}">Все материалы <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></div>
       <div class="book-row">
-        @foreach($audioStories as $index => $story)
+        @forelse($audioStories as $index => $story)
           <a class="book-card" href="{{ route('stories.show', $story) }}"><div class="cover {{ $coverClasses[$index % count($coverClasses)] }}">@if($story->cover_path)<img class="cover-img" src="{{ asset($story->cover_path) }}" alt="Иллюстрация к сказке «{{ $story->title }}»" loading="lazy">@endif<span class="mini-title">{{ $story->title }}</span><span class="audio-play"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#play"></use></svg></span></div><h3>{{ $story->title }}</h3><div class="author">{{ $story->author ?: 'СказкоМир' }}</div></a>
-        @endforeach
+        @empty
+          <p class="empty">Новые аудиосказки скоро появятся в библиотеке.</p>
+        @endforelse
       </div>
     </section>
     <section class="section">
@@ -72,7 +73,7 @@
     <section class="sidebox"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#medal"></use></svg> Самые активные</h3><ul><li class="rank"><i>1</i>Миша<span>985</span></li><li class="rank"><i>2</i>Алиса<span>840</span></li><li class="rank"><i>3</i>Варвара<span>756</span></li><li class="rank"><i>4</i>Саша<span>691</span></li><li class="rank"><i>5</i>Марина<span>570</span></li></ul></section>
     <section class="sidebox"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#message"></use></svg> Последние заметки</h3><div class="recent-notes"><article class="recent-note"><div class="note-avatar note-peach">М</div><div class="note-content"><p>«Очень добрая сказка!»</p><a href="{{ $heroStory ? route('stories.show',$heroStory) : route('home') }}">Маша · {{ $heroStory?->title ?? 'Сказки' }}</a></div></article><article class="recent-note"><div class="note-avatar note-mint">И</div><div class="note-content"><p>«Читали всей семьёй»</p><a href="{{ route('articles.index') }}">Илья · Родителям</a></div></article><article class="recent-note"><div class="note-avatar note-lilac">С</div><div class="note-content"><p>«Понравился герой»</p><a href="{{ $homeStories->get(1) ? route('stories.show',$homeStories->get(1)) : route('home') }}">Соня · {{ $homeStories->get(1)?->title ?? 'Сказки' }}</a></div></article></div><a class="sidebox-more" href="{{ route('articles.index') }}">Все отзывы читателей →</a></section>
     <section class="sidebox"><h3><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#heart"></use></svg> Популярное</h3><ul>@foreach($homeStories->take(5) as $story)<li><a href="{{ route('stories.show',$story) }}">{{ $story->title }} <span class="rating"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#heart"></use></svg> 4.9</span></a></li>@endforeach</ul></section>
-    <section class="sidebox"><h3>Подборки</h3><ul><li><a href="{{ url('/demo/fairy-tales.html?genre=Народные') }}">Русские народные <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/fairy-tales.html?age=3–5') }}">Для малышей <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/audio.html') }}">Слушать сказки <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/activities.html') }}">Загадки и игры <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li></ul></section>
+    <section class="sidebox"><h3>Подборки</h3><ul><li><a href="{{ url('/demo/fairy-tales.html?genre=Народные') }}">Русские народные <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/fairy-tales.html?age=3–5') }}">Для малышей <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ route('audio.index') }}">Слушать сказки <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li><li><a href="{{ url('/demo/activities.html') }}">Загадки и игры <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></a></li></ul></section>
   </aside>
 </div>
 {{ $stories->links('vendor.pagination.skazki') }}

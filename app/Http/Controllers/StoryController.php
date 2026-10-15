@@ -11,6 +11,42 @@ use Illuminate\Support\Facades\Storage;
 
 class StoryController extends Controller
 {
+    public function audioIndex(Request $request): View|\Illuminate\Http\JsonResponse
+    {
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'genre' => ['nullable', 'string', 'max:80'],
+            'age' => ['nullable', 'in:3-5,5-8,9-12'],
+            'sort' => ['nullable', 'in:available,title'],
+        ]);
+
+        $query = Story::published()->whereNotNull('audio_path')
+            ->when($filters['q'] ?? null, fn ($query, $q) => $query->where(fn ($sub) => $sub->where('title', 'like', '%'.$q.'%')->orWhere('author', 'like', '%'.$q.'%')))
+            ->when($filters['genre'] ?? null, fn ($query, $genre) => $query->where('genre', $genre))
+            ->when($filters['age'] ?? null, function ($query, $age): void {
+                [$min, $max] = array_map('intval', explode('-', $age));
+                $query->where('age_min', '<=', $max)->where('age_max', '>=', $min);
+            });
+
+        if (($filters['sort'] ?? 'available') === 'title') {
+            $query->orderBy('title');
+        } else {
+            $query->latest('published_at');
+        }
+
+        $stories = $query->paginate(12)->withQueryString();
+        $genres = Story::published()->whereNotNull('audio_path')->select('genre')->distinct()->orderBy('genre')->pluck('genre');
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'html' => view('audio.results', compact('stories'))->render(),
+                'count' => $stories->total(),
+            ]);
+        }
+
+        return view('audio.index', compact('stories', 'genres', 'filters'));
+    }
+
     public function index(Request $request): View
     {
         $filters = $request->validate(['q' => ['nullable', 'string', 'max:100'], 'genre' => ['nullable', 'string', 'max:80'], 'age' => ['nullable', 'integer', 'min:0', 'max:18']]);
@@ -29,10 +65,13 @@ class StoryController extends Controller
     public function audio(Story $story)
     {
         abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
-        abort_unless(preg_match('~^audio/[A-Za-z0-9._-]+\\.mp3$~i', (string) $story->audio_path), 404);
-        abort_unless(Storage::disk('local')->exists($story->audio_path), 404);
+        $privateAudio = preg_match('~^audio/[A-Za-z0-9._-]+\\.mp3$~i', (string) $story->audio_path) === 1;
+        $publicAudio = preg_match('~^assets/audio/[A-Za-z0-9._-]+\\.mp3$~i', (string) $story->audio_path) === 1;
+        abort_unless($privateAudio || $publicAudio, 404);
+        $audioFile = $privateAudio ? Storage::disk('local')->path($story->audio_path) : public_path($story->audio_path);
+        abort_unless(is_file($audioFile), 404);
 
-        return response()->file(Storage::disk('local')->path($story->audio_path), [
+        return response()->file($audioFile, [
             'Content-Type' => 'audio/mpeg',
             'Cache-Control' => 'private, max-age=3600',
             'X-Content-Type-Options' => 'nosniff',
