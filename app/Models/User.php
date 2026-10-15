@@ -13,12 +13,12 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'oauth_provider', 'oauth_id', 'avatar_path', 'profile_preferences'];
+    protected $fillable = ['name', 'email', 'password', 'oauth_provider', 'oauth_id', 'avatar_path', 'profile_preferences', 'password_login_enabled'];
     protected $hidden = ['password', 'remember_token'];
 
     protected function casts(): array
     {
-        return ['email_verified_at' => 'datetime', 'password' => 'hashed', 'profile_preferences' => 'array'];
+        return ['email_verified_at' => 'datetime', 'password' => 'hashed', 'profile_preferences' => 'array', 'password_login_enabled' => 'boolean'];
     }
 
     public function roles(): BelongsToMany
@@ -34,6 +34,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function consentEvents(): HasMany
     {
         return $this->hasMany(UserConsentEvent::class);
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 
     public function hasRole(string $role): bool
