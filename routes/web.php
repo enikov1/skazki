@@ -38,8 +38,8 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/sbros-parol/{token}', [PasswordController::class, 'resetForm'])->name('password.reset');
     Route::post('/sbros-parol', [PasswordController::class, 'reset'])->middleware('throttle:login')->name('password.update');
     Route::get('/oauth/{provider}', [OAuthController::class, 'redirect'])->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.redirect');
-    Route::get('/oauth/{provider}/callback', [OAuthController::class, 'callback'])->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.callback');
 });
+Route::get('/oauth/{provider}/callback', [OAuthController::class, 'callback'])->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.callback');
 Route::middleware('auth')->group(function (): void {
     Route::get('/podtverdit-email', fn () => view('auth.verify-email'))->name('verification.notice');
     Route::get('/podtverdit-email/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
@@ -60,6 +60,8 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.destroy');
     Route::put('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences');
     Route::put('/profile/newsletter', [ProfileController::class, 'updateNewsletterConsent'])->name('profile.newsletter');
+    Route::get('/oauth/{provider}/link', [OAuthController::class, 'link'])->whereIn('provider', ['yandex', 'vkontakte'])->name('oauth.link');
+    Route::delete('/profile/social-accounts/{socialAccount}', [ProfileController::class, 'removeSocialAccount'])->name('profile.social-accounts.destroy');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderator,editor'])->group(function (): void {
