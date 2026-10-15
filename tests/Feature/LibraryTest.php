@@ -110,6 +110,9 @@ class LibraryTest extends TestCase
         $this->get(route('stories.audio', $published))->assertOk()->assertHeader('Content-Type', 'audio/mpeg');
         $this->get(route('stories.audio.download', $published))->assertNotFound();
 
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $this->actingAs($admin);
         $this->putJson(route('admin.stories.update', $published), [
             'title' => $published->title, 'slug' => $published->slug, 'genre' => 'Тест', 'summary' => $published->summary,
             'body' => $published->body, 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5,
@@ -258,7 +261,7 @@ class LibraryTest extends TestCase
         $reader = User::factory()->create();
 
         $this->actingAs($admin)->get(route('admin.stories.edit', $story))->assertOk()->assertSee('data-ajax-form')->assertSee('data-rich-editor')->assertSee('data-custom-select');
-        $this->putJson(route('admin.stories.update', $story), ['title' => 'Изменённая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Новый текст', 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5])
+        $this->putJson(route('admin.stories.update', $story), ['title' => 'Изменённая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Новый текст', 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5, 'allow_download' => '0'])
             ->assertOk()->assertJsonPath('message', 'Изменения сохранены.');
         $this->assertSame('Изменённая сказка', $story->fresh()->title);
         $this->patchJson(route('admin.stories.status', $story), ['status' => 'review'])
