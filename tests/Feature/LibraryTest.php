@@ -527,6 +527,9 @@ class LibraryTest extends TestCase
         $story = Story::where('slug', 'kolobok')->firstOrFail();
         $this->actingAs($reader)->get(route('stories.show', $story))->assertOk();
         $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id]);
+        $this->get(route('stories.read', $story))->assertOk()->assertSee('data-reader')->assertSee('Настройки чтения');
+        $this->postJson(route('stories.reading-progress', $story), ['paragraph' => 1])->assertOk()->assertJsonPath('saved', true);
+        $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id, 'paragraph_position' => 1]);
         $this->get(route('profile.show'))->assertOk()->assertSee('Главная профиля')->assertSee('История чтения')->assertSee($story->title);
         $this->get(route('profile.history'))->assertOk()->assertSee('История и очередь')->assertSee('История чтения')->assertSee('Очередь аудиосказок');
         $this->get(route('profile.settings'))->assertOk()->assertSee('Настройки профиля')->assertSee('Внешний вид сказок')->assertSee('Согласия');

@@ -86,6 +86,39 @@ class StoryController extends Controller
         return $this->render($story, false);
     }
 
+    public function read(Request $request, Story $story): View
+    {
+        abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
+        $user = $request->user();
+        $history = $user?->readingHistories()->where('story_id', $story->id)->first();
+        if ($user) {
+            $history = $user->readingHistories()->updateOrCreate(['story_id' => $story->id], ['last_read_at' => now()]);
+        }
+
+        $preferences = array_merge(['reader_font_size' => 20, 'reader_theme' => 'cream', 'reader_width' => 'medium'], $user?->profile_preferences ?? []);
+        $width = ['narrow' => 560, 'medium' => 700, 'wide' => 900][$preferences['reader_width']] ?? 700;
+
+        return view('stories.read', [
+            'story' => $story,
+            'readerFontSize' => (int) $preferences['reader_font_size'],
+            'readerTheme' => $preferences['reader_theme'],
+            'readerWidth' => $width,
+            'paragraphPosition' => $history?->paragraph_position ?? 0,
+        ]);
+    }
+
+    public function saveReadingProgress(Request $request, Story $story)
+    {
+        abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
+        $data = $request->validate(['paragraph' => ['required', 'integer', 'min:0', 'max:10000'], 'completed' => ['sometimes', 'boolean']]);
+        $request->user()->readingHistories()->updateOrCreate(
+            ['story_id' => $story->id],
+            ['paragraph_position' => ($data['completed'] ?? false) ? 0 : $data['paragraph'], 'last_read_at' => now()],
+        );
+
+        return response()->json(['saved' => true]);
+    }
+
     public function audio(Story $story)
     {
         abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);

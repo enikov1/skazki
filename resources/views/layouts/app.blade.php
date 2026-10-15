@@ -18,6 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/site.css') }}?v=11">
   @if(request()->routeIs('profile.*'))<link rel="stylesheet" href="{{ asset('css/profile.css') }}?v=1">@endif
+  @if(request()->routeIs('stories.read'))<link rel="stylesheet" href="{{ asset('css/reader.css') }}?v=1">@endif
   @if(request()->routeIs('admin.*'))<link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=4"><link rel="stylesheet" href="{{ asset('vendor/quill/quill.snow.css') }}?v=2">@endif
   @stack('head')
 </head>

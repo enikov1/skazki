@@ -1,0 +1,153 @@
+.laravel-reader {
+  max-width: 900px;
+  margin: 10px auto 34px;
+  border-color: #e4e8dc;
+  border-radius: 20px;
+  background: #fffefa;
+}
+
+.laravel-reader .reader-toolbar {
+  position: sticky;
+  top: 58px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9e9de;
+  background: #fffefa;
+}
+
+.laravel-reader .reader-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6d7b78;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.laravel-reader .reader-toolbar select {
+  min-height: 36px;
+  max-width: 150px;
+  padding: 6px 28px 6px 9px;
+  border: 1px solid #dfe7df;
+  border-radius: 9px;
+  background: #fff;
+  color: #384e47;
+  font: inherit;
+}
+
+.laravel-reader .reader-toolbar .pill {
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.laravel-reader .reading-progress {
+  padding: 7px 20px;
+  background: #f2f7ee;
+  color: #61765d;
+  font-size: 12px;
+}
+
+.laravel-reader .reader-text {
+  max-width: var(--reader-max-width, 700px);
+  margin: 22px auto 45px;
+  padding: 22px clamp(17px, 4vw, 34px);
+  border-radius: 16px;
+  background: #fffaf0;
+  color: #394940;
+  font: var(--reader-size, 20px)/1.95 Georgia, serif;
+  overflow-wrap: anywhere;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.laravel-reader .reader-text.reader-theme-white {
+  background: #fff;
+  color: #34434b;
+}
+
+.laravel-reader .reader-text.reader-theme-green {
+  background: #f0f6ed;
+  color: #344b3c;
+}
+
+.laravel-reader .reader-title {
+  text-align: center;
+  font: 700 clamp(27px, 4vw, 38px)/1.2 Raleway, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.laravel-reader .reader-author {
+  text-align: center;
+  color: #85918a;
+  font: 600 13px/1.5 Raleway, sans-serif;
+}
+
+.laravel-reader .reader-block {
+  scroll-margin-top: 160px;
+  margin: 0 0 1.2em;
+}
+
+.laravel-reader .reader-block h2 {
+  font: 700 1.25em/1.4 Raleway, sans-serif;
+}
+
+.laravel-reader .reader-block blockquote {
+  margin: 1em 0;
+  padding-left: 1em;
+  border-left: 3px solid #d4b477;
+  color: #718071;
+}
+
+.laravel-reader .reader-end {
+  margin-top: 42px;
+  text-align: center;
+  color: #85918a;
+  font: italic 14px/1.5 Raleway, sans-serif;
+}
+
+@media (max-width: 700px) {
+  .laravel-reader {
+    margin-inline: -5px;
+    border-radius: 15px;
+  }
+  .laravel-reader .reader-toolbar {
+    top: 58px;
+    gap: 7px;
+    padding: 9px;
+  }
+  .laravel-reader .reader-toolbar label {
+    font-size: 11px;
+  }
+  .laravel-reader .reader-toolbar select {
+    max-width: 115px;
+    min-height: 34px;
+  }
+  .laravel-reader .reading-progress {
+    padding-inline: 12px;
+  }
+  .laravel-reader .reader-text {
+    margin: 14px auto 30px;
+    padding: 18px 16px;
+    line-height: 1.85;
+  }
+}
+@media (max-width: 420px) {
+  .laravel-reader .reader-toolbar {
+    align-items: stretch;
+  }
+  .laravel-reader .reader-toolbar label {
+    flex: 1 1 42%;
+    justify-content: space-between;
+  }
+  .laravel-reader .reader-toolbar label select {
+    flex: 1;
+    min-width: 0;
+    margin-left: 6px;
+  }
+  .laravel-reader .reader-toolbar .pill {
+    justify-content: center;
+  }
+}

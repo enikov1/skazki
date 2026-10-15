@@ -33,6 +33,7 @@ Route::get('/skazki/{story:slug}/audio', [StoryController::class, 'audio'])->nam
 Route::get('/skazki/{story:slug}/audio/download', [StoryController::class, 'downloadAudio'])->name('stories.audio.download');
 Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.store');
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
+Route::get('/skazki/{story:slug}/read', [StoryController::class, 'read'])->name('stories.read');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -85,6 +86,7 @@ Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/profile/security', [ProfileController::class, 'security'])->name('profile.security');
     Route::post('/audio/queue', [StoryController::class, 'saveAudioQueue'])->middleware('throttle:30,1')->name('audio.queue.save');
     Route::post('/skazki/{story:slug}/audio/progress', [StoryController::class, 'saveAudioProgress'])->middleware('throttle:public-write')->name('stories.audio.progress');
+    Route::post('/skazki/{story:slug}/reading-progress', [StoryController::class, 'saveReadingProgress'])->middleware('throttle:public-write')->name('stories.reading-progress');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:login')->name('profile.password');
     Route::put('/profile/avatar', [ProfileController::class, 'updateAvatar'])->middleware('throttle:public-write')->name('profile.avatar.update');
