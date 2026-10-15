@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -18,6 +19,7 @@ class RoleController extends Controller
 {
     public function index(Request $request): View
     {
+        Gate::authorize('viewAny', User::class);
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'role' => ['nullable', Rule::in(['user', 'editor', 'moderator', 'admin'])],
@@ -34,6 +36,7 @@ class RoleController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        Gate::authorize('changeRole', $user);
         $data = $request->validate(['role' => ['required', Rule::in(['user', 'editor', 'moderator', 'admin'])]]);
         $currentRole = $user->roles()->value('slug');
         if ($request->user()->is($user) && $data['role'] !== 'admin') return back()->withErrors(['role' => 'Нельзя убрать роль администратора у своей учётной записи.']);
@@ -53,6 +56,7 @@ class RoleController extends Controller
 
     public function block(Request $request, User $user): RedirectResponse
     {
+        Gate::authorize('block', $user);
         if ($request->user()->is($user)) {
             return back()->withErrors(['block_reason' => 'Нельзя заблокировать собственный аккаунт.']);
         }
@@ -75,6 +79,7 @@ class RoleController extends Controller
 
     public function unblock(Request $request, User $user): RedirectResponse
     {
+        Gate::authorize('unblock', $user);
         if (! $user->isBlocked()) {
             return back()->with('status', 'Этот аккаунт уже активен.');
         }

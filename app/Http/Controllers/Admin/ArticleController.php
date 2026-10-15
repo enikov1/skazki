@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\ArticleComment;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -16,19 +17,19 @@ class ArticleController extends Controller
 {
     public function index(): View
     {
-        abort_unless(request()->user()->hasAnyRole(['admin', 'editor']), 403);
+        Gate::authorize('viewAny', Article::class);
         return view('admin.articles.index', ['articles' => Article::latest()->paginate(20)]);
     }
 
     public function create(): View
     {
-        abort_unless(request()->user()->hasAnyRole(['admin', 'editor']), 403);
+        Gate::authorize('create', Article::class);
         return view('admin.articles.form', ['article' => new Article()]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        abort_unless($request->user()->hasAnyRole(['admin', 'editor']), 403);
+        Gate::authorize('create', Article::class);
         $article = Article::create($this->validated($request) + ['created_by' => $request->user()->id]);
         Cache::forget('articles:categories:v1');
         return redirect()->route('admin.articles.edit', $article)->with('status', 'Статья сохранена как черновик.');
@@ -36,13 +37,13 @@ class ArticleController extends Controller
 
     public function edit(Article $article): View
     {
-        abort_unless($this->canEdit($article), 403);
+        Gate::authorize('update', $article);
         return view('admin.articles.form', compact('article'));
     }
 
     public function update(Request $request, Article $article): RedirectResponse
     {
-        abort_unless($this->canEdit($article), 403);
+        Gate::authorize('update', $article);
         $article->update($this->validated($request, $article));
         Cache::forget('articles:categories:v1');
         return back()->with('status', 'Изменения сохранены.');
@@ -50,9 +51,9 @@ class ArticleController extends Controller
 
     public function status(Request $request, Article $article): RedirectResponse
     {
-        abort_unless($this->canEdit($article), 403);
+        Gate::authorize('update', $article);
         $data = $request->validate(['status' => ['required', Rule::in(['draft', 'review', 'published', 'archived'])]]);
-        if ($data['status'] === 'published') abort_unless($request->user()->hasRole('admin') || $request->user()->hasPermission('articles.publish'), 403);
+        if ($data['status'] === 'published') Gate::authorize('publish', Article::class);
         $article->update(['status' => $data['status'], 'published_at' => $data['status'] === 'published' ? ($article->published_at ?? now()) : null]);
         Cache::forget('articles:categories:v1');
         return back()->with('status', 'Статус статьи обновлён.');
@@ -60,21 +61,16 @@ class ArticleController extends Controller
 
     public function comments(): View
     {
-        abort_unless(request()->user()->hasAnyRole(['admin', 'moderator']), 403);
+        Gate::authorize('viewAny', ArticleComment::class);
         return view('admin.articles.comments', ['comments' => ArticleComment::with(['user', 'article'])->latest()->paginate(20)]);
     }
 
     public function moderateComment(Request $request, ArticleComment $comment): RedirectResponse
     {
-        abort_unless($request->user()->hasAnyRole(['admin', 'moderator']), 403);
+        Gate::authorize('moderate', $comment);
         $data = $request->validate(['status' => ['required', Rule::in(['approved', 'rejected'])]]);
         $comment->update(['status' => $data['status'], 'moderated_by' => $request->user()->id, 'moderated_at' => now()]);
         return back()->with('status', 'Решение по комментарию сохранено.');
-    }
-
-    private function canEdit(Article $article): bool
-    {
-        return request()->user()->hasRole('admin') || (request()->user()->hasRole('editor') && $article->created_by === request()->user()->id);
     }
 
     private function validated(Request $request, ?Article $article = null): array

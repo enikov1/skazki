@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -13,6 +14,7 @@ class AuditLogController extends Controller
 {
     public function index(Request $request): View
     {
+        Gate::authorize('viewAny', AuditLog::class);
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'action' => ['nullable', 'string', 'max:100', Rule::in(['user.blocked', 'user.unblocked', 'user.role_changed'])],

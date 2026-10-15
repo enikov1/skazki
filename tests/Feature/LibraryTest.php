@@ -136,6 +136,28 @@ class LibraryTest extends TestCase
         $this->post(route('admin.articles.store'), ['title' => 'Новая статья для родителей', 'category' => 'Чтение', 'summary' => 'Короткое описание материала.', 'body' => 'Текст материала.', 'reading_minutes' => 3])->assertRedirect();
         $article = Article::where('created_by', $editor->id)->firstOrFail();
         $this->patch(route('admin.articles.status', $article), ['status' => 'published'])->assertForbidden();
+
+        $otherEditor = User::factory()->create();
+        $otherEditor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $otherArticle = Article::create(['title' => 'Статья другого автора', 'slug' => 'other-editor-article', 'category' => 'Чтение', 'summary' => 'Описание статьи другого редактора.', 'body' => 'Содержание статьи другого редактора.', 'status' => 'draft', 'created_by' => $otherEditor->id]);
+        $this->get(route('admin.articles.edit', $otherArticle))->assertForbidden();
+        $this->patch(route('admin.articles.status', $otherArticle), ['status' => 'review'])->assertForbidden();
+
+        $otherStory = Story::create(['title' => 'Сказка другого редактора', 'slug' => 'other-editor-story', 'genre' => 'Проверка', 'summary' => 'Описание сказки.', 'body' => 'Содержание сказки.', 'status' => 'draft', 'created_by' => $otherEditor->id]);
+        $this->get(route('admin.stories.edit', $otherStory))->assertForbidden();
+        $this->patch(route('admin.stories.status', $otherStory), ['status' => 'review'])->assertForbidden();
+    }
+
+    public function test_only_users_with_management_permission_can_open_staff_actions(): void
+    {
+        $this->seed();
+        $reader = User::factory()->create();
+        $reader->roles()->attach(Role::where('slug', 'user')->value('id'));
+        $subject = User::factory()->create();
+
+        $this->actingAs($reader)->get(route('admin.users.index'))->assertForbidden();
+        $this->patch(route('admin.users.role', $subject), ['role' => 'editor'])->assertForbidden();
+        $this->get(route('admin.audit-logs.index'))->assertForbidden();
     }
 
     public function test_profile_edits_name_changes_password_and_lists_reading_history(): void
