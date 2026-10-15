@@ -56,6 +56,10 @@ Route::middleware('auth')->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:login')->name('profile.password');
+    Route::put('/profile/avatar', [ProfileController::class, 'updateAvatar'])->middleware('throttle:public-write')->name('profile.avatar.update');
+    Route::delete('/profile/avatar', [ProfileController::class, 'removeAvatar'])->name('profile.avatar.destroy');
+    Route::put('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.preferences');
+    Route::put('/profile/newsletter', [ProfileController::class, 'updateNewsletterConsent'])->name('profile.newsletter');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderator,editor'])->group(function (): void {
