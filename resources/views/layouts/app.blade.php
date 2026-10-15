@@ -25,7 +25,7 @@
   <div class="header-actions">
   @auth
     @if(auth()->user()->hasAnyRole(['admin','moderator','editor']))<a class="button button-small button-soft" href="{{ route('admin.dashboard') }}">Панель управления</a>@endif
-    <span class="user-greeting">{{ auth()->user()->name }}</span><form method="post" action="{{ route('logout') }}">@csrf<button class="button button-small button-quiet" type="submit">Выйти</button></form>
+    <a class="user-greeting" href="{{ route('profile.show') }}">{{ auth()->user()->name }}</a><form method="post" action="{{ route('logout') }}">@csrf<button class="button button-small button-quiet" type="submit">Выйти</button></form>
   @else
     <a class="button button-small button-soft" href="{{ route('login') }}">Войти</a><a class="button button-small" href="{{ route('register') }}">Создать аккаунт</a>
   @endauth

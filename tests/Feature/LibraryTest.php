@@ -131,4 +131,19 @@ class LibraryTest extends TestCase
         $article = Article::where('created_by', $editor->id)->firstOrFail();
         $this->patch(route('admin.articles.status', $article), ['status' => 'published'])->assertForbidden();
     }
+
+    public function test_profile_edits_name_changes_password_and_lists_reading_history(): void
+    {
+        $this->seed();
+        $reader = User::factory()->create();
+        $story = Story::where('slug', 'kolobok')->firstOrFail();
+        $this->actingAs($reader)->get(route('stories.show', $story))->assertOk();
+        $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id]);
+        $this->get(route('profile.show'))->assertOk()->assertSee('История сказок')->assertSee($story->title);
+
+        $this->put(route('profile.update'), ['name' => 'Костя'])->assertRedirect();
+        $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Костя']);
+        $this->put(route('profile.password'), ['current_password' => 'password-for-tests', 'password' => 'New-Reading-Pass-2026', 'password_confirmation' => 'New-Reading-Pass-2026'])->assertRedirect();
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('New-Reading-Pass-2026', $reader->fresh()->password));
+    }
 }

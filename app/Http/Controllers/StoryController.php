@@ -20,6 +20,9 @@ class StoryController extends Controller
     public function show(Story $story): View
     {
         abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
+        if ($user = auth()->user()) {
+            $user->readingHistories()->updateOrCreate(['story_id' => $story->id], ['last_read_at' => now()]);
+        }
         $related = Story::published()->where('genre', $story->genre)->where('id', '<>', $story->getKey())->limit(4)->get(['id', 'slug', 'title', 'author', 'summary', 'cover_path', 'age_min', 'age_max']);
         $comments = $story->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
 

@@ -12,6 +12,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,11 @@ Route::middleware('auth')->group(function (): void {
     })->middleware('throttle:6,1')->name('verification.send');
 });
 Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware('auth')->name('logout');
+Route::middleware('auth')->group(function (): void {
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:login')->name('profile.password');
+});
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin,moderator,editor'])->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
