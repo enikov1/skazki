@@ -152,7 +152,9 @@ class LibraryTest extends TestCase
         $this->patchJson(route('admin.stories.status', $story), ['status' => 'review'])
             ->assertOk()->assertJsonPath('message', 'Статус сказки обновлён.');
 
-        $this->getJson(route('admin.users.index', ['q' => $reader->email]))->assertOk()->assertJsonPath('count', 1)->assertJsonFragment(['Заблокировать']);
+        $usersResponse = $this->getJson(route('admin.users.index', ['q' => $reader->email]));
+        $usersResponse->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Заблокировать', $usersResponse->json('html'));
         $this->patchJson(route('admin.users.block', $reader), ['block_reason' => 'Нарушение правил общения'])
             ->assertOk()->assertJsonPath('message', 'Аккаунт заблокирован.');
         $this->assertNotNull($reader->fresh()->blocked_at);
