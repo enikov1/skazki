@@ -32,7 +32,7 @@ class PasswordController extends Controller
     {
         $data = $request->validate(['token' => ['required'], 'email' => ['required', 'email', 'max:254'], 'password' => ['required', 'confirmed', PasswordRule::min(10)->mixedCase()->numbers()],]);
         $status = Password::reset($data, function ($user, string $password): void {
-            $user->forceFill(['password' => Hash::make($password), 'remember_token' => Str::random(60)])->save();
+            $user->forceFill(['password' => Hash::make($password), 'password_login_enabled' => true, 'oauth_provider' => null, 'oauth_id' => null, 'remember_token' => Str::random(60)])->save();
             event(new PasswordReset($user));
         });
         return $status === Password::PASSWORD_RESET ? redirect()->route('login')->with('status', __($status)) : back()->withErrors(['email' => __($status)]);
