@@ -362,13 +362,13 @@ class LibraryTest extends TestCase
     public function test_only_authorized_roles_can_open_management(): void
     {
         $this->seed();
-        $this->get('/')->assertDontSee('css/admin.css');
+        $this->get('/')->assertDontSee('css/admin.css')->assertSee('css/ui.css');
         $user = User::factory()->create();
         $user->roles()->attach(Role::where('slug', 'user')->value('id'));
         $this->actingAs($user)->get('/admin')->assertForbidden();
         $editor = User::factory()->create();
         $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
-        $this->actingAs($editor)->get('/admin')->assertOk()->assertSee('Управление сайтом')->assertSee('css/admin.css');
+        $this->actingAs($editor)->get('/admin')->assertOk()->assertSee('Управление сайтом')->assertSee('css/ui.css')->assertSee('css/admin.css');
     }
 
     public function test_public_story_has_unique_title_and_canonical(): void
@@ -485,6 +485,20 @@ class LibraryTest extends TestCase
         $this->assertDatabaseCount('article_ratings', 1);
         $this->assertDatabaseHas('article_ratings', ['article_id' => $article->id, 'user_id' => $reader->id, 'rating' => 4]);
         $this->get(route('articles.show', $article))->assertOk()->assertSee('4,0')->assertSee('Изменить оценку');
+    }
+
+    public function test_story_rating_is_editable_and_one_vote_per_reader_is_kept(): void
+    {
+        $this->seed();
+        $reader = User::factory()->create();
+        $story = Story::where('slug', 'kolobok')->firstOrFail();
+
+        $this->actingAs($reader)->postJson(route('stories.rate', $story), ['rating' => 5])->assertOk()->assertJsonPath('message', 'Ваша оценка сказки сохранена.');
+        $this->postJson(route('stories.rate', $story), ['rating' => 4])->assertOk();
+        $this->assertDatabaseCount('story_ratings', 1);
+        $this->assertDatabaseHas('story_ratings', ['story_id' => $story->id, 'user_id' => $reader->id, 'rating' => 4]);
+        $this->postJson(route('stories.rate', $story), ['rating' => 6])->assertUnprocessable()->assertJsonValidationErrors('rating');
+        $this->get(route('stories.show', $story))->assertOk()->assertSee('Оцените сказку')->assertSee('1 оценка');
     }
 
     public function test_editors_manage_articles_but_only_administrators_publish_them(): void

@@ -14,6 +14,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\StoryRatingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\GenreController;
@@ -32,6 +33,7 @@ Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->name('stor
 Route::get('/skazki/{story:slug}/audio', [StoryController::class, 'audio'])->name('stories.audio');
 Route::get('/skazki/{story:slug}/audio/download', [StoryController::class, 'downloadAudio'])->name('stories.audio.download');
 Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.store');
+Route::post('/skazki/{story:slug}/rating', [StoryRatingController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('stories.rate');
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
 Route::get('/skazki/{story:slug}/read', [StoryController::class, 'read'])->name('stories.read');
 

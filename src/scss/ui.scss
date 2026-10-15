@@ -1,0 +1,14 @@
+/* Shared Laravel controls used by account, editorial, and public forms. */
+.button{appearance:none;display:inline-flex;min-height:40px;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border:1px solid #e36b49;border-radius:10px;background:#f37451;color:#fff;font:700 13px/1.25 Raleway,sans-serif;text-align:center;text-decoration:none;cursor:pointer;transition:background .16s,border-color .16s,box-shadow .16s,transform .16s}
+.button:hover:not(:disabled){border-color:#d65f40;background:#e96b48;color:#fff;box-shadow:0 4px 12px #bf59301f;transform:translateY(-1px)}
+.button:focus-visible{outline:3px solid #279bcf55;outline-offset:3px}
+.button:disabled,[aria-disabled=true].button{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.button-small{min-height:34px;padding:7px 11px;font-size:12px}
+.button-soft{border-color:#dce8d9;background:#edf4e9;color:#426a4b}
+.button-soft:hover:not(:disabled){border-color:#c5d9c2;background:#e3efdf;color:#345d3e}
+.button-quiet,.button-secondary{border-color:#dce6e8;background:#fff;color:#526a73}
+.button-quiet:hover:not(:disabled),.button-secondary:hover:not(:disabled){border-color:#bfd6da;background:#f3f9fa;color:#345c66}
+.button-danger{border-color:#a64c3d;background:#a64c3d;color:#fff}
+.button-danger:hover:not(:disabled){border-color:#863b30;background:#863b30;color:#fff}
+.button-wide{width:100%}
+.button svg,.button .icon{flex:none}

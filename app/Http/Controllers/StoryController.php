@@ -208,6 +208,8 @@ class StoryController extends Controller
         }
         $related = Story::published()->where('genre', $story->genre)->where('id', '<>', $story->getKey())->limit(4)->get(['id', 'slug', 'title', 'author', 'summary', 'cover_path', 'age_min', 'age_max']);
         $comments = $story->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
+        $rating = $story->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
+        $userRating = auth()->id() ? $story->ratings()->where('user_id', auth()->id())->value('rating') : null;
         $preferences = array_merge(['reader_font_size' => 20, 'reader_theme' => 'cream', 'reader_width' => 'medium'], auth()->user()?->profile_preferences ?? []);
         $audioProgress = ! $preview && $user && $story->audio_path
             ? (int) $user->audioPlaybackStates()->where('story_id', $story->id)->value('position_seconds')
@@ -221,6 +223,6 @@ class StoryController extends Controller
             return view('stories.preview', compact('story', 'readerFontSize', 'readerTheme', 'readerWidth', 'statusLabel'));
         }
 
-        return view('stories.show', compact('story', 'related', 'comments', 'readerFontSize', 'readerTheme', 'readerWidth', 'audioProgress'));
+        return view('stories.show', compact('story', 'related', 'comments', 'readerFontSize', 'readerTheme', 'readerWidth', 'audioProgress', 'rating', 'userRating'));
     }
 }

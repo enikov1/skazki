@@ -55,4 +55,9 @@ class Story extends Model
     {
         return $this->hasMany(AudioPlaybackState::class);
     }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(StoryRating::class);
+    }
 }
