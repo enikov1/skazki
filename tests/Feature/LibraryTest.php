@@ -77,6 +77,31 @@ class LibraryTest extends TestCase
         $this->actingAs($reader)->get(route('admin.media.index'))->assertForbidden();
     }
 
+    public function test_editors_can_upload_private_mp3_and_audio_is_only_served_for_published_stories(): void
+    {
+        $this->seed();
+        Storage::fake('local');
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+
+        $upload = $this->actingAs($editor)->postJson(route('admin.audio.store'), [
+            'audio' => UploadedFile::fake()->create('kolobok.mp3', 128, 'audio/mpeg'),
+        ]);
+        $upload->assertOk()->assertJsonPath('message', 'MP3 загружен в приватное хранилище.');
+        $path = $upload->json('audio.path');
+        $this->assertStringStartsWith('audio/', $path);
+        Storage::disk('local')->assertExists($path);
+        $this->assertFileDoesNotExist(public_path($path));
+        $this->get($upload->json('audio.url'))->assertOk()->assertHeader('Content-Type', 'audio/mpeg');
+
+        $draft = Story::create(['title' => 'Черновое аудио', 'slug' => 'draft-audio', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => $path]);
+        $this->get(route('stories.audio', $draft))->assertNotFound();
+        $published = Story::create(['title' => 'Опубликованное аудио', 'slug' => 'published-audio', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'audio_path' => $path, 'status' => 'published', 'published_at' => now()->subMinute()]);
+        $this->get(route('stories.audio', $published))->assertOk()->assertHeader('Content-Type', 'audio/mpeg');
+
+        $this->postJson(route('admin.audio.store'), ['audio' => UploadedFile::fake()->create('track.txt', 10, 'text/plain')])->assertUnprocessable();
+    }
+
     public function test_editors_can_preview_drafts_and_status_changes_record_authorship(): void
     {
         $this->seed();

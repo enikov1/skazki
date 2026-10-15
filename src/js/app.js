@@ -204,7 +204,8 @@ document.querySelectorAll('[data-copy-link]').forEach(button=>button.addEventLis
 document.querySelectorAll('[data-share-target]').forEach(button=>button.addEventListener('click',async()=>{const target=button.dataset.shareTarget,url=encodeURIComponent(location.href),title=encodeURIComponent(document.title);if(target==='copy'){try{await navigator.clipboard.writeText(location.href);notify('Ссылка скопирована')}catch{notify('Скопируйте ссылку из адресной строки')}return}const shareUrl=target==='vk'?`https://vk.com/share.php?url=${url}`:`https://t.me/share/url?url=${url}&text=${title}`;window.open(shareUrl,'_blank','noopener,noreferrer')}));
 
 document.querySelectorAll('[data-media-picker]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();const popup=window.open(link.href,'skazkomir-media-library','popup,width=1040,height=760');if(!popup)location.assign(link.href)}));
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.data?.type!=='skazkomir:media-selected'||event.data.field!=='cover_path'||typeof event.data.path!=='string')return;if(!/^(storage\/media|assets\/(covers|illustrations))\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp|gif)$/i.test(event.data.path))return;const field=document.querySelector('[name="cover_path"]');if(!field)return;field.value=event.data.path;field.dispatchEvent(new Event('input',{bubbles:true}));notify('Изображение выбрано')} );
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.data?.type!=='skazkomir:media-selected'||typeof event.data.path!=='string')return;const validImage=event.data.field==='cover_path'&&/^(storage\/media|assets\/(covers|illustrations))\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp|gif)$/i.test(event.data.path);const validAudio=event.data.field==='audio_path'&&/^audio\/[a-zA-Z0-9._-]+\.mp3$/i.test(event.data.path);if(!validImage&&!validAudio)return;const field=document.getElementsByName(event.data.field)[0];if(!field)return;field.value=event.data.path;field.dispatchEvent(new Event('input',{bubbles:true}));notify(validAudio?'Аудиофайл выбран':'Изображение выбрано')});
+document.addEventListener('click',event=>{const button=event.target.closest('[data-audio-select]');if(!button)return;const message={type:'skazkomir:media-selected',field:'audio_path',path:button.dataset.audioPath};if(window.opener&&!window.opener.closed){window.opener.postMessage(message,location.origin);window.close();return}try{navigator.clipboard.writeText(message.path).then(()=>notify('Путь скопирован')).catch(()=>notify(message.path))}catch{notify(message.path)}});
 document.querySelectorAll('[data-media-select]').forEach(button=>button.addEventListener('click',async()=>{const message={type:'skazkomir:media-selected',field:button.dataset.mediaField,path:button.dataset.mediaPath};if(window.opener&&!window.opener.closed){window.opener.postMessage(message,location.origin);window.close();return}try{await navigator.clipboard.writeText(message.path);notify('Путь скопирован')}catch{notify(message.path)}}));
 
 // BBEditor stores a small safe BBCode vocabulary; only supported tags become HTML.
@@ -332,6 +333,13 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
         first?.focus();return;
       }
       setFeedback(data.message||'Изменения сохранены.','success');
+      if(form.hasAttribute('data-audio-upload')&&data.audio){
+        const section=document.querySelector('[data-audio-section]');
+        let list=section?.querySelector('.audio-library-list');
+        const empty=section?.querySelector('.empty-state');
+        if(!list&&empty){list=document.createElement('div');list.className='audio-library-list';empty.replaceWith(list)}
+        if(list){const item=document.createElement('article');item.className='audio-library-item';item.dataset.audioItem='';const info=document.createElement('div'),name=document.createElement('strong'),path=document.createElement('code'),size=document.createElement('small'),player=document.createElement('audio'),select=document.createElement('button');name.textContent=data.audio.name;path.textContent=data.audio.path;size.textContent=(data.audio.size/1048576).toFixed(1).replace('.',',')+' МБ';info.append(name,path,size);player.controls=true;player.preload='none';player.src=data.audio.url;select.type='button';select.className='button button-small';select.dataset.audioSelect='';select.dataset.audioPath=data.audio.path;select.textContent='Выбрать в сказке';item.append(info,player,select);list.prepend(item);form.reset()}
+      }
       if(form.hasAttribute('data-media-upload')&&data.media){
         let grid=document.querySelector('.media-grid');
         const empty=document.querySelector('.media-library-section .empty-state');

@@ -7,6 +7,7 @@ use App\Models\Story;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class StoryController extends Controller
 {
@@ -23,6 +24,19 @@ class StoryController extends Controller
     {
         abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
         return $this->render($story, false);
+    }
+
+    public function audio(Story $story)
+    {
+        abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
+        abort_unless(preg_match('~^audio/[A-Za-z0-9._-]+\\.mp3$~i', (string) $story->audio_path), 404);
+        abort_unless(Storage::disk('local')->exists($story->audio_path), 404);
+
+        return response()->file(Storage::disk('local')->path($story->audio_path), [
+            'Content-Type' => 'audio/mpeg',
+            'Cache-Control' => 'private, max-age=3600',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function preview(Story $story): View

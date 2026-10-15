@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -102,7 +103,14 @@ class StoryController extends Controller
             'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('stories', 'slug')->ignore($story?->id)],
             'author' => ['nullable', 'string', 'max:160'], 'genre' => ['required', 'string', 'max:80'], 'summary' => ['required', 'string', 'max:1200'],
             'body' => ['required', 'string', 'max:500000'], 'age_min' => ['required', 'integer', 'between:0,18'], 'age_max' => ['required', 'integer', 'between:0,18', 'gte:age_min'],
-            'reading_minutes' => ['required', 'integer', 'between:1,600'], 'cover_path' => ['nullable', 'string', 'max:255'], 'audio_path' => ['nullable', 'string', 'max:255'], 'seo_title' => ['nullable', 'string', 'max:180'], 'seo_description' => ['nullable', 'string', 'max:320'],
+            'reading_minutes' => ['required', 'integer', 'between:1,600'], 'cover_path' => ['nullable', 'string', 'max:255'],
+            'audio_path' => ['nullable', 'string', 'max:255', function (string $attribute, mixed $value, $fail): void {
+                if (blank($value)) return;
+                if (preg_match('~^audio/[A-Za-z0-9._-]+\\.mp3$~i', $value) && Storage::disk('local')->exists($value)) return;
+                if (preg_match('~^assets/audio/[A-Za-z0-9._-]+\\.mp3$~i', $value) && is_file(public_path($value))) return;
+                $fail('Выберите загруженный MP3 из медиатеки.');
+            }],
+            'seo_title' => ['nullable', 'string', 'max:180'], 'seo_description' => ['nullable', 'string', 'max:320'],
         ]);
         $data['slug'] = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['title']);
         return $data;

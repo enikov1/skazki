@@ -41,9 +41,14 @@ class MediaLibraryController extends Controller
         }
 
         $media = $media->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values();
+        $audio = collect(Storage::disk('local')->files('audio'))
+            ->filter(fn (string $path): bool => strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'mp3')
+            ->map(fn (string $path): array => ['path' => $path, 'name' => basename($path), 'size' => Storage::disk('local')->size($path)])
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values();
 
         return view('admin.media.index', [
             'media' => $media,
+            'audio' => $audio,
             'select' => $request->query('select') === 'cover_path' ? 'cover_path' : null,
         ]);
     }
@@ -73,5 +78,33 @@ class MediaLibraryController extends Controller
 
         return redirect()->route('admin.media.index', $request->only('select'))
             ->with('status', 'Изображение загружено. Выберите его или скопируйте путь.');
+    }
+
+    public function storeAudio(Request $request): JsonResponse|RedirectResponse
+    {
+        Gate::authorize('create', Story::class);
+        $data = $request->validate([
+            'audio' => ['required', 'file', 'mimes:mp3', 'mimetypes:audio/mpeg,audio/mp3,audio/x-mpeg', 'max:51200'],
+        ]);
+        $path = $data['audio']->store('audio', 'local');
+        if (! $path) {
+            $message = 'Не удалось сохранить аудиофайл. Проверьте свободное место и настройки диска.';
+            return $request->expectsJson()
+                ? response()->json(['message' => $message, 'errors' => ['audio' => [$message]]], 422)
+                : back()->withErrors(['audio' => $message]);
+        }
+
+        $item = ['path' => $path, 'name' => basename($path), 'size' => Storage::disk('local')->size($path)];
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'MP3 загружен в приватное хранилище.', 'audio' => $item]);
+        }
+        return back()->with('status', 'MP3 загружен в приватное хранилище.');
+    }
+
+    public function previewAudio(string $filename)
+    {
+        $path = 'audio/'.$filename;
+        abort_unless(strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'mp3' && Storage::disk('local')->exists($path), 404);
+        return response()->file(Storage::disk('local')->path($path), ['Content-Type' => 'audio/mpeg', 'X-Content-Type-Options' => 'nosniff']);
     }
 }

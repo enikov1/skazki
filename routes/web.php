@@ -27,6 +27,7 @@ Route::post('/roditelyam/{article:slug}/rating', [ArticleCommentController::clas
 Route::post('/roditelyam/{article:slug}/comments', [ArticleCommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('article-comments.store');
 Route::post('/article-comments/{comment}/vote', [ArticleCommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('article-comments.vote');
 Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->name('stories.show');
+Route::get('/skazki/{story:slug}/audio', [StoryController::class, 'audio'])->name('stories.audio');
 Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.store');
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
 
@@ -105,6 +106,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'r
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->middleware('role:admin')->name('audit-logs.index');
     Route::get('/media', [MediaLibraryController::class, 'index'])->middleware('role:admin,editor')->name('media.index');
     Route::post('/media', [MediaLibraryController::class, 'store'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('media.store');
+    Route::post('/audio', [MediaLibraryController::class, 'storeAudio'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('audio.store');
+    Route::get('/audio/{filename}', [MediaLibraryController::class, 'previewAudio'])->where('filename', '[A-Za-z0-9._-]+')->middleware('role:admin,editor')->name('audio.preview');
 });
 
 Route::redirect('/prototype', '/demo/')->name('prototype');
