@@ -25,23 +25,21 @@ class ArticleController extends Controller
     public function show(Article $article): View
     {
         abort_unless($article->status === 'published' && $article->published_at?->isPast(), 404);
-        return $this->render($article, false);
+        return $this->render($article);
     }
 
     public function preview(Article $article): View
     {
         Gate::authorize('update', $article);
-        return $this->render($article, true);
+        return view('articles.preview', ['article' => $article, 'statusLabel' => EditorialStatus::labelFor($article->status)]);
     }
 
-    private function render(Article $article, bool $preview): View
+    private function render(Article $article): View
     {
-        $comments = $preview ? null : $article->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
+        $comments = $article->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
         $related = Article::published()->where('category', $article->category)->where('id', '<>', $article->id)->latest('published_at')->limit(3)->get();
         $rating = $article->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
         $userRating = auth()->id() ? $article->ratings()->where('user_id', auth()->id())->value('rating') : null;
-        $statusLabel = EditorialStatus::labelFor($article->status);
-
-        return view('articles.show', compact('article', 'comments', 'related', 'rating', 'userRating', 'preview', 'statusLabel'));
+        return view('articles.show', compact('article', 'comments', 'related', 'rating', 'userRating'));
     }
 }
