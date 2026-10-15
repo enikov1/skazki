@@ -4,9 +4,9 @@
     <label class="field">
         <span>Статус</span>
         <select name="status">
-            @foreach(\App\Enums\EditorialStatus::cases() as $status)
+            <?php foreach (\App\Enums\EditorialStatus::cases(): ?> as $status)
                 <option value="{{ $status->value }}" {{ $story->status === $status->value ? 'selected' : '' }}>{{ $status->label() }}</option>
-            @endforeach
+            <?php endforeach; ?>
         </select>
     </label>
     <label class="field">
