@@ -251,7 +251,8 @@ class LibraryTest extends TestCase
         $this->assertNull($admin->fresh()->blocked_at);
 
         auth()->logout();
-        $reader = User::factory()->create(['password' => Hash::make('Reader-password-2026'), 'blocked_at' => now(), 'block_reason' => 'Нарушение правил']);
+        $reader = User::factory()->create(['password' => Hash::make('Reader-password-2026')]);
+        $reader->forceFill(['blocked_at' => now(), 'block_reason' => 'Нарушение правил'])->save();
         $this->post(route('login.store'), ['email' => $reader->email, 'password' => 'Reader-password-2026'])->assertRedirect(route('login'))->assertSessionHasErrors('email');
         $this->assertGuest();
     }
@@ -259,7 +260,8 @@ class LibraryTest extends TestCase
     public function test_blocked_account_session_is_ended_on_authenticated_requests(): void
     {
         $this->seed();
-        $reader = User::factory()->create(['blocked_at' => now(), 'block_reason' => 'Проверка']);
+        $reader = User::factory()->create();
+        $reader->forceFill(['blocked_at' => now(), 'block_reason' => 'Проверка'])->save();
         $this->actingAs($reader)->get(route('profile.show'))->assertRedirect(route('login'))->assertSessionHasErrors('email');
         $this->assertGuest();
     }
@@ -284,7 +286,8 @@ class LibraryTest extends TestCase
     {
         $this->seed();
         config(['services.yandex.client_id' => 'test-client', 'services.yandex.client_secret' => 'test-secret']);
-        $reader = User::factory()->create(['blocked_at' => now()]);
+        $reader = User::factory()->create();
+        $reader->forceFill(['blocked_at' => now()])->save();
         $reader->socialAccounts()->create(['provider' => 'yandex', 'provider_user_id' => 'blocked-yandex-id']);
         $external = \Mockery::mock();
         $external->shouldReceive('getId')->andReturn('blocked-yandex-id');
