@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
+use App\Models\SocialAccount;
 
 class ProfileController extends Controller
 {
@@ -20,8 +21,9 @@ class ProfileController extends Controller
         $preferences = array_merge(['reader_font_size' => 20, 'reader_theme' => 'cream', 'reader_width' => 'medium'], $user->profile_preferences ?? []);
         $newsletterConsent = $user->consentEvents()->where('consent_type', 'newsletter')->orderByDesc('recorded_at')->orderByDesc('id')->first();
         $consentEvents = $user->consentEvents()->whereIn('consent_type', ['terms', 'privacy_notice'])->orderBy('recorded_at')->get()->keyBy('consent_type');
+        $socialAccounts = $user->socialAccounts()->orderBy('provider')->get();
 
-        return view('profile.show', compact('user', 'history', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents'));
+        return view('profile.show', compact('user', 'history', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
     }
 
     public function update(Request $request): RedirectResponse
@@ -33,13 +35,13 @@ class ProfileController extends Controller
 
     public function updatePassword(Request $request): RedirectResponse
     {
+        $user = $request->user();
         $data = $request->validate([
-            'current_password' => ['required', 'current_password'],
+            'current_password' => [$user->password_login_enabled ? 'required' : 'nullable', ...($user->password_login_enabled ? ['current_password'] : [])],
             'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()],
         ]);
 
-        $user = $request->user();
-        $user->forceFill(['password' => Hash::make($data['password']), 'remember_token' => Str::random(60)])->save();
+        $user->forceFill(['password' => Hash::make($data['password']), 'password_login_enabled' => true, 'oauth_provider' => null, 'oauth_id' => null, 'remember_token' => Str::random(60)])->save();
         $request->session()->regenerate();
 
         return back()->with('status', 'Пароль изменён. Для входа на других устройствах используйте новый пароль.');
@@ -111,5 +113,24 @@ class ProfileController extends Controller
         }
 
         return back()->with('status', $wantsNewsletter ? 'Согласие на новости сохранено.' : 'Вы больше не будете получать новости проекта.');
+    }
+
+    public function removeSocialAccount(Request $request, SocialAccount $socialAccount): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($socialAccount->user_id === $user->id, 404);
+
+        $hasAnotherProvider = $user->socialAccounts()->where('id', '<>', $socialAccount->id)->exists();
+        if (! $user->password_login_enabled && ! $hasAnotherProvider) {
+            return back()->withErrors(['oauth' => 'Нельзя отвязать последний способ входа. Сначала задайте пароль или привяжите другую сеть.']);
+        }
+
+        if ($user->oauth_provider === $socialAccount->provider && $user->oauth_id === $socialAccount->provider_user_id) {
+            $user->forceFill(['oauth_provider' => null, 'oauth_id' => null])->save();
+        }
+
+        $socialAccount->delete();
+
+        return back()->with('status', 'Связь с аккаунтом удалена.');
     }
 }
