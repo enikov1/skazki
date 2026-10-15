@@ -42,7 +42,7 @@
     "post-update-cmd": [
       "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
     ],
-    "test": "@php artisan test",
+    "test": "@php vendor/bin/phpunit",
     "format": "@php vendor/bin/pint"
   },
   "extra": {
