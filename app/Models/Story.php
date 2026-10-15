@@ -50,4 +50,9 @@ class Story extends Model
     {
         return $this->hasMany(ReadingHistory::class);
     }
+
+    public function audioPlaybackStates(): HasMany
+    {
+        return $this->hasMany(AudioPlaybackState::class);
+    }
 }

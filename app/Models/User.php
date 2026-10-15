@@ -32,6 +32,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(ReadingHistory::class);
     }
 
+    public function audioPlaybackStates(): HasMany
+    {
+        return $this->hasMany(AudioPlaybackState::class);
+    }
+
     public function consentEvents(): HasMany
     {
         return $this->hasMany(UserConsentEvent::class);

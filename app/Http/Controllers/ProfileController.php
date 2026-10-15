@@ -22,13 +22,14 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $history = $user->readingHistories()->with('story')->whereHas('story', fn ($query) => $query->published())->latest('last_read_at')->paginate(8);
+        $audioProgress = $user->audioPlaybackStates()->with('story')->whereHas('story', fn ($query) => $query->published()->whereNotNull('audio_path'))->where('position_seconds', '>', 0)->latest('updated_at')->limit(6)->get();
         $avatarUrl = $user->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null;
         $preferences = array_merge(['reader_font_size' => 20, 'reader_theme' => 'cream', 'reader_width' => 'medium'], $user->profile_preferences ?? []);
         $newsletterConsent = $user->consentEvents()->where('consent_type', 'newsletter')->orderByDesc('recorded_at')->orderByDesc('id')->first();
         $consentEvents = $user->consentEvents()->whereIn('consent_type', ['terms', 'privacy_notice'])->orderBy('recorded_at')->get()->keyBy('consent_type');
         $socialAccounts = $user->socialAccounts()->orderBy('provider')->get();
 
-        return view('profile.show', compact('user', 'history', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
+        return view('profile.show', compact('user', 'history', 'audioProgress', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
     }
 
     public function update(Request $request): RedirectResponse|JsonResponse

@@ -167,6 +167,29 @@ class LibraryTest extends TestCase
         $this->getJson(route('audio.index', ['age' => 'not-an-age']))->assertUnprocessable();
     }
 
+    public function test_audio_progress_is_private_validated_and_resumes_in_profile_and_catalog(): void
+    {
+        $story = Story::create([
+            'title' => 'Сказка для продолжения', 'slug' => 'resume-story', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст',
+            'audio_path' => 'audio/resume.mp3', 'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+        $this->postJson(route('stories.audio.progress', $story), ['position' => 125])->assertUnauthorized();
+
+        $reader = User::factory()->create();
+        $this->actingAs($reader)->postJson(route('stories.audio.progress', $story), ['position' => 125])
+            ->assertOk()->assertJsonPath('saved', true);
+        $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $story->id, 'position_seconds' => 125]);
+        $this->postJson(route('stories.audio.progress', $story), ['position' => 86401])->assertUnprocessable();
+
+        $this->get(route('profile.show'))->assertOk()->assertSee('Продолжить слушать')->assertSee('Сказка для продолжения')->assertSee('02:05');
+        $this->get(route('stories.show', $story))->assertOk()->assertSee('data-audio-progress="125"', false);
+        $catalog = $this->get(route('audio.index'))->assertOk()->assertSee('Продолжить с 02:05');
+        $this->assertStringContainsString(route('stories.audio.progress', $story), $catalog->getContent());
+
+        $this->postJson(route('stories.audio.progress', $story), ['position' => 125, 'completed' => true])->assertOk();
+        $this->assertDatabaseHas('audio_playback_states', ['user_id' => $reader->id, 'story_id' => $story->id, 'position_seconds' => 0]);
+    }
+
     public function test_admin_can_manage_genres_and_story_editor_uses_the_genre_catalog(): void
     {
         $this->seed();

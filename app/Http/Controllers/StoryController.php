@@ -35,6 +35,10 @@ class StoryController extends Controller
             $query->latest('published_at');
         }
 
+        if ($user = $request->user()) {
+            $query->with(['audioPlaybackStates' => fn ($states) => $states->where('user_id', $user->id)]);
+        }
+
         $stories = $query->paginate(12)->withQueryString();
         $genres = Story::published()->whereNotNull('audio_path')->select('genre')->distinct()->orderBy('genre')->pluck('genre');
 
@@ -94,6 +98,23 @@ class StoryController extends Controller
         ]);
     }
 
+    public function saveAudioProgress(Request $request, Story $story)
+    {
+        abort_unless($story->status === 'published' && $story->published_at?->isPast() && filled($story->audio_path), 404);
+
+        $data = $request->validate([
+            'position' => ['required', 'integer', 'min:0', 'max:86400'],
+            'completed' => ['sometimes', 'boolean'],
+        ]);
+
+        $request->user()->audioPlaybackStates()->updateOrCreate(
+            ['story_id' => $story->id],
+            ['position_seconds' => ($data['completed'] ?? false) ? 0 : $data['position'], 'updated_at' => now()],
+        );
+
+        return response()->json(['saved' => true]);
+    }
+
     public function preview(Story $story): View
     {
         Gate::authorize('update', $story);
@@ -108,6 +129,9 @@ class StoryController extends Controller
         $related = Story::published()->where('genre', $story->genre)->where('id', '<>', $story->getKey())->limit(4)->get(['id', 'slug', 'title', 'author', 'summary', 'cover_path', 'age_min', 'age_max']);
         $comments = $story->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
         $preferences = array_merge(['reader_font_size' => 20, 'reader_theme' => 'cream', 'reader_width' => 'medium'], auth()->user()?->profile_preferences ?? []);
+        $audioProgress = ! $preview && $user && $story->audio_path
+            ? (int) $user->audioPlaybackStates()->where('story_id', $story->id)->value('position_seconds')
+            : 0;
         $readerFontSize = in_array((int) $preferences['reader_font_size'], [16, 18, 20, 22, 24], true) ? (int) $preferences['reader_font_size'] : 20;
         $readerTheme = in_array($preferences['reader_theme'], ['cream', 'white', 'green'], true) ? $preferences['reader_theme'] : 'cream';
         $readerWidth = ['narrow' => 560, 'medium' => 700, 'wide' => 900][$preferences['reader_width']] ?? 700;
@@ -117,6 +141,6 @@ class StoryController extends Controller
             return view('stories.preview', compact('story', 'readerFontSize', 'readerTheme', 'readerWidth', 'statusLabel'));
         }
 
-        return view('stories.show', compact('story', 'related', 'comments', 'readerFontSize', 'readerTheme', 'readerWidth'));
+        return view('stories.show', compact('story', 'related', 'comments', 'readerFontSize', 'readerTheme', 'readerWidth', 'audioProgress'));
     }
 }

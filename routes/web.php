@@ -80,6 +80,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware(['auth',
 Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware(['auth', 'account.active']);
 Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/skazki/{story:slug}/audio/progress', [StoryController::class, 'saveAudioProgress'])->middleware('throttle:public-write')->name('stories.audio.progress');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:login')->name('profile.password');
     Route::put('/profile/avatar', [ProfileController::class, 'updateAvatar'])->middleware('throttle:public-write')->name('profile.avatar.update');
