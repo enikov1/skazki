@@ -38,7 +38,9 @@ class LibraryTest extends TestCase
 
     public function test_auth_routes_use_readable_paths_and_redirect_legacy_login_url(): void
     {
-        $this->get('/login')->assertOk();
+        $this->get('/login')->assertOk()->assertSee('data-ajax-form');
+        $this->get('/register')->assertOk()->assertSee('data-ajax-form');
+        $this->get('/forgot-password')->assertOk()->assertSee('data-ajax-form');
         $this->get('/vhod')->assertRedirect(route('login'), 301);
     }
 
@@ -175,7 +177,7 @@ class LibraryTest extends TestCase
 
         $this->actingAs($author)->post(route('comments.vote', $comment), ['vote' => 'like'])->assertRedirect();
         $this->assertDatabaseHas('comments', ['id' => $comment->id, 'likes_count' => 1]);
-        $this->post(route('comments.vote', $comment), ['vote' => 'dislike'])->assertRedirect();
+        $this->postJson(route('comments.vote', $comment), ['vote' => 'dislike'])->assertOk()->assertJsonPath('message', 'Ваш голос сохранён.');
         $this->assertDatabaseHas('comments', ['id' => $comment->id, 'likes_count' => 0, 'dislikes_count' => 1]);
     }
 
@@ -188,6 +190,33 @@ class LibraryTest extends TestCase
         $this->assertFalse($user->hasRole('admin'));
         $this->assertDatabaseHas('user_consent_events', ['user_id' => $user->id, 'consent_type' => 'terms', 'action' => 'granted']);
         $this->assertDatabaseHas('user_consent_events', ['user_id' => $user->id, 'consent_type' => 'privacy_notice', 'action' => 'granted']);
+    }
+
+    public function test_authentication_registration_and_password_recovery_support_ajax(): void
+    {
+        $this->seed();
+        $reader = User::factory()->create(['email' => 'ajax-reader@example.test', 'password' => Hash::make('Reader-password-2026')]);
+
+        $invalidLogin = $this->postJson(route('login.store'), ['email' => 'not-an-email', 'password' => 'wrong']);
+        $invalidLogin->assertUnprocessable()->assertJsonValidationErrors('email');
+        $this->assertSame('Укажите корректный адрес электронной почты.', $invalidLogin->json('errors.email.0'));
+        $this->postJson(route('login.store'), ['email' => $reader->email, 'password' => 'Reader-password-2026'])
+            ->assertOk()->assertJsonPath('redirect', route('home'));
+        $this->assertAuthenticatedAs($reader);
+
+        auth()->logout();
+        $this->postJson(route('register.store'), ['name' => 'Ajax Reader', 'email' => 'ajax-new@example.test', 'password' => 'A-long-pass-2026', 'password_confirmation' => 'A-long-pass-2026'])
+            ->assertUnprocessable()->assertJsonValidationErrors('terms');
+        $this->postJson(route('register.store'), ['name' => 'Ajax Reader', 'email' => 'ajax-new@example.test', 'password' => 'A-long-pass-2026', 'password_confirmation' => 'A-long-pass-2026', 'terms' => '1'])
+            ->assertOk()->assertJsonPath('redirect', route('home'));
+
+        auth()->logout();
+        \Illuminate\Support\Facades\Notification::fake();
+        $this->postJson(route('password.email'), ['email' => $reader->email])->assertOk()->assertJsonStructure(['message']);
+        $token = \Illuminate\Support\Facades\Password::broker()->createToken($reader);
+        $this->postJson(route('password.update'), ['token' => $token, 'email' => $reader->email, 'password' => 'New-Password-2026', 'password_confirmation' => 'New-Password-2026'])
+            ->assertOk()->assertJsonPath('redirect', route('login'));
+        $this->assertTrue(Hash::check('New-Password-2026', $reader->fresh()->password));
     }
 
     public function test_parent_articles_are_searchable_and_drafts_remain_private(): void
@@ -285,6 +314,8 @@ class LibraryTest extends TestCase
 
         $this->put(route('profile.update'), ['name' => 'Костя'])->assertRedirect();
         $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Костя']);
+        $this->putJson(route('profile.update'), ['name' => 'Ajax Костя'])->assertOk()->assertJsonPath('message', 'Имя в профиле обновлено.');
+        $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Ajax Костя']);
         $this->put(route('profile.password'), ['current_password' => 'password-for-tests', 'password' => 'New-Reading-Pass-2026', 'password_confirmation' => 'New-Reading-Pass-2026'])->assertRedirect();
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('New-Reading-Pass-2026', $reader->fresh()->password));
     }

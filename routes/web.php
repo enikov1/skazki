@@ -61,6 +61,7 @@ Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/email/verify/{id}/{hash}', $verifyEmail)->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
     Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
         $request->user()->sendEmailVerificationNotification();
+        if ($request->expectsJson()) return response()->json(['message' => 'Письмо для подтверждения отправлено.']);
         return back()->with('status', 'Письмо для подтверждения отправлено.');
     })->middleware('throttle:6,1')->name('verification.send');
 

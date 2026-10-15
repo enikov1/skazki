@@ -27,7 +27,7 @@
   <div class="right-head">
   @auth
     @if(auth()->user()->hasAnyRole(['admin','moderator','editor']))<a class="icon-btn" href="{{ route('admin.dashboard') }}">Панель управления</a>@endif
-    <a class="icon-btn" href="{{ route('profile.show') }}" aria-label="Личный кабинет"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#user"></use></svg>{{ auth()->user()->name }}</a><form method="post" action="{{ route('logout') }}">@csrf<button class="icon-btn" type="submit">Выйти</button></form>
+    <a class="icon-btn" href="{{ route('profile.show') }}" aria-label="Личный кабинет"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#user"></use></svg>{{ auth()->user()->name }}</a><form method="post" action="{{ route('logout') }}" data-ajax-form>@csrf<button class="icon-btn" type="submit">Выйти</button></form>
   @else
     <a class="icon-btn" href="{{ route('login') }}" aria-label="Войти или зарегистрироваться"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#user"></use></svg>Войти</a>
   @endauth

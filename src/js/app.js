@@ -283,3 +283,59 @@ window.addEventListener('popstate',()=>{
   if(form){const params=new URL(location.href).searchParams;form.querySelectorAll('[name]').forEach(field=>{if(field.type==='search'||field.type==='text')field.value=params.get(field.name)||'';else if(field.tagName==='SELECT')field.value=params.get(field.name)||''})}
   loadAdminResults(location.href,container);
 });
+
+// Shared AJAX submission for account, profile, and public interaction forms.
+document.querySelectorAll('form[data-ajax-form]').forEach(form=>{
+  let feedback=form.querySelector('[data-ajax-feedback]');
+  if(!feedback){feedback=document.createElement('div');feedback.className='ajax-form-feedback';feedback.dataset.ajaxFeedback='';feedback.hidden=true;feedback.setAttribute('aria-live','polite');form.prepend(feedback)}
+  const fields=[...form.querySelectorAll('input:not([type="hidden"]),select,textarea')];
+  const clearError=field=>{
+    field.removeAttribute('aria-invalid');
+    const wrap=field.closest('.field,.check-line')||field.parentElement;
+    const error=wrap?.querySelector(`[data-error-for="${CSS.escape(field.name)}"]`);
+    if(error){const descriptions=(field.getAttribute('aria-describedby')||'').split(/\s+/).filter(id=>id&&id!==error.id);if(descriptions.length)field.setAttribute('aria-describedby',descriptions.join(' '));else field.removeAttribute('aria-describedby');error.remove()}
+  };
+  const fieldError=(field,message)=>{
+    if(!field)return;
+    clearError(field);field.setAttribute('aria-invalid','true');
+    const wrap=field.closest('.field,.check-line')||field.parentElement;
+    if(!wrap)return;
+    const error=document.createElement('small');error.className='ajax-field-error';error.dataset.errorFor=field.name;form.dataset.ajaxId||=String([...document.forms].indexOf(form)+1);error.id=`ajax-form-${form.dataset.ajaxId}-${field.name.replace(/[^a-z0-9_-]/gi,'-')}-error`;error.textContent=message;
+    const descriptions=(field.getAttribute('aria-describedby')||'').split(/\s+/).filter(Boolean);if(!descriptions.includes(error.id))descriptions.push(error.id);field.setAttribute('aria-describedby',descriptions.join(' '));
+    wrap.append(error);
+  };
+  const setFeedback=(message,kind='error')=>{
+    feedback.hidden=false;feedback.className=`ajax-form-feedback is-${kind}`;feedback.setAttribute('role',kind==='error'?'alert':'status');feedback.textContent=message;
+  };
+  const clearErrors=()=>{fields.forEach(clearError);feedback.hidden=true;feedback.textContent='';feedback.className='ajax-form-feedback'};
+  fields.forEach(field=>['input','change'].forEach(type=>field.addEventListener(type,()=>{clearError(field);if(!form.querySelector('[aria-invalid="true"]')&&feedback.classList.contains('is-error'))feedback.hidden=true})));
+  form.addEventListener('invalid',event=>{
+    event.preventDefault();
+    const field=event.target;
+    fieldError(field,field.validationMessage||'Проверьте это поле.');
+    setFeedback('Проверьте обязательные поля и исправьте отмеченные ошибки.');
+  },true);
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();clearErrors();form.setAttribute('aria-busy','true');form.classList.add('is-submitting');
+    const submitters=[...form.querySelectorAll('button[type="submit"],input[type="submit"]')];submitters.forEach(button=>button.disabled=true);
+    setFeedback('Отправляем данные…','pending');
+    try{
+      const response=await fetch(form.action,{method:(form.method||'POST').toUpperCase(),body:new FormData(form),headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'}});
+      if(!response.headers.get('content-type')?.includes('application/json'))throw new Error('Сеанс мог завершиться. Обновите страницу и попробуйте снова.');
+      let data;try{data=await response.json()}catch{throw new Error('Сервер вернул неполный ответ. Повторите попытку.')}
+      if(!response.ok){
+        const errors=data.errors||{};let first=null;
+        Object.entries(errors).forEach(([name,messages])=>{const field=form.elements.namedItem(name.split('.')[0]);const control=field instanceof RadioNodeList?field[0]:field;if(control){fieldError(control,Array.isArray(messages)?messages[0]:String(messages));first??=control}});
+        setFeedback(first?'Проверьте отмеченные поля.':(data.message||'Не удалось отправить форму. Проверьте данные и попробуйте ещё раз.'));
+        first?.focus();return;
+      }
+      setFeedback(data.message||'Изменения сохранены.','success');
+      if(form.hasAttribute('data-ajax-clear'))form.reset();
+      if(data.redirect){setFeedback(data.message||'Готово. Переходим…','success');window.setTimeout(()=>location.assign(data.redirect),250)}
+    }catch(error){
+      setFeedback(error.message||'Не удалось связаться с сервером. Проверьте подключение и повторите попытку.');
+    }finally{
+      form.removeAttribute('aria-busy');form.classList.remove('is-submitting');submitters.forEach(button=>button.disabled=false);
+    }
+  });
+});

@@ -9,7 +9,7 @@
     @if($errors->any())<div class="form-errors" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
     <div class="social-login" aria-label="Войти через социальную сеть"><a class="social-button social-yandex" href="{{ route('oauth.redirect', 'yandex') }}"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#yandex"></use></svg> Продолжить с Яндексом</a><a class="social-button social-vk" href="{{ route('oauth.redirect', 'vkontakte') }}"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#vk"></use></svg> Продолжить с VK</a></div>
     <div class="auth-divider"><span>или по электронной почте</span></div>
-    <form class="auth-form" method="post" action="{{ route('login.store') }}">@csrf
+    <form class="auth-form" method="post" action="{{ route('login.store') }}" data-ajax-form>@csrf
       <div class="field"><label for="loginEmail">Электронная почта</label><input id="loginEmail" type="email" name="email" value="{{ old('email') }}" autocomplete="email" placeholder="ваша почта" required autofocus><small class="field-help">Вход выполняется по адресу почты, а не по имени пользователя.</small></div>
       <div class="field"><div class="field-heading"><label for="loginPassword">Пароль</label><a href="{{ route('password.request') }}">Забыли пароль?</a></div><input id="loginPassword" type="password" name="password" autocomplete="current-password" placeholder="Пароль" required></div>
       <label class="check-line"><input type="checkbox" name="remember" value="1"><span>Запомнить меня на этом устройстве</span></label>

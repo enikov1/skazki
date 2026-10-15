@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -15,9 +17,11 @@ use Illuminate\View\View;
 
 class RegisterController extends Controller
 {
+    use RespondsToAjax;
+
     public function create(): View { return view('auth.register'); }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
         $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'email' => ['required', 'email', 'max:254', 'unique:users,email'], 'password' => ['required', 'string', 'min:10', 'confirmed'], 'terms' => ['accepted'], 'newsletter' => ['sometimes', 'boolean']]);
@@ -39,6 +43,6 @@ class RegisterController extends Controller
         auth()->login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('home')->with('status', 'Рады видеть вас в СказкоМире!');
+        return $this->respond($request, 'Рады видеть вас в СказкоМире!', route('home'));
     }
 }

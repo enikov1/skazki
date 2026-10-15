@@ -9,7 +9,7 @@
     @if($errors->any())<div class="form-errors" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
     <div class="social-login" aria-label="Создать аккаунт через социальную сеть"><a class="social-button social-yandex" href="{{ route('oauth.redirect', 'yandex') }}"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#yandex"></use></svg> Продолжить с Яндексом</a><a class="social-button social-vk" href="{{ route('oauth.redirect', 'vkontakte') }}"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#vk"></use></svg> Продолжить с VK</a></div>
     <div class="auth-divider"><span>или по электронной почте</span></div>
-    <form class="auth-form" method="post" action="{{ route('register.store') }}">@csrf
+    <form class="auth-form" method="post" action="{{ route('register.store') }}" data-ajax-form>@csrf
       <div class="field"><label for="registerName">Как к вам обращаться</label><input id="registerName" type="text" name="name" value="{{ old('name') }}" autocomplete="name" maxlength="120" required></div>
       <div class="field"><label for="registerEmail">Электронная почта</label><input id="registerEmail" type="email" name="email" value="{{ old('email') }}" autocomplete="email" required></div>
       <div class="field"><label for="registerPassword">Пароль — не короче 10 символов</label><input id="registerPassword" type="password" name="password" autocomplete="new-password" minlength="10" required></div>
