@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\ColoringCategoryController;
 use App\Http\Controllers\Admin\ColoringPageController;
 use App\Http\Controllers\Admin\ColoringSubmissionModerationController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\RobotsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoryController::class, 'index'])->name('home');
@@ -49,6 +50,7 @@ Route::post('/raskraski/{category:slug}/{page:slug}/rating', [ColoringInteractio
 Route::post('/raskraski/{category:slug}/{page:slug}/submissions', [ColoringSubmissionController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.submissions.store');
 Route::post('/raskraski/{category:slug}/{page:slug}/progress', [ColoringProgressController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.progress.store');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', RobotsController::class)->name('robots');
 Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
 Route::post('/roditelyam/{article:slug}/rating', [ArticleCommentController::class, 'rate'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('articles.rate');

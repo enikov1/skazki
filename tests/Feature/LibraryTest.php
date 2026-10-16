@@ -455,6 +455,28 @@ class LibraryTest extends TestCase
         $this->assertStringNotContainsString('hidden-article', $xml);
     }
 
+    public function test_sitemap_and_robots_cover_public_pages_without_private_urls(): void
+    {
+        $story = Story::create(['title' => 'История для игр', 'slug' => 'games-sitemap-story', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()]);
+        $story->quizQuestions()->create(['prompt' => 'Вопрос?', 'options' => ['Да', 'Нет'], 'correct_option' => 0]);
+        Article::create(['title' => 'Открытая статья карты', 'slug' => 'sitemap-parent-article', 'category' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()]);
+        $category = ColoringCategory::create(['name' => 'Открытая категория', 'slug' => 'sitemap-colorings', 'is_published' => true]);
+        $page = $category->pages()->create(['title' => 'Открытый рисунок', 'slug' => 'sitemap-page', 'outline_path' => 'assets/colorings/test.png', 'is_published' => true]);
+        $user = User::factory()->create();
+        \App\Models\ColoringSubmission::create(['user_id' => $user->id, 'coloring_page_id' => $page->id, 'title' => 'Публичная работа', 'slug' => 'public-sitemap-work', 'file_path' => 'coloring-submissions/example.png', 'status' => 'approved', 'guardian_consent_at' => now()]);
+
+        $sitemap = $this->get(route('sitemap'))->assertOk();
+        ob_start();
+        $sitemap->baseResponse->sendContent();
+        $xml = ob_get_clean();
+        foreach ([route('audio.index'), route('games.index'), route('stories.quiz', $story), route('articles.show', 'sitemap-parent-article'), route('colorings.category', $category), route('colorings.page', [$category, $page]), route('colorings.gallery.work', 'public-sitemap-work')] as $url) {
+            $this->assertStringContainsString($url, $xml);
+        }
+        $this->assertStringNotContainsString('profile', $xml);
+        $this->assertStringNotContainsString('admin', $xml);
+        $this->get(route('robots'))->assertOk()->assertHeader('Content-Type', 'text/plain; charset=UTF-8')->assertSee('Disallow: /profile')->assertSee('Disallow: /*?*')->assertSee('Sitemap: '.route('sitemap'));
+    }
+
     public function test_article_comments_require_moderation_and_votes_can_change(): void
     {
         $this->seed();
