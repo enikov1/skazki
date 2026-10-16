@@ -903,7 +903,9 @@ class LibraryTest extends TestCase
         $differences['title'] = 'Лесная прогулка обновлена';
         $this->putJson(route('admin.games.update', $differenceGame), $differences)->assertOk()->assertJsonPath('message', 'Изменения игры сохранены.');
         $differenceGame->refresh();
-        $this->get(route('games.differences.show', $differenceGame->slug))->assertOk()->assertSee('Лесная прогулка обновлена')->assertSee('Найдите все отличия');
+        $this->assertTrue($differenceGame->is_published);
+        $this->assertDatabaseHas('interactive_games', ['id' => $differenceGame->id, 'slug' => 'lesnaya-progulka', 'is_published' => true]);
+        $this->get(route('games.differences.show', ['slug' => 'lesnaya-progulka']))->assertOk()->assertSee('Лесная прогулка обновлена')->assertSee('Найдите все отличия');
 
         $mosaic = [
             'type' => 'mosaics',
