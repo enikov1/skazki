@@ -791,6 +791,15 @@ class LibraryTest extends TestCase
         $this->patchJson(route('admin.coloring-submissions.update', $submission), ['status' => 'approved'])->assertOk();
         $this->get(route('colorings.gallery'))->assertOk()->assertSee('Моя звёздочка');
         $this->get(route('colorings.gallery.image', $submission))->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->get(route('colorings.gallery.work', $submission->slug))->assertOk()->assertSee('Моя звёздочка')->assertSee('Скопировать ссылку');
+        $this->postJson(route('colorings.gallery.like', $submission->slug))->assertOk()->assertJsonPath('liked', true)->assertJsonPath('count', 1);
+        $this->postJson(route('colorings.gallery.like', $submission->slug))->assertOk()->assertJsonPath('liked', false)->assertJsonPath('count', 0);
+        $this->postJson(route('colorings.gallery.comment', $submission->slug), ['body' => 'Какой чудесный рисунок!'])->assertOk()->assertJsonPath('message', 'Комментарий отправлен на проверку.');
+        $this->get(route('colorings.gallery.work', $submission->slug))->assertDontSee('Какой чудесный рисунок!');
+        $this->actingAs($moderator)->get(route('admin.coloring-work-comments.index'))->assertOk()->assertSee('Какой чудесный рисунок!');
+        $comment = \App\Models\ColoringWorkComment::firstOrFail();
+        $this->patchJson(route('admin.coloring-work-comments.update', $comment), ['status' => 'approved'])->assertOk();
+        $this->get(route('colorings.gallery.work', $submission->slug))->assertSee('Какой чудесный рисунок!')->assertSee('Читатель');
         $this->actingAs($parent)->get(route('profile.history'))->assertOk()->assertSee('Опубликована в галерее');
     }
 

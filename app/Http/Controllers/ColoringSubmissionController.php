@@ -36,6 +36,7 @@ class ColoringSubmissionController extends Controller
             'status' => 'pending',
             'guardian_consent_at' => now(),
         ]);
+        $submission->update(['slug' => Str::slug($submission->title).'-'.$submission->id]);
         $request->user()->consentEvents()->create([
             'consent_type' => 'child_art_publication',
             'policy_version' => 'art-gallery-v1',

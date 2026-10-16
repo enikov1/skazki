@@ -59,6 +59,15 @@ class ColoringController extends Controller
         return $this->privateImage($submission);
     }
 
+    public function galleryWork(ColoringSubmission $submission): View
+    {
+        abort_unless($submission->status === 'approved', 404);
+        $comments = $submission->comments()->where('status', 'approved')->latest()->paginate(20);
+        $likesCount = $submission->likes()->count();
+        $liked = auth()->user()?->coloringWorkLikes()->where('coloring_submission_id', $submission->id)->exists() ?? false;
+        return view('colorings.gallery-work', compact('submission', 'comments', 'likesCount', 'liked'));
+    }
+
     private function privateImage(ColoringSubmission $submission)
     {
         abort_unless(preg_match('~^coloring-submissions/[A-Za-z0-9._/-]+\.png$~i', $submission->file_path) === 1, 404);

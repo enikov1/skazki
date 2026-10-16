@@ -19,6 +19,8 @@ use App\Http\Controllers\StoryQuizController;
 use App\Http\Controllers\ColoringController;
 use App\Http\Controllers\ColoringInteractionController;
 use App\Http\Controllers\ColoringSubmissionController;
+use App\Http\Controllers\ColoringWorkInteractionController;
+use App\Http\Controllers\Admin\ColoringWorkCommentModerationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\GenreController;
@@ -33,7 +35,10 @@ Route::get('/', [StoryController::class, 'index'])->name('home');
 Route::get('/audio', [StoryController::class, 'audioIndex'])->name('audio.index');
 Route::get('/raskraski', [ColoringController::class, 'index'])->name('colorings.index');
 Route::get('/raskraski/raboty', [ColoringController::class, 'gallery'])->name('colorings.gallery');
+Route::get('/raskraski/raboty/{submission:slug}', [ColoringController::class, 'galleryWork'])->name('colorings.gallery.work');
 Route::get('/raskraski/raboty/{submission}/image', [ColoringController::class, 'galleryImage'])->name('colorings.gallery.image');
+Route::post('/raskraski/raboty/{submission}/likes', [ColoringWorkInteractionController::class, 'like'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.gallery.like');
+Route::post('/raskraski/raboty/{submission}/comments', [ColoringWorkInteractionController::class, 'comment'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.gallery.comment');
 Route::get('/raskraski/{category:slug}', [ColoringController::class, 'category'])->name('colorings.category');
 Route::get('/raskraski/{category:slug}/{page:slug}', [ColoringController::class, 'page'])->name('colorings.page');
 Route::post('/raskraski/{category:slug}/{page:slug}/favorite', [ColoringInteractionController::class, 'favorite'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.favorite');
@@ -154,6 +159,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'r
     Route::get('/coloring-submissions', [ColoringSubmissionModerationController::class, 'index'])->middleware('role:admin,moderator')->name('coloring-submissions.index');
     Route::get('/coloring-submissions/{submission}/image', [ColoringSubmissionModerationController::class, 'image'])->middleware('role:admin,moderator')->name('coloring-submissions.image');
     Route::patch('/coloring-submissions/{submission}', [ColoringSubmissionModerationController::class, 'update'])->middleware(['role:admin,moderator', 'throttle:public-write'])->name('coloring-submissions.update');
+    Route::get('/coloring-work-comments', [ColoringWorkCommentModerationController::class, 'index'])->middleware('role:admin,moderator')->name('coloring-work-comments.index');
+    Route::patch('/coloring-work-comments/{comment}', [ColoringWorkCommentModerationController::class, 'update'])->middleware(['role:admin,moderator', 'throttle:public-write'])->name('coloring-work-comments.update');
 });
 
 Route::redirect('/prototype', '/demo/')->name('prototype');

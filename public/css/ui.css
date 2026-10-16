@@ -514,6 +514,70 @@
   margin: 0 0 12px;
 }
 
+.coloring-gallery-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.coloring-work-detail, .coloring-comments {
+  min-width: 0;
+  padding: clamp(16px, 3vw, 28px);
+}
+
+.coloring-work-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 9px;
+}
+
+.coloring-work-actions form {
+  margin: 0;
+}
+
+.coloring-comment-form {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 22px;
+}
+
+.coloring-comment-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  resize: vertical;
+}
+
+.coloring-comment-list {
+  display: grid;
+  gap: 10px;
+}
+
+.coloring-comment {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.coloring-comment strong {
+  color: var(--ink);
+}
+
+.coloring-comment time {
+  float: right;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coloring-comment p {
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+
 .coloring-work {
   text-align: center;
 }
@@ -568,6 +632,11 @@
   }
   .coloring-page-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .coloring-gallery-work {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 600px) {

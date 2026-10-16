@@ -20,6 +20,7 @@
             <a class="admin-link" href="{{ route('admin.moderation.index') }}">Комментарии @if($pending)<span class="badge">{{ $pending }}</span>@endif</a>
             <a class="admin-link" href="{{ route('admin.articles.comments') }}">Комментарии к статьям</a>
             <a class="admin-link" href="{{ route('admin.coloring-submissions.index') }}">Детские работы</a>
+            <a class="admin-link" href="{{ route('admin.coloring-work-comments.index') }}">Комментарии к работам</a>
         @endif
         @if(auth()->user()->hasRole('admin'))
             <a class="admin-link" href="{{ route('admin.users.index') }}">Пользователи и роли</a>

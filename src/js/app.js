@@ -404,6 +404,8 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
       }
       if(form.hasAttribute('data-ajax-clear'))form.reset();
       if(form.hasAttribute('data-coloring-favorite')){const button=form.querySelector('button[type="submit"]');if(button){button.setAttribute('aria-pressed',data.saved?'true':'false');button.textContent=data.saved?(form.dataset.savedLabel||'В избранном'):(form.dataset.unsavedLabel||'В избранное')}}
+      if(form.hasAttribute('data-coloring-work-like')){const button=form.querySelector('button[type="submit"]'),count=button?.querySelector('[data-like-count]');if(button){button.setAttribute('aria-pressed',data.liked?'true':'false');button.classList.toggle('button-soft',!data.liked)}if(count)count.textContent=String(data.count??0)}
+      if(form.hasAttribute('data-coloring-work-comment')){const field=form.querySelector('[name="body"]');if(field)field.value=''}
       if(form.hasAttribute('data-coloring-rating')){const average=document.querySelector('[data-coloring-average]'),count=document.querySelector('[data-coloring-rating-count]'),legend=form.querySelector('legend');if(average)average.textContent=Number(data.average||0).toFixed(1).replace('.',',');if(count)count.textContent=String(data.total||0);if(legend)legend.textContent=`Ваша оценка: ${data.user_rating} из 5`}
       if(form.hasAttribute('data-coloring-submission')){const button=form.querySelector('[data-coloring-share]');if(button){button.disabled=true;button.textContent='Отправлено на проверку'}}
       const row=form.closest('.admin-users-table tr');
