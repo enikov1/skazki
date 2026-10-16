@@ -344,6 +344,109 @@
   font-size: 13px;
 }
 
+.coloring-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fbfdfe;
+}
+
+.coloring-tool-group, .coloring-palette {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.coloring-tool-group .is-active {
+  border-color: var(--blue);
+  background: var(--blue2);
+  color: var(--blue);
+}
+
+.coloring-size {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coloring-size input {
+  width: 120px;
+  accent-color: var(--coral);
+}
+
+.coloring-size output {
+  min-width: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.coloring-custom-color {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coloring-custom-color input {
+  width: 36px;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+}
+
+.color-swatch {
+  width: 29px;
+  height: 29px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: 0 0 0 1px #cfd9dc;
+  cursor: pointer;
+}
+
+.color-swatch:focus-visible {
+  outline: 3px solid rgba(39, 155, 207, 0.4666666667);
+  outline-offset: 2px;
+}
+
+.coloring-studio-canvas {
+  max-width: 900px;
+  margin: 18px auto 8px;
+  overflow: hidden;
+  border: 1px solid #dce6e8;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 5px 18px rgba(37, 60, 75, 0.0705882353);
+}
+
+.coloring-studio-canvas canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.coloring-save-status {
+  margin: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coloring-studio-actions {
+  justify-content: center;
+}
+
 .coloring-work {
   text-align: center;
 }
@@ -443,5 +546,52 @@
   }
   .coloring-interactions form {
     width: 100%;
+  }
+}
+@media (max-width: 600px) {
+  .coloring-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .coloring-size {
+    width: 100%;
+  }
+  .coloring-size input {
+    flex: 1;
+    width: auto;
+  }
+  .coloring-palette {
+    gap: 8px;
+  }
+  .color-swatch {
+    width: 32px;
+    height: 32px;
+  }
+  .coloring-studio-actions {
+    align-items: stretch;
+  }
+  .coloring-studio-actions .button {
+    flex: 1 1 42%;
+  }
+}
+@media print {
+  .topbar, .ticker, .footer, .breadcrumbs, .coloring-toolbar, .coloring-save-status, .coloring-studio-actions, .coloring-interactions, .coloring-score, .coloring-work > .button, .notice {
+    display: none !important;
+  }
+  .page-wrap {
+    max-width: none;
+    padding: 0;
+  }
+  .page-panel.coloring-work {
+    border: 0;
+    box-shadow: none;
+    margin: 0;
+    padding: 0;
+  }
+  .coloring-studio-canvas {
+    max-width: 100%;
+    border: 0;
+    box-shadow: none;
   }
 }

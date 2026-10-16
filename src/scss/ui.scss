@@ -50,6 +50,20 @@
 .coloring-interactions form[data-coloring-rating] { padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fbfdfe; }
 .coloring-interactions fieldset { display: grid; justify-items: center; gap: 6px; border: 0; margin: 0; padding: 0; }
 .coloring-interactions legend { font-weight: 700; font-size: 13px; }
+.coloring-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 14px auto; padding: 12px; border: 1px solid var(--line); border-radius: 13px; background: #fbfdfe; }
+.coloring-tool-group,.coloring-palette { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.coloring-tool-group .is-active { border-color: var(--blue); background: var(--blue2); color: var(--blue); }
+.coloring-size { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; }
+.coloring-size input { width: 120px; accent-color: var(--coral); }
+.coloring-size output { min-width: 24px; font-variant-numeric: tabular-nums; }
+.coloring-custom-color { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; }
+.coloring-custom-color input { width: 36px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+.color-swatch { width: 29px; height: 29px; border: 2px solid #ffffff; border-radius: 50%; background: var(--swatch); box-shadow: 0 0 0 1px #cfd9dc; cursor: pointer; }
+.color-swatch:focus-visible { outline: 3px solid #279bcf77; outline-offset: 2px; }
+.coloring-studio-canvas { max-width: 900px; margin: 18px auto 8px; overflow: hidden; border: 1px solid #dce6e8; border-radius: 12px; background: white; box-shadow: 0 5px 18px #253c4b12; }
+.coloring-studio-canvas canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
+.coloring-save-status { margin: 8px 0; color: var(--muted); font-size: 13px; }
+.coloring-studio-actions { justify-content: center; }
 .coloring-work { text-align: center; }
 .coloring-work-image { max-width: 760px; margin: 18px auto; padding: 14px; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
 .coloring-work-image img { display: block; max-width: 100%; max-height: 72vh; margin: auto; object-fit: contain; }
@@ -59,3 +73,5 @@
 .coloring-search + [data-coloring-results][aria-busy=true] { opacity: .65; }
 @media(max-width:900px) { .coloring-category-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .coloring-page-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
 @media(max-width:600px) { .coloring-heading { padding: 15px; } .coloring-search { align-items: stretch; flex-wrap: wrap; gap: 7px; padding: 11px; } .coloring-search .field { flex-basis: 100%; } .coloring-search .button { flex: 1; } .coloring-category-grid { grid-template-columns: 1fr; gap: 9px; } .coloring-category-card { grid-template-columns: 74px minmax(0,1fr) auto; gap: 11px; padding: 10px; } .coloring-category-image { width: 74px; height: 72px; } .coloring-page-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; } .coloring-card-meta { align-items: flex-start; flex-direction: column; } .coloring-interactions { align-items: stretch; flex-direction: column; } .coloring-interactions form { width: 100%; } }
+@media(max-width:600px) { .coloring-toolbar { align-items: flex-start; flex-direction: column; gap: 10px; } .coloring-size { width: 100%; } .coloring-size input { flex: 1; width: auto; } .coloring-palette { gap: 8px; } .color-swatch { width: 32px; height: 32px; } .coloring-studio-actions { align-items: stretch; } .coloring-studio-actions .button { flex: 1 1 42%; } }
+@media print { .topbar,.ticker,.footer,.breadcrumbs,.coloring-toolbar,.coloring-save-status,.coloring-studio-actions,.coloring-interactions,.coloring-score,.coloring-work > .button,.notice { display:none!important; } .page-wrap { max-width:none; padding:0; } .page-panel.coloring-work { border:0; box-shadow:none; margin:0; padding:0; } .coloring-studio-canvas { max-width:100%; border:0; box-shadow:none; } }

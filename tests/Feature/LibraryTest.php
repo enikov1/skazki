@@ -746,7 +746,7 @@ class LibraryTest extends TestCase
         $this->assertStringContainsString('Лесные жители', $filteredCategories->json('html'));
         $this->get(route('colorings.category', $category))->assertOk()->assertSee('Лисёнок');
         $this->getJson(route('colorings.category', [$category, 'q' => 'не найдено']))->assertOk()->assertJsonPath('count', 0);
-        $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('Контур рисунка');
+        $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('data-coloring-canvas', false)->assertSee('Скачать PNG')->assertSee('Ластик');
         $this->postJson(route('colorings.favorite', [$category, $page]))->assertOk()->assertJsonPath('saved', true);
         $this->postJson(route('colorings.favorite', [$category, $page]))->assertOk()->assertJsonPath('saved', false);
         $this->postJson(route('colorings.favorite', [$category, $page]))->assertOk()->assertJsonPath('saved', true);

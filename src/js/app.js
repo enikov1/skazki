@@ -444,6 +444,38 @@ if(coloringResult&&coloringFilter){
  });
  addEventListener('popstate',()=>{const url=new URL(location.href);coloringFilter.elements.namedItem('q').value=url.searchParams.get('q')||'';loadColoringResults(url.toString(),false)});
 }
+const coloringStudio=document.querySelector('[data-coloring-studio]');
+if(coloringStudio){
+ const canvas=coloringStudio.querySelector('[data-coloring-canvas]'),outline=coloringStudio.querySelector('[data-coloring-outline]'),ctx=canvas?.getContext('2d');
+ const key=`skazkomir-coloring-${coloringStudio.dataset.coloringId}`;let strokes=[],activeStroke=null,tool='brush',color=coloringStudio.querySelector('[data-coloring-color]')?.value||'#f37451',size=24,ready=false;
+ const status=coloringStudio.querySelector('[data-coloring-save-status]');
+ const draw=()=>{
+  if(!ready||!ctx)return;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  for(const stroke of strokes){if(!stroke.points.length)continue;ctx.beginPath();ctx.strokeStyle=stroke.color;ctx.lineWidth=stroke.size*canvas.width/900;ctx.lineCap='round';ctx.lineJoin='round';ctx.moveTo(stroke.points[0][0]*canvas.width,stroke.points[0][1]*canvas.height);for(const point of stroke.points.slice(1))ctx.lineTo(point[0]*canvas.width,point[1]*canvas.height);if(stroke.points.length===1){const [x,y]=stroke.points[0];ctx.lineTo(x*canvas.width+.01,y*canvas.height+.01)}ctx.stroke()}
+  if(outline?.complete&&outline.naturalWidth)ctx.drawImage(outline,0,0,canvas.width,canvas.height);
+ };
+ const persist=()=>{try{localStorage.setItem(key,JSON.stringify(strokes));if(status)status.textContent='Сохранено на этом устройстве. Можно продолжить позже.'}catch{if(status)status.textContent='Не удалось сохранить рисунок в браузере.'}};
+ const initialize=()=>{
+  if(!outline?.naturalWidth||!canvas||!ctx){if(status)status.textContent='Не удалось загрузить контур рисунка.';return}
+  const scale=Math.min(1,1400/outline.naturalWidth,1400/outline.naturalHeight);canvas.width=Math.max(1,Math.round(outline.naturalWidth*scale));canvas.height=Math.max(1,Math.round(outline.naturalHeight*scale));
+  try{const stored=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(stored))strokes=stored.filter(s=>s&&/^#[0-9a-f]{6}$/i.test(s.color)&&Number.isFinite(s.size)&&Array.isArray(s.points)).slice(0,2000)}catch{strokes=[]}
+  ready=true;draw();
+ };
+ if(outline?.complete)initialize();else outline?.addEventListener('load',initialize,{once:true});
+ outline?.addEventListener('error',()=>{if(status)status.textContent='Не удалось загрузить контур. Попробуйте обновить страницу.'},{once:true});
+ const pointFromEvent=event=>{const rect=canvas.getBoundingClientRect();return [Math.min(1,Math.max(0,(event.clientX-rect.left)/rect.width)),Math.min(1,Math.max(0,(event.clientY-rect.top)/rect.height))]};
+ canvas?.addEventListener('pointerdown',event=>{if(!ready)return;event.preventDefault();canvas.setPointerCapture(event.pointerId);activeStroke={color:tool==='eraser'?'#ffffff':color,size,points:[pointFromEvent(event)]};strokes.push(activeStroke);draw()});
+ canvas?.addEventListener('pointermove',event=>{if(!activeStroke)return;activeStroke.points.push(pointFromEvent(event));draw()});
+ const finishStroke=()=>{if(!activeStroke)return;activeStroke=null;persist()};canvas?.addEventListener('pointerup',finishStroke);canvas?.addEventListener('pointercancel',finishStroke);
+ coloringStudio.querySelectorAll('[data-coloring-tool]').forEach(button=>button.addEventListener('click',()=>{tool=button.dataset.coloringTool;coloringStudio.querySelectorAll('[data-coloring-tool]').forEach(item=>{const active=item===button;item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))})}));
+ const colorInput=coloringStudio.querySelector('[data-coloring-color]');colorInput?.addEventListener('input',()=>{color=colorInput.value;tool='brush';coloringStudio.querySelectorAll('[data-coloring-tool]').forEach(item=>{const active=item.dataset.coloringTool==='brush';item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))})});
+ coloringStudio.querySelectorAll('[data-coloring-swatch]').forEach(button=>button.addEventListener('click',()=>{color=button.dataset.coloringSwatch;if(colorInput)colorInput.value=color;tool='brush';coloringStudio.querySelectorAll('[data-coloring-tool]').forEach(item=>{const active=item.dataset.coloringTool==='brush';item.classList.toggle('is-active',active);item.setAttribute('aria-pressed',String(active))})}));
+ const sizeInput=coloringStudio.querySelector('[data-coloring-size]'),sizeOutput=coloringStudio.querySelector('[data-coloring-size-value]');sizeInput?.addEventListener('input',()=>{size=Number(sizeInput.value);if(sizeOutput)sizeOutput.value=String(size)});
+ coloringStudio.querySelector('[data-coloring-undo]')?.addEventListener('click',()=>{strokes.pop();draw();persist()});
+ coloringStudio.querySelector('[data-coloring-clear]')?.addEventListener('click',()=>{if(strokes.length&&confirm('Очистить рисунок?')){strokes=[];draw();persist()}});
+ coloringStudio.querySelector('[data-coloring-download]')?.addEventListener('click',()=>{canvas?.toBlob(blob=>{if(!blob)return;const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`raskraska-${coloringStudio.dataset.coloringId}.png`;link.click();URL.revokeObjectURL(link.href)},'image/png')});
+ coloringStudio.querySelector('[data-coloring-print]')?.addEventListener('click',()=>window.print());
+}
 const savedStoryAudio=document.querySelector('#storyAudio[data-audio-progress-url]');
 if(savedStoryAudio){
  let savedAudioTimer=null,initialAudioPosition=Number(savedStoryAudio.dataset.audioProgress||0),audioPositionRestored=false;
