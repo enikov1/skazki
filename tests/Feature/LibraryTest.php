@@ -444,7 +444,7 @@ class LibraryTest extends TestCase
         Article::create(['title' => 'Скрытая статья', 'slug' => 'hidden-article', 'category' => 'Тест', 'summary' => 'Не должна попасть в публичный каталог.', 'body' => 'Черновой текст.', 'status' => 'draft']);
 
         $this->get(route('articles.index', ['q' => 'вечер']))->assertOk()->assertSee('Читаем вместе каждый вечер')->assertDontSee('Скрытая статья');
-        $this->get(route('articles.show', 'reading-together'))->assertOk()->assertSee('Начните с короткой истории')->assertSee('application/ld+json', false);
+        $this->get(route('articles.show', 'reading-together'))->assertOk()->assertSee('Начните с короткой истории')->assertSee('application/ld+json', false)->assertSee('BreadcrumbList', false);
         $this->get(route('articles.show', 'hidden-article'))->assertNotFound();
         $sitemap = $this->get(route('sitemap'));
         $sitemap->assertOk();
@@ -746,7 +746,7 @@ class LibraryTest extends TestCase
             ->assertOk()->assertJsonPath('score', 1)->assertJsonPath('total', 2)->assertJsonPath('redirect', route('stories.quiz', $story).'?result=1');
         $this->assertDatabaseHas('story_quiz_attempts', ['story_id' => $story->id, 'score' => 1, 'question_count' => 2]);
         $this->get(route('stories.quiz', [$story, 'result' => 1]))->assertOk()->assertSee('Ваш результат: 1 из 2');
-        $this->get(route('games.index'))->assertOk()->assertSee('Игры и викторины')->assertSee('Тестовая сказка');
+        $this->get(route('games.index'))->assertOk()->assertSee('Игры и викторины')->assertSee('Тестовая сказка')->assertSee('BreadcrumbList', false);
         $filteredGames = $this->getJson(route('games.index', ['q' => 'Тестовая', 'genre' => 'Тест', 'age' => '5-8']))
             ->assertOk()->assertJsonPath('count', 1);
         $this->assertStringContainsString(route('stories.quiz', $story), $filteredGames->json('html'));
@@ -772,7 +772,7 @@ class LibraryTest extends TestCase
         $filteredCategories = $this->getJson(route('colorings.index', ['q' => 'лес']));
         $filteredCategories->assertOk()->assertJsonPath('count', 1);
         $this->assertStringContainsString('Лесные жители', $filteredCategories->json('html'));
-        $this->get(route('colorings.category', $category))->assertOk()->assertSee('Лисёнок');
+        $this->get(route('colorings.category', $category))->assertOk()->assertSee('Лисёнок')->assertSee('BreadcrumbList', false);
         $this->get(route('colorings.category', [$category, 'q' => 'лиса']))->assertOk()->assertSee('content="noindex,follow"', false);
         $this->getJson(route('colorings.category', [$category, 'q' => 'не найдено']))->assertOk()->assertJsonPath('count', 0);
         $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('data-coloring-canvas', false)->assertSee('Скачать PNG')->assertSee('Ластик');

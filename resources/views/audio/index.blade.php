@@ -3,6 +3,9 @@
 @section('title', 'Аудиосказки для детей — СказкоМир')
 @section('description', 'Слушайте аудиосказки вместе: выбирайте историю по жанру и возрасту, добавляйте записи в очередь.')
 @if(request()->query())@section('robots', 'noindex,follow')@endif
+@push('head')
+<script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_map(fn ($item, $index) => ['@type' => 'ListItem', 'position' => $index + 1, 'name' => $item[0], 'item' => $item[1]], [['Главная', route('home')], ['Аудиосказки', route('audio.index')]], array_keys([['Главная', route('home')], ['Аудиосказки', route('audio.index')]]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
+@endpush
 @section('content')
 <nav class="breadcrumbs"><a href="{{ route('home') }}">Главная</a><span>/</span><span>Аудиосказки</span></nav>
 <div class="page-heading-art"><div><h1 class="page-title">Аудиосказки</h1><p class="lead">Устройтесь поудобнее, наденьте наушники и отправляйтесь в сказочное путешествие.</p></div><img src="{{ asset('assets/illustrations/audio-story.webp') }}" alt="Ребёнок слушает сказку в наушниках" fetchpriority="high"></div>

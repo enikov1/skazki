@@ -1,5 +1,8 @@
 @extends('layouts.app')
 @section('title', $page->title.' — раскраска | СказкоМир')
+@push('head')
+<script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_map(fn ($item, $index) => ['@type' => 'ListItem', 'position' => $index + 1, 'name' => $item[0], 'item' => $item[1]], [['Главная', route('home')], ['Раскраски', route('colorings.index')], [$category->name, route('colorings.category', $category)], [$page->title, route('colorings.page', [$category, $page])]], array_keys([['Главная', route('home')], ['Раскраски', route('colorings.index')], [$category->name, route('colorings.category', $category)], [$page->title, route('colorings.page', [$category, $page])]]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
+@endpush
 @section('content')
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('colorings.index') }}">Раскраски</a><span>/</span><a href="{{ route('colorings.category', $category) }}">{{ $category->name }}</a><span>/</span><span aria-current="page">{{ $page->title }}</span></nav>
 <section class="page-panel coloring-work" data-coloring-studio data-coloring-id="{{ $page->id }}" @auth data-coloring-progress-url="{{ route('colorings.progress.store', [$category, $page]) }}" @endauth><p class="eyebrow">{{ $category->name }}</p><h1 class="page-title">{{ $page->title }}</h1><p class="coloring-score" aria-live="polite">★ <strong data-coloring-average>{{ $rating->total ? number_format((float) $rating->average, 1, ',', ' ') : '—' }}</strong> · <span data-coloring-rating-count>{{ $rating->total }}</span> оценок</p>

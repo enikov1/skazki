@@ -2,6 +2,9 @@
 @section('title', $article->seo_title ?: $article->title.' | Советы родителям — СказкоМир')
 @section('description', $article->seo_description ?: $article->summary)
 @section('og_type', 'article')
+@push('head')
+<script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_map(fn ($item, $index) => ['@type' => 'ListItem', 'position' => $index + 1, 'name' => $item[0], 'item' => $item[1]], [['Главная', route('home')], ['Родителям', route('articles.index')], [$article->title, route('articles.show', $article)]], array_keys([['Главная', route('home')], ['Родителям', route('articles.index')], [$article->title, route('articles.show', $article)]]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
+@endpush
 @section('content')
 @push('head')<script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'Article', 'headline' => $article->title, 'description' => $article->summary, 'datePublished' => $article->published_at?->toAtomString(), 'dateModified' => $article->updated_at->toAtomString(), 'author' => ['@type' => 'Person', 'name' => $article->creator?->name ?: 'Редакция СказкоМира'], 'mainEntityOfPage' => route('articles.show', $article->slug)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>@endpush
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('articles.index') }}">Родителям</a><span>/</span><span>{{ $article->title }}</span></nav>

@@ -2,6 +2,9 @@
 @section('title', 'Игры и викторины для детей — СказкоМир')
 @section('description', 'Играйте и проверяйте, что запомнилось из любимых сказок.')
 @if(request()->query())@section('robots', 'noindex,follow')@endif
+@push('head')
+<script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_map(fn ($item, $index) => ['@type' => 'ListItem', 'position' => $index + 1, 'name' => $item[0], 'item' => $item[1]], [['Главная', route('home')], ['Игры и занятия', route('games.index')]], array_keys([['Главная', route('home')], ['Игры и занятия', route('games.index')]]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
+@endpush
 @section('content')
 <nav class="breadcrumbs"><a href="{{ route('home') }}">Главная</a><span>/</span><span aria-current="page">Игры и занятия</span></nav>
 <header class="page-panel games-heading"><p class="eyebrow">Играем и вспоминаем</p><h1 class="page-title">Игры и викторины</h1><p class="lead">Выберите сказку и ответьте на вопросы о героях и событиях.</p></header>
