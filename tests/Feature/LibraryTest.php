@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 20593)
-Total output lines: 1061
-
 <?php
 
 namespace Tests\Feature;
@@ -387,7 +384,321 @@ class LibraryTest extends TestCase
         $this->seed();
         $editor = User::factory()->create();
         $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
-        $story = Story::create(['title' => 'Черновая история', 'slug' => 'draft-story', 'genre' => 'Тест', 'summary' => 'Описание черновика', 'body' => 'Полный текст для предпросмотра.', 'status' => 'draf…6593 tokens truncated…blic function test_profile_avatar_preferences_and_optional_consent_are_manageable(): void
+        $story = Story::create(['title' => 'Черновая история', 'slug' => 'draft-story', 'genre' => 'Тест', 'summary' => 'Описание черновика', 'body' => 'Полный текст для предпросмотра.', 'status' => 'draft', 'created_by' => $editor->id]);
+        $article = Article::create(['title' => 'Черновая статья', 'slug' => 'draft-article', 'category' => 'Тест', 'summary' => 'Описание статьи', 'body' => 'Текст статьи для предпросмотра.', 'reading_minutes' => 3, 'status' => 'draft', 'created_by' => $editor->id]);
+
+        $this->actingAs($editor)->get(route('admin.stories.preview', $story))->assertOk()->assertSee('Предпросмотр')->assertSee('Полный текст для предпросмотра.')->assertSee('noindex,nofollow');
+        $this->get(route('stories.show', $story))->assertNotFound();
+        $this->get(route('admin.articles.preview', $article))->assertOk()->assertSee('Предпросмотр')->assertSee('Текст статьи для предпросмотра.')->assertSee('noindex,nofollow');
+        $this->get(route('articles.show', $article))->assertNotFound();
+
+        auth()->logout();
+        $anotherEditor = User::factory()->create();
+        $anotherEditor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($anotherEditor)->get(route('admin.stories.preview', $story))->assertForbidden();
+        auth()->logout();
+        $this->actingAs($editor);
+
+        $this->patch(route('admin.stories.status', $story), ['status' => 'review'])->assertRedirect();
+        $this->assertSame($editor->id, $story->fresh()->updated_by);
+        $this->assertDatabaseHas('audit_logs', ['actor_id' => $editor->id, 'action' => 'story.status_changed', 'subject_id' => $story->id]);
+        $this->patch(route('admin.articles.status', $article), ['status' => 'review'])->assertRedirect();
+        $this->assertSame($editor->id, $article->fresh()->updated_by);
+        $this->assertDatabaseHas('audit_logs', ['actor_id' => $editor->id, 'action' => 'article.status_changed', 'subject_id' => $article->id]);
+    }
+
+    public function test_editorial_lists_can_be_searched_filtered_and_content_can_be_scheduled(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $story = Story::create(['title' => 'Запланированная сказка', 'slug' => 'scheduled-story', 'genre' => 'Приключения', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'draft']);
+        Story::create(['title' => 'Другая сказка', 'slug' => 'another-story', 'genre' => 'Басни', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'review']);
+        $article = Article::create(['title' => 'Запланированная статья', 'slug' => 'scheduled-article', 'category' => 'Развитие', 'summary' => 'Описание', 'body' => 'Текст', 'reading_minutes' => 3, 'status' => 'draft']);
+        Article::create(['title' => 'Другая статья', 'slug' => 'another-article', 'category' => 'Здоровье', 'summary' => 'Описание', 'body' => 'Текст', 'reading_minutes' => 3, 'status' => 'review']);
+        $publishAt = now()->addDay()->startOfMinute();
+
+        $this->actingAs($admin)->get(route('admin.stories.index', ['q' => 'scheduled', 'status' => 'draft', 'genre' => 'Приключения']))
+            ->assertOk()->assertSee('Запланированная сказка')->assertDontSee('Другая сказка');
+        $this->get(route('admin.articles.index', ['q' => 'scheduled', 'status' => 'draft', 'category' => 'Развитие']))
+            ->assertOk()->assertSee('Запланированная статья')->assertDontSee('Другая статья');
+        $storyResults = $this->getJson(route('admin.stories.index', ['q' => 'scheduled', 'status' => 'draft', 'genre' => 'Приключения']));
+        $storyResults->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Запланированная сказка', $storyResults->json('html'));
+        $articleResults = $this->getJson(route('admin.articles.index', ['q' => 'scheduled', 'status' => 'draft', 'category' => 'Развитие']));
+        $articleResults->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Запланированная статья', $articleResults->json('html'));
+
+        $this->patch(route('admin.stories.status', $story), ['status' => 'published', 'publish_at' => $publishAt->format('Y-m-d\\TH:i')])->assertRedirect();
+        $this->patch(route('admin.articles.status', $article), ['status' => 'published', 'publish_at' => $publishAt->format('Y-m-d\\TH:i')])->assertRedirect();
+        $this->assertSame($publishAt->format('Y-m-d H:i'), $story->fresh()->published_at->format('Y-m-d H:i'));
+        $this->assertSame($publishAt->format('Y-m-d H:i'), $article->fresh()->published_at->format('Y-m-d H:i'));
+        $this->get(route('stories.show', $story))->assertNotFound();
+        $this->get(route('articles.show', $article))->assertNotFound();
+        $this->get(route('admin.stories.index'))->assertSee('Запланировано');
+        $this->get(route('admin.articles.index'))->assertSee('Запланировано');
+    }
+
+    public function test_admin_editors_and_user_controls_support_ajax(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $story = Story::create(['title' => 'Редактируемая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Текст', 'status' => 'draft', 'created_by' => $admin->id]);
+        $reader = User::factory()->create();
+
+        $this->actingAs($admin)->get(route('admin.stories.edit', $story))->assertOk()->assertSee('data-ajax-form')->assertSee('data-rich-editor')->assertSee('data-custom-select');
+        $this->putJson(route('admin.stories.update', $story), ['title' => 'Изменённая сказка', 'slug' => 'ajax-story', 'genre' => 'Приключения', 'summary' => 'Коротко', 'body' => 'Новый текст', 'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5, 'allow_download' => '0'])
+            ->assertOk()->assertJsonPath('message', 'Изменения сохранены.');
+        $this->assertSame('Изменённая сказка', $story->fresh()->title);
+        $this->patchJson(route('admin.stories.status', $story), ['status' => 'review'])
+            ->assertOk()->assertJsonPath('message', 'Статус сказки обновлён.');
+
+        $usersResponse = $this->getJson(route('admin.users.index', ['q' => $reader->email]));
+        $usersResponse->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Заблокировать', $usersResponse->json('html'));
+        $this->patchJson(route('admin.users.block', $reader), ['block_reason' => 'Нарушение правил общения'])
+            ->assertOk()->assertJsonPath('message', 'Аккаунт заблокирован.');
+        $this->assertNotNull($reader->fresh()->blocked_at);
+        $this->patchJson(route('admin.users.unblock', $reader))->assertOk()->assertJsonPath('message', 'Доступ к аккаунту восстановлен.');
+        $this->getJson(route('admin.audit-logs.index', ['action' => 'user.blocked']))->assertOk()->assertJsonPath('count', 1);
+    }
+
+    public function test_published_story_is_available_and_draft_is_not(): void
+    {
+        $this->seed();
+        $this->get('/')->assertOk()->assertSee('Колобок');
+        Story::create(['title' => 'Черновик', 'genre' => 'Проверка', 'summary' => 'Скрытая запись', 'body' => 'Секретный текст', 'status' => 'draft']);
+        $this->get('/skazki/chernovik')->assertNotFound();
+    }
+
+    public function test_only_authorized_roles_can_open_management(): void
+    {
+        $this->seed();
+        $this->get('/')->assertDontSee('css/admin.css')->assertSee('css/ui.css');
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::where('slug', 'user')->value('id'));
+        $this->actingAs($user)->get('/admin')->assertForbidden();
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($editor)->get('/admin')->assertOk()->assertSee('Управление сайтом')->assertSee('css/ui.css')->assertSee('css/admin.css')->assertSee('content="noindex,nofollow"', false);
+    }
+
+    public function test_public_story_has_unique_title_and_canonical(): void
+    {
+        $this->seed();
+        $this->get('/skazki/kolobok')->assertOk()->assertSee('Колобок')->assertSee('rel="canonical"', false);
+    }
+
+    public function test_comments_wait_for_moderation_and_votes_can_be_changed(): void
+    {
+        $this->seed();
+        $story = Story::where('slug', 'kolobok')->firstOrFail();
+        $author = User::factory()->create();
+        $author->roles()->attach(Role::where('slug', 'user')->value('id'));
+        $this->actingAs($author)->post(route('comments.store', $story), ['body' => 'Добрая история!'])->assertRedirect(route('stories.show', $story));
+        $comment = Comment::firstOrFail();
+        $this->get(route('stories.show', $story))->assertDontSee('Добрая история!');
+
+        $moderator = User::factory()->create();
+        $moderator->roles()->attach(Role::where('slug', 'moderator')->value('id'));
+        $this->actingAs($moderator)->patch(route('admin.moderation.update', $comment), ['status' => 'approved'])->assertRedirect();
+        $this->get(route('stories.show', $story))->assertSee('Добрая история!');
+
+        $this->actingAs($author)->post(route('comments.vote', $comment), ['vote' => 'like'])->assertRedirect();
+        $this->assertDatabaseHas('comments', ['id' => $comment->id, 'likes_count' => 1]);
+        $this->postJson(route('comments.vote', $comment), ['vote' => 'dislike'])->assertOk()->assertJsonPath('message', 'Ваш голос сохранён.');
+        $this->assertDatabaseHas('comments', ['id' => $comment->id, 'likes_count' => 0, 'dislikes_count' => 1]);
+    }
+
+    public function test_registration_assigns_only_the_regular_user_role(): void
+    {
+        $this->seed();
+        $password = Str::password(24);
+        $this->post(route('register.store'), ['name' => 'Маша', 'email' => 'MASHA@example.com', 'password' => $password, 'password_confirmation' => $password, 'terms' => '1'])->assertRedirect(route('home'));
+        $user = User::where('email', 'masha@example.com')->firstOrFail();
+        $this->assertTrue($user->hasRole('user'));
+        $this->assertFalse($user->hasRole('admin'));
+        $this->assertDatabaseHas('user_consent_events', ['user_id' => $user->id, 'consent_type' => 'terms', 'action' => 'granted']);
+        $this->assertDatabaseHas('user_consent_events', ['user_id' => $user->id, 'consent_type' => 'privacy_notice', 'action' => 'granted']);
+    }
+
+    public function test_authentication_registration_and_password_recovery_support_ajax(): void
+    {
+        $this->seed();
+        $readerPassword = Str::password(24);
+        $registrationPassword = Str::password(24);
+        $newPassword = Str::password(24);
+        $reader = User::factory()->create(['email' => 'ajax-reader@example.test', 'password' => Hash::make($readerPassword)]);
+
+        $invalidLogin = $this->postJson(route('login.store'), ['email' => 'not-an-email', 'password' => 'wrong']);
+        $invalidLogin->assertUnprocessable()->assertJsonValidationErrors('email');
+        $this->assertSame('Укажите корректный адрес электронной почты.', $invalidLogin->json('errors.email.0'));
+        $this->postJson(route('login.store'), ['email' => $reader->email, 'password' => $readerPassword])
+            ->assertOk()->assertJsonPath('redirect', route('home'));
+        $this->assertAuthenticatedAs($reader);
+
+        auth()->logout();
+        $this->postJson(route('register.store'), ['name' => 'Ajax Reader', 'email' => 'ajax-new@example.test', 'password' => $registrationPassword, 'password_confirmation' => $registrationPassword])
+            ->assertUnprocessable()->assertJsonValidationErrors('terms');
+        $this->postJson(route('register.store'), ['name' => 'Ajax Reader', 'email' => 'ajax-new@example.test', 'password' => $registrationPassword, 'password_confirmation' => $registrationPassword, 'terms' => '1'])
+            ->assertOk()->assertJsonPath('redirect', route('home'));
+
+        auth()->logout();
+        \Illuminate\Support\Facades\Notification::fake();
+        $this->postJson(route('password.email'), ['email' => $reader->email])->assertOk()->assertJsonStructure(['message']);
+        $token = \Illuminate\Support\Facades\Password::broker()->createToken($reader);
+        $this->postJson(route('password.update'), ['token' => $token, 'email' => $reader->email, 'password' => $newPassword, 'password_confirmation' => $newPassword])
+            ->assertOk()->assertJsonPath('redirect', route('login'));
+        $this->assertTrue(Hash::check($newPassword, $reader->fresh()->password));
+    }
+
+    public function test_parent_articles_are_searchable_and_drafts_remain_private(): void
+    {
+        $this->seed();
+        Article::create(['title' => 'Читаем вместе каждый вечер', 'slug' => 'reading-together', 'category' => 'Семейное чтение', 'summary' => 'Несколько добрых советов для всей семьи.', 'body' => 'Начните с короткой истории и читайте без спешки.', 'reading_minutes' => 4, 'status' => 'published', 'published_at' => now()]);
+        Article::create(['title' => 'Скрытая статья', 'slug' => 'hidden-article', 'category' => 'Тест', 'summary' => 'Не должна попасть в публичный каталог.', 'body' => 'Черновой текст.', 'status' => 'draft']);
+
+        $this->get(route('articles.index', ['q' => 'вечер']))->assertOk()->assertSee('Читаем вместе каждый вечер')->assertDontSee('Скрытая статья');
+        $this->get(route('articles.show', 'reading-together'))->assertOk()->assertSee('Начните с короткой истории')->assertSee('application/ld+json', false)->assertSee('BreadcrumbList', false);
+        $this->get(route('articles.show', 'hidden-article'))->assertNotFound();
+        $sitemap = $this->get(route('sitemap'));
+        $sitemap->assertOk();
+        ob_start();
+        $sitemap->baseResponse->sendContent();
+        $xml = ob_get_clean();
+        $this->assertStringContainsString('/roditelyam/reading-together', $xml);
+        $this->assertStringNotContainsString('hidden-article', $xml);
+    }
+
+    public function test_sitemap_and_robots_cover_public_pages_without_private_urls(): void
+    {
+        $story = Story::create(['title' => 'История для игр', 'slug' => 'games-sitemap-story', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()]);
+        $story->quizQuestions()->create(['prompt' => 'Вопрос?', 'options' => ['Да', 'Нет'], 'correct_option' => 0]);
+        Article::create(['title' => 'Открытая статья карты', 'slug' => 'sitemap-parent-article', 'category' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()]);
+        $category = ColoringCategory::create(['name' => 'Открытая категория', 'slug' => 'sitemap-colorings', 'is_published' => true]);
+        $page = $category->pages()->create(['title' => 'Открытый рисунок', 'slug' => 'sitemap-page', 'outline_path' => 'assets/colorings/test.png', 'is_published' => true]);
+        $user = User::factory()->create();
+        \App\Models\ColoringSubmission::create(['user_id' => $user->id, 'coloring_page_id' => $page->id, 'title' => 'Публичная работа', 'slug' => 'public-sitemap-work', 'file_path' => 'coloring-submissions/example.png', 'status' => 'approved', 'guardian_consent_at' => now()]);
+
+        $sitemap = $this->get(route('sitemap'))->assertOk();
+        ob_start();
+        $sitemap->baseResponse->sendContent();
+        $xml = ob_get_clean();
+        foreach ([route('audio.index'), route('games.index'), route('stories.quiz', $story), route('articles.show', 'sitemap-parent-article'), route('colorings.category', $category), route('colorings.page', [$category, $page]), route('colorings.gallery.work', 'public-sitemap-work')] as $url) {
+            $this->assertStringContainsString($url, $xml);
+        }
+        $this->assertStringNotContainsString('profile', $xml);
+        $this->assertStringNotContainsString('admin', $xml);
+        $this->get(route('robots'))->assertOk()->assertHeader('Content-Type', 'text/plain; charset=UTF-8')->assertSee('Disallow: /profile')->assertSee('Disallow: /*?*')->assertSee('Sitemap: '.route('sitemap'));
+    }
+
+    public function test_article_comments_require_moderation_and_votes_can_change(): void
+    {
+        $this->seed();
+        $article = Article::create(['title' => 'Совет о чтении', 'slug' => 'reading-advice', 'category' => 'Книги', 'summary' => 'Короткое вступление.', 'body' => 'Текст статьи.', 'status' => 'published', 'published_at' => now()]);
+        $reader = User::factory()->create();
+        $reader->roles()->attach(Role::where('slug', 'user')->value('id'));
+
+        $this->actingAs($reader)->post(route('article-comments.store', $article), ['body' => 'Нам очень понравился этот совет!'])->assertRedirect(route('articles.show', $article));
+        $comment = ArticleComment::firstOrFail();
+        $this->get(route('articles.show', $article))->assertDontSee('Нам очень понравился этот совет!');
+
+        $moderator = User::factory()->create();
+        $moderator->roles()->attach(Role::where('slug', 'moderator')->value('id'));
+        $this->actingAs($moderator)->patch(route('admin.articles.comments.moderate', $comment), ['status' => 'approved'])->assertRedirect();
+        $this->get(route('articles.show', $article))->assertSee('Нам очень понравился этот совет!');
+        $this->actingAs($reader)->post(route('article-comments.vote', $comment), ['vote' => 'like'])->assertRedirect();
+        $this->assertDatabaseHas('article_comments', ['id' => $comment->id, 'likes_count' => 1]);
+        $this->post(route('article-comments.vote', $comment), ['vote' => 'dislike'])->assertRedirect();
+        $this->assertDatabaseHas('article_comments', ['id' => $comment->id, 'likes_count' => 0, 'dislikes_count' => 1]);
+    }
+
+    public function test_article_rating_is_editable_and_one_vote_per_reader_is_kept(): void
+    {
+        $this->seed();
+        $article = Article::create(['title' => 'История о семейном чтении', 'slug' => 'family-reading', 'category' => 'Чтение', 'summary' => 'Описание.', 'body' => 'Текст статьи.', 'status' => 'published', 'published_at' => now()]);
+        $reader = User::factory()->create();
+        $this->actingAs($reader)->post(route('articles.rate', $article), ['rating' => 5])->assertRedirect();
+        $this->post(route('articles.rate', $article), ['rating' => 4])->assertRedirect();
+        $this->assertDatabaseCount('article_ratings', 1);
+        $this->assertDatabaseHas('article_ratings', ['article_id' => $article->id, 'user_id' => $reader->id, 'rating' => 4]);
+        $this->get(route('articles.show', $article))->assertOk()->assertSee('4,0')->assertSee('Изменить оценку');
+    }
+
+    public function test_story_rating_is_editable_and_one_vote_per_reader_is_kept(): void
+    {
+        $this->seed();
+        $reader = User::factory()->create();
+        $story = Story::where('slug', 'kolobok')->firstOrFail();
+
+        $this->actingAs($reader)->postJson(route('stories.rate', $story), ['rating' => 5])->assertOk()->assertJsonPath('message', 'Ваша оценка сказки сохранена.');
+        $this->postJson(route('stories.rate', $story), ['rating' => 4])->assertOk();
+        $this->assertDatabaseCount('story_ratings', 1);
+        $this->assertDatabaseHas('story_ratings', ['story_id' => $story->id, 'user_id' => $reader->id, 'rating' => 4]);
+        $this->postJson(route('stories.rate', $story), ['rating' => 6])->assertUnprocessable()->assertJsonValidationErrors('rating');
+        $this->get(route('stories.show', $story))->assertOk()->assertSee('Ваша оценка: 4 из 5')->assertSee('1 оценка');
+    }
+
+    public function test_editors_manage_articles_but_only_administrators_publish_them(): void
+    {
+        $this->seed();
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($editor)->get(route('admin.articles.index'))->assertOk();
+        $this->post(route('admin.articles.store'), ['title' => 'Новая статья для родителей', 'category' => 'Чтение', 'summary' => 'Короткое описание материала.', 'body' => 'Текст материала.', 'reading_minutes' => 3])->assertRedirect();
+        $article = Article::where('created_by', $editor->id)->firstOrFail();
+        $this->patch(route('admin.articles.status', $article), ['status' => 'published'])->assertForbidden();
+
+        $otherEditor = User::factory()->create();
+        $otherEditor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $otherArticle = Article::create(['title' => 'Статья другого автора', 'slug' => 'other-editor-article', 'category' => 'Чтение', 'summary' => 'Описание статьи другого редактора.', 'body' => 'Содержание статьи другого редактора.', 'status' => 'draft', 'created_by' => $otherEditor->id]);
+        $this->get(route('admin.articles.edit', $otherArticle))->assertForbidden();
+        $this->patch(route('admin.articles.status', $otherArticle), ['status' => 'review'])->assertForbidden();
+
+        $otherStory = Story::create(['title' => 'Сказка другого редактора', 'slug' => 'other-editor-story', 'genre' => 'Проверка', 'summary' => 'Описание сказки.', 'body' => 'Содержание сказки.', 'status' => 'draft', 'created_by' => $otherEditor->id]);
+        $this->get(route('admin.stories.edit', $otherStory))->assertForbidden();
+        $this->patch(route('admin.stories.status', $otherStory), ['status' => 'review'])->assertForbidden();
+    }
+
+    public function test_only_users_with_management_permission_can_open_staff_actions(): void
+    {
+        $this->seed();
+        $reader = User::factory()->create();
+        $reader->roles()->attach(Role::where('slug', 'user')->value('id'));
+        $subject = User::factory()->create();
+
+        $this->actingAs($reader)->get(route('admin.users.index'))->assertForbidden();
+        $this->patch(route('admin.users.role', $subject), ['role' => 'editor'])->assertForbidden();
+        $this->get(route('admin.audit-logs.index'))->assertForbidden();
+    }
+
+    public function test_profile_edits_name_changes_password_and_lists_reading_history(): void
+    {
+        $this->seed();
+        $currentPassword = Str::password(24);
+        $newPassword = Str::password(24);
+        $reader = User::factory()->create(['password' => Hash::make($currentPassword)]);
+        $story = Story::where('slug', 'kolobok')->firstOrFail();
+        $this->actingAs($reader)->get(route('stories.show', $story))->assertOk();
+        $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id]);
+        $this->get(route('stories.read', $story))->assertOk()->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')->assertSee('<meta name="robots" content="noindex,nofollow">', false)->assertSee('data-reader')->assertSee('Настройки чтения')->assertSee('data-reader-prev')->assertSee('data-reader-next')->assertDontSee('Основная навигация');
+        $this->postJson(route('stories.reading-progress', $story), ['paragraph' => 1])->assertOk()->assertJsonPath('saved', true);
+        $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id, 'paragraph_position' => 1]);
+        $this->get(route('profile.show'))->assertOk()->assertSee('Главная профиля')->assertSee('История чтения')->assertSee($story->title)->assertSee('Достижения')->assertSee('Первое чтение')->assertSee('Любознательный читатель')->assertSee('aria-label="Первое чтение: 1 из 1"', false);
+        $this->get(route('profile.history'))->assertOk()->assertSee('История и очередь')->assertSee('История чтения')->assertSee('Очередь аудиосказок');
+        $this->get(route('profile.settings'))->assertOk()->assertSee('Настройки профиля')->assertSee('Внешний вид сказок')->assertSee('Согласия');
+        $this->get(route('profile.security'))->assertOk()->assertSee('Безопасность аккаунта')->assertSee('Создать пароль')->assertSee('Связанные аккаунты');
+
+        $this->put(route('profile.update'), ['name' => 'Костя'])->assertRedirect();
+        $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Костя']);
+        $this->putJson(route('profile.update'), ['name' => 'Ajax Костя'])->assertOk()->assertJsonPath('message', 'Имя в профиле обновлено.');
+        $this->assertDatabaseHas('users', ['id' => $reader->id, 'name' => 'Ajax Костя']);
+        $this->put(route('profile.password'), ['current_password' => $currentPassword, 'password' => $newPassword, 'password_confirmation' => $newPassword])->assertRedirect();
+        $this->assertTrue(Hash::check($newPassword, $reader->fresh()->password));
+    }
+
+    public function test_profile_avatar_preferences_and_optional_consent_are_manageable(): void
     {
         $this->seed();
         Storage::fake('public');
