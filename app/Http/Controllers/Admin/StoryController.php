@@ -60,9 +60,15 @@ class StoryController extends Controller
     public function update(Request $request, Story $story): RedirectResponse|JsonResponse
     {
         Gate::authorize('update', $story);
+        $oldSlug = $story->slug;
         $story->update($this->validated($request, $story) + ['updated_by' => $request->user()->id]);
+        if ($oldSlug !== $story->slug) {
+            $story->slugRedirects()->firstOrCreate(['old_slug' => $oldSlug]);
+            $story->slugRedirects()->where('old_slug', $story->slug)->delete();
+        }
         $this->recordChange($request, $story, 'story.updated', 'Обновлена сказка «'.$story->title.'».');
         Cache::forget('stories:detail:v1:'.$story->slug);
+        Cache::forget('stories:detail:v1:'.$oldSlug);
         Cache::forget('stories:genres:v1');
         return $this->respond($request, 'Изменения сохранены.');
     }
@@ -102,7 +108,10 @@ class StoryController extends Controller
             $request->merge(['slug' => Str::slug($request->input('title'))]);
         }
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('stories', 'slug')->ignore($story?->id)],
+            'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('stories', 'slug')->ignore($story?->id), function (string $attribute, mixed $value, $fail) use ($story): void {
+                $redirect = \App\Models\SlugRedirect::query()->where('redirectable_type', Story::class)->where('old_slug', $value)->when($story, fn ($query) => $query->where('redirectable_id', '!=', $story->id))->exists();
+                if ($redirect) $fail('Этот адрес уже используется как перенаправление для другой сказки.');
+            }],
             'author' => ['nullable', 'string', 'max:160'], 'series_name' => ['nullable', 'string', 'max:160'],
             'source_name' => ['nullable', 'string', 'max:180'], 'source_url' => ['nullable', 'url', 'max:500', function (string $attribute, mixed $value, $fail): void {
                 if (filled($value) && ! in_array(parse_url($value, PHP_URL_SCHEME), ['http', 'https'], true)) {

@@ -52,19 +52,19 @@ Route::post('/raskraski/{category:slug}/{page:slug}/progress', [ColoringProgress
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
 Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
-Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->middleware('canonical.slug')->name('articles.show');
 Route::post('/roditelyam/{article:slug}/rating', [ArticleCommentController::class, 'rate'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('articles.rate');
 Route::post('/roditelyam/{article:slug}/comments', [ArticleCommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('article-comments.store');
 Route::post('/article-comments/{comment}/vote', [ArticleCommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('article-comments.vote');
-Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->name('stories.show');
-Route::get('/skazki/{story:slug}/audio', [StoryController::class, 'audio'])->name('stories.audio');
-Route::get('/skazki/{story:slug}/audio/download', [StoryController::class, 'downloadAudio'])->name('stories.audio.download');
+Route::get('/skazki/{story:slug}', [StoryController::class, 'show'])->middleware('canonical.slug')->name('stories.show');
+Route::get('/skazki/{story:slug}/audio', [StoryController::class, 'audio'])->middleware('canonical.slug')->name('stories.audio');
+Route::get('/skazki/{story:slug}/audio/download', [StoryController::class, 'downloadAudio'])->middleware('canonical.slug')->name('stories.audio.download');
 Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.store');
 Route::post('/skazki/{story:slug}/rating', [StoryRatingController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('stories.rate');
-Route::get('/skazki/{story:slug}/quiz', [StoryQuizController::class, 'show'])->name('stories.quiz');
+Route::get('/skazki/{story:slug}/quiz', [StoryQuizController::class, 'show'])->middleware('canonical.slug')->name('stories.quiz');
 Route::post('/skazki/{story:slug}/quiz', [StoryQuizController::class, 'submit'])->middleware('throttle:public-write')->name('stories.quiz.submit');
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
-Route::get('/skazki/{story:slug}/read', [StoryController::class, 'read'])->name('stories.read');
+Route::get('/skazki/{story:slug}/read', [StoryController::class, 'read'])->middleware('canonical.slug')->name('stories.read');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

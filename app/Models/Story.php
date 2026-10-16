@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class Story extends Model
@@ -64,5 +65,20 @@ class Story extends Model
     public function quizQuestions(): HasMany
     {
         return $this->hasMany(StoryQuizQuestion::class);
+    }
+
+    public function slugRedirects(): MorphMany
+    {
+        return $this->morphMany(SlugRedirect::class, 'redirectable');
+    }
+
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        if ($field === 'slug') {
+            return $this->newQuery()->where('slug', $value)->first()
+                ?? $this->newQuery()->whereHas('slugRedirects', fn ($query) => $query->where('old_slug', $value))->first();
+        }
+
+        return parent::resolveRouteBinding($value, $field);
     }
 }

@@ -61,7 +61,12 @@ class ArticleController extends Controller
     public function update(Request $request, Article $article): RedirectResponse|JsonResponse
     {
         Gate::authorize('update', $article);
+        $oldSlug = $article->slug;
         $article->update($this->validated($request, $article) + ['updated_by' => $request->user()->id]);
+        if ($oldSlug !== $article->slug) {
+            $article->slugRedirects()->firstOrCreate(['old_slug' => $oldSlug]);
+            $article->slugRedirects()->where('old_slug', $article->slug)->delete();
+        }
         $this->recordChange($request, $article, 'article.updated', 'Обновлена статья «'.$article->title.'».');
         Cache::forget('articles:categories:v1');
         return $this->respond($request, 'Изменения сохранены.');
@@ -114,7 +119,10 @@ class ArticleController extends Controller
     {
         if (blank($request->input('slug')) && filled($request->input('title'))) $request->merge(['slug' => Str::slug($request->input('title'))]);
         $data = $request->validate([
-            'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('articles', 'slug')->ignore($article?->id)],
+            'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('articles', 'slug')->ignore($article?->id), function (string $attribute, mixed $value, $fail) use ($article): void {
+                $redirect = \App\Models\SlugRedirect::query()->where('redirectable_type', Article::class)->where('old_slug', $value)->when($article, fn ($query) => $query->where('redirectable_id', '!=', $article->id))->exists();
+                if ($redirect) $fail('Этот адрес уже используется как перенаправление для другой статьи.');
+            }],
             'category' => ['required', 'string', 'max:100'], 'summary' => ['required', 'string', 'max:1200'], 'body' => ['required', 'string', 'max:500000'],
             'reading_minutes' => ['required', 'integer', 'between:1,180'], 'cover_path' => ['nullable', 'string', 'max:255'],
             'seo_title' => ['nullable', 'string', 'max:180'], 'seo_description' => ['nullable', 'string', 'max:320'],

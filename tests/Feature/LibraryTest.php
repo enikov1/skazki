@@ -267,6 +267,30 @@ class LibraryTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('source_url');
     }
 
+    public function test_changing_content_slugs_keeps_old_public_urls_as_permanent_redirects(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $story = Story::create(['title' => 'Старая ссылка сказки', 'slug' => 'old-story-address', 'genre' => 'Тест', 'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()->subMinute()]);
+        $article = Article::create(['title' => 'Старая ссылка статьи', 'slug' => 'old-article-address', 'category' => 'Чтение', 'summary' => 'Описание статьи', 'body' => 'Текст статьи', 'reading_minutes' => 3, 'status' => 'published', 'published_at' => now()->subMinute()]);
+
+        $this->actingAs($admin)->putJson(route('admin.stories.update', $story), [
+            'title' => $story->title, 'slug' => 'new-story-address', 'genre' => 'Тест', 'summary' => $story->summary, 'body' => $story->body,
+            'age_min' => 3, 'age_max' => 8, 'reading_minutes' => 5, 'allow_download' => '0',
+        ])->assertOk();
+        $this->putJson(route('admin.articles.update', $article), [
+            'title' => $article->title, 'slug' => 'new-article-address', 'category' => $article->category, 'summary' => $article->summary,
+            'body' => $article->body, 'reading_minutes' => 3,
+        ])->assertOk();
+
+        $this->get('/skazki/old-story-address?source=legacy&campaign=summer')->assertStatus(301)->assertRedirect('/skazki/new-story-address?source=legacy&campaign=summer');
+        $this->get('/skazki/old-story-address/quiz?source=legacy')->assertStatus(301)->assertRedirect('/skazki/new-story-address/quiz?source=legacy');
+        $this->get('/roditelyam/old-article-address?source=legacy')->assertStatus(301)->assertRedirect('/roditelyam/new-article-address?source=legacy');
+        $this->assertDatabaseHas('slug_redirects', ['redirectable_type' => Story::class, 'redirectable_id' => $story->id, 'old_slug' => 'old-story-address']);
+        $this->assertDatabaseHas('slug_redirects', ['redirectable_type' => Article::class, 'redirectable_id' => $article->id, 'old_slug' => 'old-article-address']);
+    }
+
     public function test_editors_can_preview_drafts_and_status_changes_record_authorship(): void
     {
         $this->seed();
