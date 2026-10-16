@@ -29,7 +29,10 @@ class SitemapController extends Controller
             foreach (ColoringCategory::query()->where('is_published', true)->whereHas('pages', fn ($query) => $query->where('is_published', true))->orderBy('id')->cursor(['id', 'slug', 'updated_at']) as $category) {
                 echo '<url><loc>'.htmlspecialchars(route('colorings.category', $category->slug), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$category->updated_at->toAtomString().'</lastmod></url>';
             }
-            foreach (DB::table('coloring_pages')->join('coloring_categories', 'coloring_categories.id', '=', 'coloring_pages.category_id')->where('coloring_pages.is_published', true)->where('coloring_categories.is_published', true)->orderBy('coloring_pages.id')->cursor(['coloring_pages.slug as page_slug', 'coloring_categories.slug as category_slug', 'coloring_pages.updated_at']) as $page) {
+            $coloringPages = DB::table('coloring_pages')->join('coloring_categories', 'coloring_categories.id', '=', 'coloring_pages.category_id')
+                ->where('coloring_pages.is_published', true)->where('coloring_categories.is_published', true)
+                ->orderBy('coloring_pages.id')->select(['coloring_pages.slug as page_slug', 'coloring_categories.slug as category_slug', 'coloring_pages.updated_at']);
+            foreach ($coloringPages->cursor() as $page) {
                 echo '<url><loc>'.htmlspecialchars(route('colorings.page', [$page->category_slug, $page->page_slug]), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$page->updated_at.'</lastmod></url>';
             }
             foreach (Story::published()->whereHas('quizQuestions')->orderBy('id')->cursor(['slug', 'updated_at']) as $story) {
