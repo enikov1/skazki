@@ -403,6 +403,8 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
         }
       }
       if(form.hasAttribute('data-ajax-clear'))form.reset();
+      if(form.hasAttribute('data-coloring-favorite')){const button=form.querySelector('button[type="submit"]');if(button){button.setAttribute('aria-pressed',data.saved?'true':'false');button.textContent=data.saved?(form.dataset.savedLabel||'В избранном'):(form.dataset.unsavedLabel||'В избранное')}}
+      if(form.hasAttribute('data-coloring-rating')){const average=document.querySelector('[data-coloring-average]'),count=document.querySelector('[data-coloring-rating-count]'),legend=form.querySelector('legend');if(average)average.textContent=Number(data.average||0).toFixed(1).replace('.',',');if(count)count.textContent=String(data.total||0);if(legend)legend.textContent=`Ваша оценка: ${data.user_rating} из 5`}
       const row=form.closest('.admin-users-table tr');
       if(row){const results=form.closest('[data-ajax-results]');if(results)loadAdminResults(location.href,results)}
       const moderationCard=form.closest('.moderation-card');
@@ -426,7 +428,7 @@ if(coloringResult&&coloringFilter){
   try{
    const response=await fetch(url,{headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'},signal:coloringRequest.signal});
    if(!response.ok)throw new Error('Не удалось загрузить раскраски.');
-   const data=await response.json();coloringResult.innerHTML=data.html;
+   const data=await response.json();coloringResult.innerHTML=data.html;bindAjaxForms(coloringResult);
    if(replaceUrl)history.pushState({},'',url);
   }catch(error){if(error.name!=='AbortError'){const message=document.createElement('p');message.className='notice';message.textContent=error.message;coloringResult.replaceChildren(message)}}
   finally{coloringResult.removeAttribute('aria-busy')}

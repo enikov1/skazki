@@ -37,6 +37,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(StoryQuizAttempt::class);
     }
 
+    public function coloringFavorites(): HasMany
+    {
+        return $this->hasMany(ColoringFavorite::class);
+    }
+
+    public function coloringRatings(): HasMany
+    {
+        return $this->hasMany(ColoringRating::class);
+    }
+
     public function audioPlaybackStates(): HasMany
     {
         return $this->hasMany(AudioPlaybackState::class);

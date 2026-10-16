@@ -28,6 +28,8 @@ class ColoringController extends Controller
         $filters = $request->validate(['q' => ['nullable', 'string', 'max:100']]);
         $pages = $category->pages()->where('is_published', true)
             ->when(filled($filters['q'] ?? null), fn ($query) => $query->where('title', 'like', '%'.$filters['q'].'%'))
+            ->withAvg('ratings', 'rating')->withCount('ratings')
+            ->withExists(['favorites as is_favorited' => fn ($query) => $query->where('user_id', $request->user()?->id)])
             ->orderBy('title')->paginate(18)->withQueryString();
         if ($request->expectsJson()) {
             return response()->json(['html' => view('colorings.page-cards', compact('category', 'pages'))->render(), 'count' => $pages->total()]);
@@ -38,6 +40,9 @@ class ColoringController extends Controller
     public function page(ColoringCategory $category, ColoringPage $page): View
     {
         abort_unless($category->is_published && $page->category_id === $category->id && $page->is_published, 404);
-        return view('colorings.page', compact('category', 'page'));
+        $rating = $page->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
+        $userRating = auth()->user()?->coloringRatings()->where('coloring_page_id', $page->id)->value('rating');
+        $isFavorited = auth()->user()?->coloringFavorites()->where('coloring_page_id', $page->id)->exists() ?? false;
+        return view('colorings.page', compact('category', 'page', 'rating', 'userRating', 'isFavorited'));
     }
 }

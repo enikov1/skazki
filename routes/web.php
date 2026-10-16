@@ -17,6 +17,7 @@ use App\Http\Controllers\StoryController;
 use App\Http\Controllers\StoryRatingController;
 use App\Http\Controllers\StoryQuizController;
 use App\Http\Controllers\ColoringController;
+use App\Http\Controllers\ColoringInteractionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\GenreController;
@@ -31,6 +32,8 @@ Route::get('/audio', [StoryController::class, 'audioIndex'])->name('audio.index'
 Route::get('/raskraski', [ColoringController::class, 'index'])->name('colorings.index');
 Route::get('/raskraski/{category:slug}', [ColoringController::class, 'category'])->name('colorings.category');
 Route::get('/raskraski/{category:slug}/{page:slug}', [ColoringController::class, 'page'])->name('colorings.page');
+Route::post('/raskraski/{category:slug}/{page:slug}/favorite', [ColoringInteractionController::class, 'favorite'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.favorite');
+Route::post('/raskraski/{category:slug}/{page:slug}/rating', [ColoringInteractionController::class, 'rate'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.rate');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');

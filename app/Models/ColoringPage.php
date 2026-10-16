@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ColoringPage extends Model
 {
@@ -17,5 +18,15 @@ class ColoringPage extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ColoringCategory::class, 'category_id');
+    }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(ColoringRating::class, 'coloring_page_id');
+    }
+
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(ColoringFavorite::class, 'coloring_page_id');
     }
 }

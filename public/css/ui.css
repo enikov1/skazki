@@ -289,6 +289,61 @@
   padding: 0 3px 3px;
 }
 
+.coloring-page-card > a {
+  display: grid;
+  gap: 8px;
+}
+
+.coloring-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 3px 3px;
+  color: #90723b;
+}
+
+.coloring-card-meta small {
+  color: var(--muted);
+}
+
+.coloring-card-meta .button {
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+.coloring-score {
+  margin: 0 0 12px;
+  color: #a37726;
+}
+
+.coloring-interactions {
+  justify-content: center;
+  align-items: center;
+}
+
+.coloring-interactions form[data-coloring-rating] {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfdfe;
+}
+
+.coloring-interactions fieldset {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.coloring-interactions legend {
+  font-weight: 700;
+  font-size: 13px;
+}
+
 .coloring-work {
   text-align: center;
 }
@@ -377,5 +432,16 @@
   .coloring-page-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 9px;
+  }
+  .coloring-card-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .coloring-interactions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .coloring-interactions form {
+    width: 100%;
   }
 }

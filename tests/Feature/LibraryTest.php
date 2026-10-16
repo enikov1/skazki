@@ -747,6 +747,14 @@ class LibraryTest extends TestCase
         $this->get(route('colorings.category', $category))->assertOk()->assertSee('Лисёнок');
         $this->getJson(route('colorings.category', [$category, 'q' => 'не найдено']))->assertOk()->assertJsonPath('count', 0);
         $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('Контур рисунка');
+        $this->postJson(route('colorings.favorite', [$category, $page]))->assertOk()->assertJsonPath('saved', true);
+        $this->postJson(route('colorings.favorite', [$category, $page]))->assertOk()->assertJsonPath('saved', false);
+        $this->postJson(route('colorings.favorite', [$category, $page]))->assertOk()->assertJsonPath('saved', true);
+        $this->postJson(route('colorings.rate', [$category, $page]), ['rating' => 5])->assertOk()->assertJsonPath('average', 5);
+        $this->postJson(route('colorings.rate', [$category, $page]), ['rating' => 4])->assertOk()->assertJsonPath('total', 1);
+        $this->assertDatabaseCount('coloring_favorites', 1);
+        $this->assertDatabaseCount('coloring_ratings', 1);
+        $this->get(route('profile.history'))->assertOk()->assertSee('Избранные раскраски')->assertSee('Лисёнок');
         $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertUnprocessable();
         $this->deleteJson(route('admin.colorings.pages.destroy', $page))->assertOk();
         $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertOk();
