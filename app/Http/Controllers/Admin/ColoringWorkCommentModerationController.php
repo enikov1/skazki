@@ -17,7 +17,7 @@ class ColoringWorkCommentModerationController extends Controller
 
     public function index(): View
     {
-        $comments = ColoringWorkComment::query()->with(['submission', 'user:id,name'])->where('status', 'pending')->oldest()->paginate(25);
+        $comments = ColoringWorkComment::query()->with(['submission', 'coloringPage.category', 'user:id,name'])->where('status', 'pending')->oldest()->paginate(25);
         return view('admin.colorings.comments', compact('comments'));
     }
 

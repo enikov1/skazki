@@ -50,6 +50,7 @@ Route::get('/raskraski/{category:slug}/{page:slug}', [ColoringController::class,
 Route::post('/raskraski/{category:slug}/{page:slug}/favorite', [ColoringInteractionController::class, 'favorite'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.favorite');
 Route::post('/raskraski/{category:slug}/{page:slug}/rating', [ColoringInteractionController::class, 'rate'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.rate');
 Route::post('/raskraski/{category:slug}/{page:slug}/submissions', [ColoringSubmissionController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.submissions.store');
+Route::post('/raskraski/{category:slug}/{page:slug}/comments', [ColoringWorkInteractionController::class, 'pageComment'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.comments.store');
 Route::post('/raskraski/{category:slug}/{page:slug}/progress', [ColoringProgressController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.progress.store');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/robots.txt', RobotsController::class)->name('robots');

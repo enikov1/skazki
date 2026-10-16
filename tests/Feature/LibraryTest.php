@@ -936,4 +936,35 @@ class LibraryTest extends TestCase
         $this->actingAs($parent)->get(route('profile.history'))->assertOk()->assertSee('Опубликована в галерее');
     }
 
+    public function test_coloring_page_has_related_recommendations_and_moderated_comments(): void
+    {
+        $this->seed();
+        $category = ColoringCategory::create(['name' => 'Домашние истории', 'slug' => 'home-stories', 'is_published' => true]);
+        $page = $category->pages()->create(['title' => 'Маша и медведь', 'slug' => 'masha-medved', 'outline_path' => 'assets/colorings/masha.png', 'is_published' => true]);
+        $category->pages()->create(['title' => 'Домик в лесу', 'slug' => 'domik-les', 'outline_path' => 'assets/colorings/house.png', 'is_published' => true]);
+        foreach ([['name' => 'Лесные друзья', 'slug' => 'forest-friends'], ['name' => 'Сказочные герои', 'slug' => 'fairy-heroes'], ['name' => 'Транспорт', 'slug' => 'transport']] as $item) {
+            $otherCategory = ColoringCategory::create($item + ['is_published' => true]);
+            $otherCategory->pages()->create(['title' => $item['name'].' — рисунок', 'slug' => $item['slug'].'-page', 'outline_path' => 'assets/colorings/example.png', 'is_published' => true]);
+        }
+
+        $this->get(route('colorings.page', [$category, $page]))->assertOk()
+            ->assertSee('coloring-workspace', false)->assertSee('coloring-tools-panel', false)
+            ->assertSee('Другие раскраски')->assertSee('Все раскраски')->assertSee('Комментарии')
+            ->assertSee('Домик в лесу')->assertSee('Лесные друзья — рисунок');
+
+        $reader = User::factory()->create();
+        $this->actingAs($reader)->postJson(route('colorings.comments.store', [$category, $page]), ['body' => 'Очень красивая раскраска!'])
+            ->assertOk()->assertJsonPath('message', 'Комментарий отправлен на проверку.');
+        $comment = \App\Models\ColoringWorkComment::firstOrFail();
+        $this->assertSame($page->id, $comment->coloring_page_id);
+        $this->get(route('colorings.page', [$category, $page]))->assertDontSee('Очень красивая раскраска!');
+
+        $moderator = User::factory()->create();
+        $moderator->roles()->attach(Role::where('slug', 'moderator')->value('id'));
+        $this->actingAs($moderator)->get(route('admin.coloring-work-comments.index'))
+            ->assertOk()->assertSee('Комментарии к раскраскам и работам')->assertSee('к раскраске «Маша и медведь»');
+        $this->patchJson(route('admin.coloring-work-comments.update', $comment), ['status' => 'approved'])->assertOk();
+        $this->get(route('colorings.page', [$category, $page]))->assertSee('Очень красивая раскраска!')->assertSee('Читатель');
+    }
+
 }

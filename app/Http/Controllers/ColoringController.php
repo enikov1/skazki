@@ -45,7 +45,21 @@ class ColoringController extends Controller
         $userRating = auth()->user()?->coloringRatings()->where('coloring_page_id', $page->id)->value('rating');
         $isFavorited = auth()->user()?->coloringFavorites()->where('coloring_page_id', $page->id)->exists() ?? false;
         $savedStrokes = auth()->user()?->coloringProgress()->where('coloring_page_id', $page->id)->first()?->strokes ?? [];
-        return view('colorings.page', compact('category', 'page', 'rating', 'userRating', 'isFavorited', 'savedStrokes'));
+        $comments = $page->comments()->where('status', 'approved')->latest()->paginate(10);
+        $related = $category->pages()->where('is_published', true)->where('id', '<>', $page->id)
+            ->with('category:id,name,slug')->withAvg('ratings', 'rating')->withCount('favorites')
+            ->orderByDesc('favorites_count')->orderByDesc('ratings_avg_rating')->orderBy('title')->limit(4)->get();
+        if ($related->count() < 4) {
+            $excludedIds = $related->pluck('id')->push($page->id);
+            $popular = ColoringPage::query()->where('is_published', true)->whereNotIn('id', $excludedIds)
+                ->whereHas('category', fn ($query) => $query->where('is_published', true))
+                ->with('category:id,name,slug')->withAvg('ratings', 'rating')->withCount('favorites')
+                ->orderByDesc('favorites_count')->orderByDesc('ratings_avg_rating')->orderBy('title')
+                ->limit(4 - $related->count())->get();
+            $related = $related->concat($popular);
+        }
+
+        return view('colorings.page', compact('category', 'page', 'rating', 'userRating', 'isFavorited', 'savedStrokes', 'related', 'comments'));
     }
 
     public function gallery(): View

@@ -578,6 +578,559 @@
   overflow-wrap: anywhere;
 }
 
+.coloring-detail-page {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.coloring-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(37, 73, 90, 0.0352941176);
+}
+
+.coloring-detail-title {
+  min-width: 0;
+}
+
+.coloring-category-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 11px;
+  border-radius: 99px;
+  background: #fff4dc;
+  color: #91652b;
+  font-size: 12px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.coloring-detail-header h1 {
+  margin: 8px 0 5px;
+  color: var(--ink);
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.2;
+}
+
+.coloring-detail-header .coloring-score {
+  margin: 0;
+  color: #92733b;
+  font-size: 13px;
+}
+
+.coloring-detail-actions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.coloring-detail-actions form {
+  margin: 0;
+}
+
+.coloring-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(245px, 290px);
+  align-items: start;
+  gap: 16px;
+}
+
+.coloring-canvas-column {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(37, 73, 90, 0.0352941176);
+}
+
+.coloring-canvas-column .coloring-studio-canvas {
+  max-width: none;
+  margin: 0;
+  border-radius: 13px;
+}
+
+.coloring-canvas-column .coloring-studio-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.coloring-actions-spacer {
+  flex: 1 1 auto;
+}
+
+.coloring-canvas-column .coloring-save-status {
+  margin: 10px 0 0;
+  color: #74838b;
+  font-size: 12px;
+}
+
+.coloring-tools-panel {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #f9fcfd;
+}
+
+.coloring-tool-section {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid #e8eef0;
+  border-radius: 13px;
+  background: #fff;
+}
+
+.coloring-tool-section h2 {
+  margin: 0 0 10px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.coloring-tool-section .coloring-tool-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.coloring-tool-section .coloring-tool-group .button {
+  min-height: 41px;
+}
+
+.coloring-tool-section .coloring-tool-group .is-active {
+  border-color: #8dcbe1;
+  background: #edf9fd;
+  color: #1683a9;
+}
+
+.coloring-tool-section .coloring-size {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 38px;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coloring-tool-section .coloring-size input {
+  width: 100%;
+  accent-color: var(--coral);
+}
+
+.coloring-tool-section .coloring-size output {
+  display: grid;
+  place-items: center;
+  min-height: 30px;
+  border-radius: 8px;
+  background: #f2f7f8;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.coloring-size-preview {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 34px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #edf1f2;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.coloring-size-preview > span {
+  display: block;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #f37451;
+  transition: width 0.12s, height 0.12s;
+}
+
+.coloring-palette-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+
+.coloring-palette-heading h2 {
+  margin: 0;
+}
+
+.coloring-palette-heading .coloring-custom-color {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.coloring-palette-heading .coloring-custom-color input {
+  width: 34px;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.coloring-tool-section .coloring-palette {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(30px, 1fr));
+  justify-items: center;
+  gap: 10px;
+  padding: 4px;
+}
+
+.coloring-tool-section .color-swatch {
+  width: 34px;
+  height: 34px;
+}
+
+.coloring-community-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: start;
+  gap: 15px;
+  margin: 4px 0 26px;
+}
+
+.coloring-community-grid .coloring-submission-form {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: clamp(16px, 2.5vw, 24px);
+  background: #fff;
+}
+
+.coloring-submission-form h2, .coloring-rating-card h2 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.coloring-submission-form .eyebrow {
+  margin: 0 0 4px;
+}
+
+.coloring-submission-form > div > p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.coloring-community-grid .coloring-submission-form form, .coloring-community-grid .coloring-submission-form > form {
+  display: grid;
+  gap: 12px;
+}
+
+.coloring-community-grid .coloring-submission-form .field {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.coloring-community-grid .coloring-submission-form .button {
+  justify-self: start;
+}
+
+.coloring-community-grid .consent-check {
+  border: 1px solid #edf0ee;
+  line-height: 1.5;
+}
+
+.coloring-login-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.coloring-rating-card {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+  min-height: 150px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(37, 73, 90, 0.0352941176);
+}
+
+.coloring-rating-card .eyebrow {
+  margin: 0;
+}
+
+.coloring-rating-card h2 {
+  font-size: 18px;
+}
+
+.coloring-rating-card form, .coloring-rating-card fieldset {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.coloring-rating-card fieldset {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
+
+.coloring-rating-card .rating-options {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.coloring-rating-card .rating-options label {
+  cursor: pointer;
+}
+
+.coloring-rating-card .rating-options input {
+  position: absolute;
+  opacity: 0;
+}
+
+.coloring-rating-card .rating-options span {
+  color: #d3d9da;
+  font-size: 24px;
+}
+
+.coloring-rating-card .rating-options input:checked + span, .coloring-rating-card .rating-options label:has(input:checked) ~ label span {
+  color: #e0aa39;
+}
+
+.coloring-rating-card .rating-options input:focus-visible + span {
+  outline: 2px solid #279bcf;
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.coloring-related-section {
+  margin: 0 0 26px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.coloring-related-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.coloring-related-heading .eyebrow {
+  margin: 0 0 3px;
+}
+
+.coloring-related-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(21px, 2.5vw, 27px);
+}
+
+.coloring-related-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.coloring-related-grid .coloring-page-card {
+  align-content: start;
+}
+
+.coloring-related-grid .coloring-page-card > a > span {
+  aspect-ratio: 4/3;
+}
+
+.coloring-related-grid .coloring-page-card > a > span .icon {
+  width: 36px;
+  height: 36px;
+  color: #7c9ca7;
+}
+
+.coloring-related-grid .coloring-page-card small {
+  padding: 0 3px 3px;
+  color: var(--muted);
+}
+
+.coloring-page-comments {
+  margin-bottom: 32px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.coloring-page-comments h2 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 24px;
+}
+
+.coloring-page-comments .notice {
+  margin: 0 0 16px;
+  padding: 10px 13px;
+  font-size: 13px;
+}
+
+.coloring-page-comments .form-grid {
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.coloring-page-comments .field {
+  display: grid;
+  gap: 7px;
+}
+
+.coloring-page-comments textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.coloring-page-comments .comment-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.coloring-page-comments .comment {
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.coloring-page-comments .comment p {
+  margin: 7px 0 0;
+  color: #536872;
+}
+
+@media (max-width: 900px) {
+  .coloring-related-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .coloring-workspace {
+    grid-template-columns: minmax(0, 1fr) 245px;
+  }
+}
+@media (max-width: 760px) {
+  .coloring-detail-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .coloring-detail-actions {
+    justify-content: flex-start;
+  }
+  .coloring-workspace {
+    grid-template-columns: 1fr;
+  }
+  .coloring-tools-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .coloring-tool-section:last-child {
+    grid-column: 1/-1;
+  }
+  .coloring-tool-section .coloring-palette {
+    grid-template-columns: repeat(8, minmax(30px, 1fr));
+  }
+  .coloring-community-grid {
+    grid-template-columns: minmax(0, 1fr) 230px;
+  }
+}
+@media (max-width: 600px) {
+  .coloring-detail-page {
+    gap: 12px;
+  }
+  .coloring-detail-header, .coloring-canvas-column {
+    padding: 14px;
+    border-radius: 14px;
+  }
+  .coloring-detail-header h1 {
+    font-size: 26px;
+  }
+  .coloring-detail-actions {
+    width: 100%;
+  }
+  .coloring-detail-actions .button {
+    min-height: 40px;
+    padding: 8px 11px;
+    font-size: 13px;
+  }
+  .coloring-canvas-column .coloring-studio-actions {
+    gap: 7px;
+  }
+  .coloring-actions-spacer {
+    display: none;
+  }
+  .coloring-canvas-column .coloring-studio-actions .button {
+    flex: 1 1 calc(50% - 7px);
+    justify-content: center;
+  }
+  .coloring-tools-panel {
+    padding: 11px;
+    gap: 9px;
+  }
+  .coloring-tool-section {
+    padding: 11px;
+  }
+  .coloring-tool-section .coloring-palette {
+    grid-template-columns: repeat(4, minmax(30px, 1fr));
+  }
+  .coloring-community-grid {
+    grid-template-columns: 1fr;
+  }
+  .coloring-rating-card {
+    width: 100%;
+    min-height: 0;
+  }
+  .coloring-rating-card fieldset {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+  .coloring-related-section, .coloring-page-comments {
+    padding: 15px;
+  }
+  .coloring-related-grid {
+    gap: 9px;
+  }
+  .coloring-related-grid .coloring-page-card {
+    padding: 8px;
+  }
+}
+@media (max-width: 380px) {
+  .coloring-tools-panel {
+    grid-template-columns: 1fr;
+  }
+  .coloring-tool-section:last-child {
+    grid-column: auto;
+  }
+  .coloring-tool-section .coloring-palette {
+    grid-template-columns: repeat(4, minmax(30px, 1fr));
+  }
+  .coloring-related-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .games-heading {
   margin-bottom: 18px;
   padding: clamp(18px, 4vw, 36px);
@@ -1224,6 +1777,45 @@
   }
   img, figure {
     break-inside: avoid;
+  }
+}
+@media print {
+  @page {
+    margin: 12mm;
+  }
+  body.print-coloring * {
+    visibility: hidden !important;
+  }
+  body.print-coloring .coloring-canvas-column, body.print-coloring .coloring-canvas-column * {
+    visibility: visible !important;
+  }
+  body.print-coloring .coloring-canvas-column {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  body.print-coloring .coloring-studio-canvas {
+    width: 100%;
+    max-width: none;
+    max-height: 270mm;
+    margin: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  body.print-coloring .coloring-studio-canvas canvas {
+    width: 100%;
+    max-height: 270mm;
+    object-fit: contain;
+  }
+  body.print-coloring .coloring-studio-actions, body.print-coloring .coloring-save-status {
+    display: none !important;
   }
 }
 @media print {

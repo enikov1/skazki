@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/site.css') }}?v=12">
-  <link rel="stylesheet" href="{{ asset('css/ui.css') }}?v=3">
+  <link rel="stylesheet" href="{{ asset('css/ui.css') }}?v=4">
   @if(request()->routeIs('profile.*'))<link rel="stylesheet" href="{{ asset('css/profile.css') }}?v=1">@endif
   @if(request()->routeIs('stories.read'))<link rel="stylesheet" href="{{ asset('css/reader.css') }}?v=1">@endif
   @if(request()->routeIs('admin.*'))<link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=5"><link rel="stylesheet" href="{{ asset('vendor/quill/quill.snow.css') }}?v=2">@endif
@@ -48,6 +48,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="modal" id="modal"><div class="modal-card"><button class="modal-close" id="modalClose" type="button" aria-label="Закрыть"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#close"></use></svg></button><div id="modalContent"></div></div></div>
 @if(request()->routeIs('admin.*'))<script src="{{ asset('vendor/quill/quill.js') }}?v=2" defer></script>@endif
-<script src="{{ asset('js/app.js') }}?v=12" defer></script>
+<script src="{{ asset('js/app.js') }}?v=13" defer></script>
 </body>
 </html>

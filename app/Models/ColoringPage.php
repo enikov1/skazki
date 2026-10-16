@@ -25,6 +25,11 @@ class ColoringPage extends Model
         return $this->hasMany(ColoringRating::class, 'coloring_page_id');
     }
 
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ColoringWorkComment::class, 'coloring_page_id');
+    }
+
     public function favorites(): HasMany
     {
         return $this->hasMany(ColoringFavorite::class, 'coloring_page_id');

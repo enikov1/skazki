@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ColoringWorkComment extends Model
 {
-    protected $fillable = ['user_id', 'coloring_submission_id', 'body', 'status', 'moderated_by', 'moderated_at'];
+    protected $fillable = ['user_id', 'coloring_submission_id', 'coloring_page_id', 'body', 'status', 'moderated_by', 'moderated_at'];
 
     protected function casts(): array
     {
@@ -17,6 +17,11 @@ class ColoringWorkComment extends Model
     public function submission(): BelongsTo
     {
         return $this->belongsTo(ColoringSubmission::class, 'coloring_submission_id');
+    }
+
+    public function coloringPage(): BelongsTo
+    {
+        return $this->belongsTo(ColoringPage::class, 'coloring_page_id');
     }
 
     public function user(): BelongsTo
