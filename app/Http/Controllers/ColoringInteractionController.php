@@ -12,15 +12,15 @@ class ColoringInteractionController extends Controller
 {
     use RespondsToAjax;
 
-    public function favorite(Request $request, ColoringPage $page): JsonResponse|RedirectResponse
+    public function favorite(Request $request, string $category, string $page): JsonResponse|RedirectResponse
     {
-        $this->ensurePublished($page);
-        $favorite = $request->user()->coloringFavorites()->where('coloring_page_id', $page->id)->first();
+        $coloringPage = $this->publishedPage($category, $page);
+        $favorite = $request->user()->coloringFavorites()->where('coloring_page_id', $coloringPage->id)->first();
         if ($favorite) {
             $favorite->delete();
             $saved = false;
         } else {
-            $request->user()->coloringFavorites()->create(['coloring_page_id' => $page->id]);
+            $request->user()->coloringFavorites()->create(['coloring_page_id' => $coloringPage->id]);
             $saved = true;
         }
         if ($request->expectsJson()) {
@@ -29,20 +29,22 @@ class ColoringInteractionController extends Controller
         return $this->respond($request, $saved ? 'Добавлено в избранное.' : 'Удалено из избранного.');
     }
 
-    public function rate(Request $request, ColoringPage $page): JsonResponse|RedirectResponse
+    public function rate(Request $request, string $category, string $page): JsonResponse|RedirectResponse
     {
-        $this->ensurePublished($page);
+        $coloringPage = $this->publishedPage($category, $page);
         $data = $request->validate(['rating' => ['required', 'integer', 'between:1,5']]);
-        $page->ratings()->updateOrCreate(['user_id' => $request->user()->id], ['rating' => $data['rating']]);
-        $rating = $page->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
+        $coloringPage->ratings()->updateOrCreate(['user_id' => $request->user()->id], ['rating' => $data['rating']]);
+        $rating = $coloringPage->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Ваша оценка сохранена.', 'average' => (float) $rating->average, 'total' => (int) $rating->total, 'user_rating' => $data['rating']]);
         }
         return $this->respond($request, 'Ваша оценка сохранена.');
     }
 
-    private function ensurePublished(ColoringPage $coloring): void
+    private function publishedPage(string $category, string $page): ColoringPage
     {
-        abort_unless($coloring->is_published && $coloring->category()->where('is_published', true)->exists(), 404);
+        return ColoringPage::query()->where('slug', $page)->where('is_published', true)
+            ->whereHas('category', fn ($query) => $query->where('slug', $category)->where('is_published', true))
+            ->firstOrFail();
     }
 }
