@@ -9,6 +9,7 @@ use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\User;
 use App\Models\Comment;
+use App\Models\ColoringCategory;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -726,6 +727,30 @@ class LibraryTest extends TestCase
         $this->get(route('profile.history'))->assertOk()->assertSee('Пройденные викторины')->assertSee('1 из 2 верных ответов');
         $this->actingAs(User::factory()->create())->get(route('stories.quiz', [$story, 'result' => 1]))->assertNotFound();
         $this->postJson(route('stories.quiz.submit', $story), ['answers' => [0]])->assertUnprocessable();
+    }
+
+    public function test_coloring_categories_and_pages_are_managed_in_admin_and_publicly_scoped(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $this->actingAs($admin)->get(route('admin.coloring-categories.index'))->assertOk()->assertSee('Категории раскрасок');
+        $this->postJson(route('admin.coloring-categories.store'), ['name' => 'Лесные жители', 'description' => 'Рисунки животных леса', 'is_published' => 1])
+            ->assertOk()->assertJsonPath('message', 'Категория раскрасок сохранена.');
+        $category = ColoringCategory::firstOrFail();
+        $this->postJson(route('admin.colorings.pages.store'), ['category_id' => $category->id, 'title' => 'Лисёнок', 'outline_path' => 'storage/media/fox.png', 'is_published' => 1])->assertOk();
+        $page = $category->pages()->firstOrFail();
+        $this->get(route('colorings.index'))->assertOk()->assertSee('Лесные жители')->assertSee('1 раскраска');
+        $this->get(route('colorings.category', $category))->assertOk()->assertSee('Лисёнок');
+        $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('Контур рисунка');
+        $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertUnprocessable();
+        $this->deleteJson(route('admin.colorings.pages.destroy', $page))->assertOk();
+        $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertOk();
+
+        auth()->logout();
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($editor)->get(route('admin.coloring-categories.index'))->assertForbidden();
     }
 
 }

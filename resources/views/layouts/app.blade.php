@@ -26,7 +26,7 @@
 <body data-site-page="@yield('site_page', 'laravel')">
 <header class="topbar"><div class="top-inner">
   <a class="brand" href="{{ route('home') }}"><span class="brand-icon"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#bear"></use></svg></span><span>СказкоМир<small>ЧИТАЕМ ВМЕСТЕ</small></span></a>
-  <nav class="nav" id="nav" aria-label="Основная навигация"><a href="{{ route('home') }}" @class(['active' => request()->routeIs('home')])>Главная</a><a href="{{ route('home') }}">Сказки</a><a href="{{ route('audio.index') }}" @class(['active' => request()->routeIs('audio.*')])>Аудио</a><a href="{{ url('/demo/activities.html') }}">Занятия</a><a href="{{ url('/demo/workshop.html') }}">Мастерская</a><a href="{{ route('articles.index') }}" @class(['active' => request()->routeIs('articles.*')])>Родителям</a></nav>
+  <nav class="nav" id="nav" aria-label="Основная навигация"><a href="{{ route('home') }}" @class(['active' => request()->routeIs('home')])>Главная</a><a href="{{ route('home') }}">Сказки</a><a href="{{ route('audio.index') }}" @class(['active' => request()->routeIs('audio.*')])>Аудио</a><a href="{{ route('colorings.index') }}" @class(['active' => request()->routeIs('colorings.*')])>Раскраски</a><a href="{{ route('articles.index') }}" @class(['active' => request()->routeIs('articles.*')])>Родителям</a></nav>
   <button class="menu-close" type="button" data-menu-close aria-label="Закрыть меню"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#close"></use></svg>Закрыть меню</button>
   <div class="right-head">
   @auth
