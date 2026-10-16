@@ -417,6 +417,31 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
 });
 };
 bindAjaxForms();
+const coloringResult=document.querySelector('[data-coloring-results]');
+const coloringFilter=document.querySelector('form[data-coloring-filter]');
+if(coloringResult&&coloringFilter){
+ let coloringRequest=null;
+ const loadColoringResults=async(url,replaceUrl=true)=>{
+  coloringRequest?.abort();coloringRequest=new AbortController();coloringResult.setAttribute('aria-busy','true');
+  try{
+   const response=await fetch(url,{headers:{Accept:'application/json','X-Requested-With':'XMLHttpRequest'},signal:coloringRequest.signal});
+   if(!response.ok)throw new Error('Не удалось загрузить раскраски.');
+   const data=await response.json();coloringResult.innerHTML=data.html;
+   if(replaceUrl)history.pushState({},'',url);
+  }catch(error){if(error.name!=='AbortError'){const message=document.createElement('p');message.className='notice';message.textContent=error.message;coloringResult.replaceChildren(message)}}
+  finally{coloringResult.removeAttribute('aria-busy')}
+ };
+ coloringFilter.addEventListener('submit',event=>{
+  event.preventDefault();const url=new URL(coloringFilter.action,location.href);new FormData(coloringFilter).forEach((value,key)=>{if(String(value).trim())url.searchParams.set(key,String(value).trim());else url.searchParams.delete(key)});url.searchParams.delete('page');loadColoringResults(url.toString());
+ });
+ document.addEventListener('click',event=>{
+  const reset=event.target.closest('[data-coloring-reset]');
+  if(reset){event.preventDefault();coloringFilter.reset();loadColoringResults(reset.href);return}
+  const link=event.target.closest('[data-coloring-results] .pagination a');
+  if(link){event.preventDefault();loadColoringResults(link.href)}
+ });
+ addEventListener('popstate',()=>{const url=new URL(location.href);coloringFilter.elements.namedItem('q').value=url.searchParams.get('q')||'';loadColoringResults(url.toString(),false)});
+}
 const savedStoryAudio=document.querySelector('#storyAudio[data-audio-progress-url]');
 if(savedStoryAudio){
  let savedAudioTimer=null,initialAudioPosition=Number(savedStoryAudio.dataset.audioProgress||0),audioPositionRestored=false;

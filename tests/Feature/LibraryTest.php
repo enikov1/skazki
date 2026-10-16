@@ -741,7 +741,11 @@ class LibraryTest extends TestCase
         $this->postJson(route('admin.colorings.pages.store'), ['category_id' => $category->id, 'title' => 'Лисёнок', 'outline_path' => 'storage/media/fox.png', 'is_published' => 1])->assertOk();
         $page = $category->pages()->firstOrFail();
         $this->get(route('colorings.index'))->assertOk()->assertSee('Лесные жители')->assertSee('1 раскраска');
+        $filteredCategories = $this->getJson(route('colorings.index', ['q' => 'лес']));
+        $filteredCategories->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString('Лесные жители', $filteredCategories->json('html'));
         $this->get(route('colorings.category', $category))->assertOk()->assertSee('Лисёнок');
+        $this->getJson(route('colorings.category', [$category, 'q' => 'не найдено']))->assertOk()->assertJsonPath('count', 0);
         $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('Контур рисунка');
         $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertUnprocessable();
         $this->deleteJson(route('admin.colorings.pages.destroy', $page))->assertOk();
