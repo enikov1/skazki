@@ -42,10 +42,10 @@ Route::get('/skazki', [StoryController::class, 'catalog'])->name('stories.index'
 Route::get('/audio', [StoryController::class, 'audioIndex'])->name('audio.index');
 Route::view('/politika-konfidentsialnosti', 'privacy-policy')->name('privacy-policy');
 Route::get('/igry', [GameController::class, 'index'])->name('games.index');
-Route::get('/igry/naydi-otlichiya', [InteractiveGameController::class, 'index'])->defaults('type', 'differences')->name('games.differences.index');
-Route::get('/igry/naydi-otlichiya/{slug}', [InteractiveGameController::class, 'show'])->defaults('type', 'differences')->name('games.differences.show');
-Route::get('/igry/mozaiki', [InteractiveGameController::class, 'index'])->defaults('type', 'mosaics')->name('games.mosaics.index');
-Route::get('/igry/mozaiki/{slug}', [InteractiveGameController::class, 'show'])->defaults('type', 'mosaics')->name('games.mosaics.show');
+Route::get('/igry/naydi-otlichiya', [InteractiveGameController::class, 'differencesIndex'])->name('games.differences.index');
+Route::get('/igry/naydi-otlichiya/{slug}', [InteractiveGameController::class, 'differencesShow'])->name('games.differences.show');
+Route::get('/igry/mozaiki', [InteractiveGameController::class, 'mosaicsIndex'])->name('games.mosaics.index');
+Route::get('/igry/mozaiki/{slug}', [InteractiveGameController::class, 'mosaicsShow'])->name('games.mosaics.show');
 Route::get('/raskraski', [ColoringController::class, 'index'])->name('colorings.index');
 Route::get('/raskraski/raboty', [ColoringController::class, 'gallery'])->name('colorings.gallery');
 Route::get('/raskraski/raboty/{submission:slug}', [ColoringController::class, 'galleryWork'])->name('colorings.gallery.work');
