@@ -3,6 +3,7 @@
 @section('description', $story->seo_description ?: $story->summary)
 @section('content')
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('stories.show', $story) }}">{{ $story->title }}</a><span>/</span><span aria-current="page">Чтение</span></nav>
+@include('stories.partials.print-sheet')
 <main class="reading-shell laravel-reader" data-print-area="story" data-reader data-story="{{ $story->slug }}" data-resume="{{ $paragraphPosition }}" @auth data-progress-url="{{ route('stories.reading-progress', $story) }}" data-preferences-url="{{ route('profile.preferences') }}" @endauth>
   <div class="reader-toolbar" aria-label="Настройки чтения"><button class="button button-quiet" type="button" data-print-page><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#printer"></use></svg> Распечатать</button>
     <a class="pill" href="{{ route('stories.show', $story) }}">← К сказке</a>

@@ -75,6 +75,47 @@ class LibraryTest extends TestCase
         $this->get('/vhod')->assertRedirect(route('login'), 301);
     }
 
+    public function test_dedicated_story_catalog_lists_all_published_stories_and_filters_results(): void
+    {
+        Story::create(['title' => 'Лесная сказка', 'slug' => 'lesnaya-skazka', 'genre' => 'Приключения', 'summary' => 'Путешествие по лесу', 'body' => 'Текст', 'age_min' => 4, 'age_max' => 7, 'status' => 'published', 'published_at' => now()->subMinute()]);
+        Story::create(['title' => 'Народная история', 'slug' => 'narodnaya-istoriya', 'genre' => 'Народные сказки', 'summary' => 'Добрая история', 'body' => 'Текст', 'age_min' => 3, 'age_max' => 5, 'status' => 'published', 'published_at' => now()->subMinute()]);
+        Story::create(['title' => 'Черновик', 'slug' => 'draft-story', 'genre' => 'Тест', 'summary' => 'Не опубликовано', 'body' => 'Текст']);
+
+        $this->get(route('stories.index'))->assertOk()->assertSee('Все сказки')->assertSee('Лесная сказка')->assertSee('Народная история')->assertDontSee('Черновик');
+        $this->get(route('stories.index', ['genre' => 'Приключения', 'age' => 6]))->assertOk()->assertSee('Лесная сказка')->assertDontSee('Народная история');
+    }
+
+    public function test_story_print_sheet_contains_only_story_body_illustration_and_admin_logo(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('branding/print.png', 'fake-image');
+        \App\Models\SiteSetting::create(['key' => 'print_watermark_logo', 'value' => 'branding/print.png']);
+        $story = Story::create(['title' => 'Сказка для печати', 'slug' => 'print-story', 'genre' => 'Тест', 'summary' => 'Краткое описание страницы', 'body' => '[p]Только текст сказки[/p]', 'cover_path' => 'assets/illustrations/audio-story.webp', 'status' => 'published', 'published_at' => now()->subMinute()]);
+
+        $response = $this->get(route('stories.show', $story))->assertOk()->assertSee('story-print-sheet', false)
+            ->assertSee('story-print-illustration', false)->assertSee('Только текст сказки')
+            ->assertSee('storage/branding/print.png', false)->assertSee('story-print-watermark', false);
+        $this->assertStringContainsString('Краткое описание страницы', $response->getContent());
+        $this->assertStringEndsWith('/storage/branding/print.png', \App\Models\SiteSetting::printLogoUrl());
+    }
+
+    public function test_admin_can_upload_print_watermark_and_other_roles_cannot(): void
+    {
+        $this->seed();
+        Storage::fake('public');
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $this->actingAs($admin)->get(route('admin.settings.branding.edit'))->assertOk()->assertSee('Логотип-водяной знак');
+        $this->post(route('admin.settings.branding.update'), ['_method' => 'PUT', 'print_watermark_logo' => UploadedFile::fake()->image('logo.png', 200, 200)], ['Accept' => 'application/json'])
+            ->assertOk()->assertJsonPath('message', 'Логотип для печати обновлён.');
+        $stored = \App\Models\SiteSetting::query()->where('key', 'print_watermark_logo')->value('value');
+        $this->assertStringStartsWith('branding/', $stored);
+        Storage::disk('public')->assertExists($stored);
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($editor)->get(route('admin.settings.branding.edit'))->assertForbidden();
+    }
+
     public function test_responses_include_baseline_security_headers_and_hsts_only_over_https(): void
     {
         $this->get('/login')->assertOk()

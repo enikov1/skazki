@@ -16,6 +16,7 @@
         @if(auth()->user()->hasRole('admin'))
             <a class="admin-link" href="{{ route('admin.genres.index') }}">Жанры</a>
             <a class="admin-link" href="{{ route('admin.coloring-categories.index') }}">Категории раскрасок</a>
+            <a class="admin-link" href="{{ route('admin.settings.branding.edit') }}">Логотип для печати</a>
         @endif
         @if(auth()->user()->hasAnyRole(['admin', 'moderator']))
             <a class="admin-link" href="{{ route('admin.moderation.index') }}">Комментарии @if($pending)<span class="badge">{{ $pending }}</span>@endif</a>
