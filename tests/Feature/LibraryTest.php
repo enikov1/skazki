@@ -724,6 +724,11 @@ class LibraryTest extends TestCase
             ->assertOk()->assertJsonPath('score', 1)->assertJsonPath('total', 2)->assertJsonPath('redirect', route('stories.quiz', $story).'?result=1');
         $this->assertDatabaseHas('story_quiz_attempts', ['story_id' => $story->id, 'score' => 1, 'question_count' => 2]);
         $this->get(route('stories.quiz', [$story, 'result' => 1]))->assertOk()->assertSee('Ваш результат: 1 из 2');
+        $this->get(route('games.index'))->assertOk()->assertSee('Игры и викторины')->assertSee('Тестовая сказка');
+        $filteredGames = $this->getJson(route('games.index', ['q' => 'Тестовая', 'genre' => 'Тест', 'age' => '5-8']))
+            ->assertOk()->assertJsonPath('count', 1);
+        $this->assertStringContainsString(route('stories.quiz', $story), $filteredGames->json('html'));
+        $this->getJson(route('games.index', ['age' => 'unknown']))->assertUnprocessable();
         $this->get(route('profile.history'))->assertOk()->assertSee('Пройденные викторины')->assertSee('1 из 2 верных ответов');
         $this->actingAs(User::factory()->create())->get(route('stories.quiz', [$story, 'result' => 1]))->assertNotFound();
         $this->postJson(route('stories.quiz.submit', $story), ['answers' => [0]])->assertUnprocessable();

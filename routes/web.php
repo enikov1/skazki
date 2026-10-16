@@ -16,6 +16,7 @@ use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\StoryRatingController;
 use App\Http\Controllers\StoryQuizController;
+use App\Http\Controllers\GameController;
 use App\Http\Controllers\ColoringController;
 use App\Http\Controllers\ColoringInteractionController;
 use App\Http\Controllers\ColoringSubmissionController;
@@ -33,6 +34,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoryController::class, 'index'])->name('home');
 Route::get('/audio', [StoryController::class, 'audioIndex'])->name('audio.index');
+Route::get('/igry', [GameController::class, 'index'])->name('games.index');
 Route::get('/raskraski', [ColoringController::class, 'index'])->name('colorings.index');
 Route::get('/raskraski/raboty', [ColoringController::class, 'gallery'])->name('colorings.gallery');
 Route::get('/raskraski/raboty/{submission:slug}', [ColoringController::class, 'galleryWork'])->name('colorings.gallery.work');

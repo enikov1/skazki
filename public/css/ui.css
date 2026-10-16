@@ -578,6 +578,111 @@
   overflow-wrap: anywhere;
 }
 
+.games-heading {
+  margin-bottom: 18px;
+  padding: clamp(18px, 4vw, 36px);
+}
+
+.games-catalog {
+  padding: clamp(16px, 3vw, 26px);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.games-filter {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.5fr) repeat(2, minmax(150px, 1fr)) auto;
+  align-items: end;
+  gap: 10px;
+  margin: 16px 0 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--blue3);
+}
+
+.games-filter .field {
+  min-width: 0;
+}
+
+.games-filter input, .games-filter select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fff;
+}
+
+.games-filter-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.game-card {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.game-card-cover {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  min-height: 110px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--blue2);
+  color: var(--blue);
+  font-size: 32px;
+}
+
+.game-card-cover img {
+  width: 100%;
+  height: 100%;
+  min-height: 110px;
+  object-fit: cover;
+}
+
+.game-card-copy h3, .game-card-copy p {
+  margin: 4px 0 8px;
+}
+
+.game-card-copy h3 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.game-card-copy h3 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.game-card-copy > p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.game-card .button {
+  grid-column: 2;
+  justify-self: start;
+}
+
+[data-games-results][aria-busy=true] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .coloring-work {
   text-align: center;
 }
@@ -636,6 +741,17 @@
 }
 @media (max-width: 760px) {
   .coloring-gallery-work {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .games-filter {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .games-filter .field:first-child {
+    grid-column: 1/-1;
+  }
+  .games-grid {
     grid-template-columns: 1fr;
   }
 }
