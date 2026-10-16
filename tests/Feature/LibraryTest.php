@@ -55,7 +55,7 @@ class LibraryTest extends TestCase
         $this->seed(\Database\Seeders\DemoContentSeeder::class);
         $this->seed(\Database\Seeders\DemoContentSeeder::class);
 
-        $this->assertSame(10, Story::count());
+        $this->assertSame(11, Story::count());
         $this->assertSame(9, Story::published()->count());
         $this->assertSame(5, Article::count());
         $this->assertSame(4, ColoringCategory::count());
@@ -85,7 +85,8 @@ class LibraryTest extends TestCase
         Story::create(['title' => 'Черновик', 'slug' => 'draft-story', 'genre' => 'Тест', 'summary' => 'Не опубликовано', 'body' => 'Текст']);
 
         $this->get(route('stories.index'))->assertOk()->assertSee('Все сказки')->assertSee('Лесная сказка')->assertSee('Народная история')->assertDontSee('Черновик');
-        $this->get(route('stories.index', ['genre' => 'Приключения', 'age' => 6]))->assertOk()->assertSee('Лесная сказка')->assertDontSee('Народная история');
+        $filtered = $this->get(route('stories.index', ['genre' => 'Приключения', 'age' => 6]))->assertOk()->assertSee('Лесная сказка')->assertSee('Найдено сказок: 1');
+        $this->assertSame(1, substr_count($filtered->getContent(), 'class="book-card"'));
     }
 
     public function test_story_print_sheet_contains_only_story_body_illustration_and_admin_logo(): void
@@ -128,7 +129,7 @@ class LibraryTest extends TestCase
             ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
             ->assertHeaderMissing('Strict-Transport-Security');
 
-        $this->withServerVariables(['HTTPS' => 'on'])->get('/login')->assertOk()
+        $this->get('https://localhost/login')->assertOk()
             ->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
 
@@ -362,9 +363,18 @@ class LibraryTest extends TestCase
             'body' => $article->body, 'reading_minutes' => 3,
         ])->assertOk();
 
-        $this->get('/skazki/old-story-address?source=legacy&campaign=summer')->assertStatus(301)->assertRedirect('/skazki/new-story-address?source=legacy&campaign=summer');
-        $this->get('/skazki/old-story-address/quiz?source=legacy')->assertStatus(301)->assertRedirect('/skazki/new-story-address/quiz?source=legacy');
-        $this->get('/roditelyam/old-article-address?source=legacy')->assertStatus(301)->assertRedirect('/roditelyam/new-article-address?source=legacy');
+        $storyRedirect = $this->get('/skazki/old-story-address?source=legacy&campaign=summer')->assertStatus(301);
+        $this->assertSame('/skazki/new-story-address', parse_url($storyRedirect->headers->get('Location'), PHP_URL_PATH));
+        parse_str((string) parse_url($storyRedirect->headers->get('Location'), PHP_URL_QUERY), $storyQuery);
+        $this->assertSame(['campaign' => 'summer', 'source' => 'legacy'], $storyQuery);
+        $quizRedirect = $this->get('/skazki/old-story-address/quiz?source=legacy')->assertStatus(301);
+        $this->assertSame('/skazki/new-story-address/quiz', parse_url($quizRedirect->headers->get('Location'), PHP_URL_PATH));
+        parse_str((string) parse_url($quizRedirect->headers->get('Location'), PHP_URL_QUERY), $quizQuery);
+        $this->assertSame(['source' => 'legacy'], $quizQuery);
+        $articleRedirect = $this->get('/roditelyam/old-article-address?source=legacy')->assertStatus(301);
+        $this->assertSame('/roditelyam/new-article-address', parse_url($articleRedirect->headers->get('Location'), PHP_URL_PATH));
+        parse_str((string) parse_url($articleRedirect->headers->get('Location'), PHP_URL_QUERY), $articleQuery);
+        $this->assertSame(['source' => 'legacy'], $articleQuery);
         $this->assertDatabaseHas('slug_redirects', ['redirectable_type' => Story::class, 'redirectable_id' => $story->id, 'old_slug' => 'old-story-address']);
         $this->assertDatabaseHas('slug_redirects', ['redirectable_type' => Article::class, 'redirectable_id' => $article->id, 'old_slug' => 'old-article-address']);
     }

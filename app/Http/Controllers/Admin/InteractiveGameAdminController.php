@@ -57,8 +57,8 @@ class InteractiveGameAdminController extends Controller
             'title' => ['required', 'string', 'min:2', 'max:180'],
             'slug' => ['nullable', 'string', 'max:190', Rule::unique('interactive_games', 'slug')->ignore($game?->id)],
             'description' => ['nullable', 'string', 'max:1500'],
-            'image_a' => ['required', 'string', 'max:255', 'regex~^(https?://[A-Za-z0-9.-]+(?::[0-9]+)?/[A-Za-z0-9._/-]+|/?[A-Za-z0-9._/-]+)$~', 'not_regex~(^|/)\.\.(/|$)~'],
-            'image_b' => [$type === 'differences' ? 'required' : 'nullable', 'string', 'max:255', 'regex~^(https?://[A-Za-z0-9.-]+(?::[0-9]+)?/[A-Za-z0-9._/-]+|/?[A-Za-z0-9._/-]+)$~', 'not_regex~(^|/)\.\.(/|$)~'],
+            'image_a' => ['required', 'string', 'max:255', 'regex:/^(https?:\/\/[A-Za-z0-9.-]+(?::[0-9]+)?\/[A-Za-z0-9._\/-]+|\/?[A-Za-z0-9._\/-]+)$/', 'not_regex:/(^|\/)\.\.(\/|$)/'],
+            'image_b' => [$type === 'differences' ? 'required' : 'nullable', 'string', 'max:255', 'regex:/^(https?:\/\/[A-Za-z0-9.-]+(?::[0-9]+)?\/[A-Za-z0-9._\/-]+|\/?[A-Za-z0-9._\/-]+)$/', 'not_regex:/(^|\/)\.\.(\/|$)/'],
             'is_published' => ['nullable', 'boolean'],
             'payload_json' => ['required', 'string', 'max:30000'],
         ];
