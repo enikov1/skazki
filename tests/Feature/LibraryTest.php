@@ -765,4 +765,33 @@ class LibraryTest extends TestCase
         $this->actingAs($editor)->get(route('admin.coloring-categories.index'))->assertForbidden();
     }
 
+    public function test_parent_consent_and_moderation_gate_the_public_art_gallery(): void
+    {
+        $this->seed();
+        Storage::fake('local');
+        $category = ColoringCategory::create(['name' => 'Семейные рисунки', 'slug' => 'family-art', 'is_published' => true]);
+        $page = $category->pages()->create(['title' => 'Звёздочка', 'slug' => 'zvezdochka', 'outline_path' => 'assets/colorings/star.png', 'is_published' => true]);
+        $parent = User::factory()->create();
+        $this->actingAs($parent)->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('Поделиться работой');
+        $payload = ['title' => 'Моя звёздочка', 'artwork' => UploadedFile::fake()->image('artwork.png', 320, 320), 'guardian_consent' => '1'];
+        $withoutConsent = $payload;
+        unset($withoutConsent['guardian_consent']);
+        $this->post(route('colorings.submissions.store', [$category, $page]), $withoutConsent, ['Accept' => 'application/json'])->assertUnprocessable()->assertJsonValidationErrors('guardian_consent');
+        $this->post(route('colorings.submissions.store', [$category, $page]), $payload, ['Accept' => 'application/json'])->assertCreated()->assertJsonPath('message', 'Работа отправлена родителем на проверку. После одобрения она появится в галерее.');
+        $submission = $parent->coloringSubmissions()->firstOrFail();
+        Storage::disk('local')->assertExists($submission->file_path);
+        $this->assertDatabaseHas('user_consent_events', ['user_id' => $parent->id, 'consent_type' => 'child_art_publication', 'action' => 'accepted']);
+        $this->get(route('colorings.gallery'))->assertOk()->assertDontSee('Моя звёздочка');
+        $this->get(route('colorings.gallery.image', $submission))->assertNotFound();
+
+        $moderator = User::factory()->create();
+        $moderator->roles()->attach(Role::where('slug', 'moderator')->value('id'));
+        $this->actingAs($moderator)->get(route('admin.coloring-submissions.index'))->assertOk()->assertSee('Моя звёздочка');
+        $this->get(route('admin.coloring-submissions.image', $submission))->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->patchJson(route('admin.coloring-submissions.update', $submission), ['status' => 'approved'])->assertOk();
+        $this->get(route('colorings.gallery'))->assertOk()->assertSee('Моя звёздочка');
+        $this->get(route('colorings.gallery.image', $submission))->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->get(route('profile.history'))->assertOk()->assertSee('Опубликована в галерее');
+    }
+
 }

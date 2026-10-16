@@ -405,6 +405,7 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
       if(form.hasAttribute('data-ajax-clear'))form.reset();
       if(form.hasAttribute('data-coloring-favorite')){const button=form.querySelector('button[type="submit"]');if(button){button.setAttribute('aria-pressed',data.saved?'true':'false');button.textContent=data.saved?(form.dataset.savedLabel||'В избранном'):(form.dataset.unsavedLabel||'В избранное')}}
       if(form.hasAttribute('data-coloring-rating')){const average=document.querySelector('[data-coloring-average]'),count=document.querySelector('[data-coloring-rating-count]'),legend=form.querySelector('legend');if(average)average.textContent=Number(data.average||0).toFixed(1).replace('.',',');if(count)count.textContent=String(data.total||0);if(legend)legend.textContent=`Ваша оценка: ${data.user_rating} из 5`}
+      if(form.hasAttribute('data-coloring-submission')){const button=form.querySelector('[data-coloring-share]');if(button){button.disabled=true;button.textContent='Отправлено на проверку'}}
       const row=form.closest('.admin-users-table tr');
       if(row){const results=form.closest('[data-ajax-results]');if(results)loadAdminResults(location.href,results)}
       const moderationCard=form.closest('.moderation-card');
@@ -475,6 +476,14 @@ if(coloringStudio){
  coloringStudio.querySelector('[data-coloring-clear]')?.addEventListener('click',()=>{if(strokes.length&&confirm('Очистить рисунок?')){strokes=[];draw();persist()}});
  coloringStudio.querySelector('[data-coloring-download]')?.addEventListener('click',()=>{canvas?.toBlob(blob=>{if(!blob)return;const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`raskraska-${coloringStudio.dataset.coloringId}.png`;link.click();URL.revokeObjectURL(link.href)},'image/png')});
  coloringStudio.querySelector('[data-coloring-print]')?.addEventListener('click',()=>window.print());
+ const shareButton=coloringStudio.querySelector('[data-coloring-share]'),submissionForm=coloringStudio.querySelector('[data-coloring-submission]');
+ shareButton?.addEventListener('click',()=>{
+  if(!submissionForm)return;const artwork=submissionForm.elements.namedItem('artwork'),title=submissionForm.elements.namedItem('title'),consent=submissionForm.elements.namedItem('guardian_consent');
+  if(!title.reportValidity()||!consent.reportValidity())return;
+  if(artwork.files?.length){submissionForm.requestSubmit();return}
+  if(status)status.textContent='Подготавливаем рисунок к отправке…';
+  canvas.toBlob(blob=>{if(!blob){if(status)status.textContent='Не удалось создать PNG. Попробуйте скачать рисунок и загрузить файл.';return}const transfer=new DataTransfer();transfer.items.add(new File([blob],`raskraska-${coloringStudio.dataset.coloringId}.png`,{type:'image/png'}));artwork.files=transfer.files;submissionForm.requestSubmit()},'image/png');
+ });
 }
 const savedStoryAudio=document.querySelector('#storyAudio[data-audio-progress-url]');
 if(savedStoryAudio){

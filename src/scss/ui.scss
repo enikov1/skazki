@@ -64,6 +64,15 @@
 .coloring-studio-canvas canvas { display: block; width: 100%; height: auto; touch-action: none; cursor: crosshair; }
 .coloring-save-status { margin: 8px 0; color: var(--muted); font-size: 13px; }
 .coloring-studio-actions { justify-content: center; }
+.coloring-submission-form { display: grid; gap: 12px; max-width: 660px; margin: 18px auto; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fbfdfe; text-align: left; }
+.coloring-submission-form > p { margin: 0; color: var(--muted); }
+.coloring-submission-form .eyebrow { width: fit-content; color: #985834; }
+.coloring-submission-form input[type=file] { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+.consent-check { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 10px; background: #fff; color: #536a73; font-size: 13px; }
+.consent-check input { flex: none; margin-top: 4px; accent-color: var(--blue); }
+.coloring-moderation-image { display: block; width: min(360px,100%); margin: 12px 0; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.coloring-moderation-image img { display: block; width: 100%; height: auto; }
+.coloring-gallery-link { margin: 0 0 12px; }
 .coloring-work { text-align: center; }
 .coloring-work-image { max-width: 760px; margin: 18px auto; padding: 14px; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
 .coloring-work-image img { display: block; max-width: 100%; max-height: 72vh; margin: auto; object-fit: contain; }
@@ -73,5 +82,5 @@
 .coloring-search + [data-coloring-results][aria-busy=true] { opacity: .65; }
 @media(max-width:900px) { .coloring-category-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .coloring-page-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
 @media(max-width:600px) { .coloring-heading { padding: 15px; } .coloring-search { align-items: stretch; flex-wrap: wrap; gap: 7px; padding: 11px; } .coloring-search .field { flex-basis: 100%; } .coloring-search .button { flex: 1; } .coloring-category-grid { grid-template-columns: 1fr; gap: 9px; } .coloring-category-card { grid-template-columns: 74px minmax(0,1fr) auto; gap: 11px; padding: 10px; } .coloring-category-image { width: 74px; height: 72px; } .coloring-page-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; } .coloring-card-meta { align-items: flex-start; flex-direction: column; } .coloring-interactions { align-items: stretch; flex-direction: column; } .coloring-interactions form { width: 100%; } }
-@media(max-width:600px) { .coloring-toolbar { align-items: flex-start; flex-direction: column; gap: 10px; } .coloring-size { width: 100%; } .coloring-size input { flex: 1; width: auto; } .coloring-palette { gap: 8px; } .color-swatch { width: 32px; height: 32px; } .coloring-studio-actions { align-items: stretch; } .coloring-studio-actions .button { flex: 1 1 42%; } }
-@media print { .topbar,.ticker,.footer,.breadcrumbs,.coloring-toolbar,.coloring-save-status,.coloring-studio-actions,.coloring-interactions,.coloring-score,.coloring-work > .button,.notice { display:none!important; } .page-wrap { max-width:none; padding:0; } .page-panel.coloring-work { border:0; box-shadow:none; margin:0; padding:0; } .coloring-studio-canvas { max-width:100%; border:0; box-shadow:none; } }
+@media(max-width:600px) { .coloring-toolbar { align-items: flex-start; flex-direction: column; gap: 10px; } .coloring-size { width: 100%; } .coloring-size input { flex: 1; width: auto; } .coloring-palette { gap: 8px; } .color-swatch { width: 32px; height: 32px; } .coloring-studio-actions { align-items: stretch; } .coloring-studio-actions .button { flex: 1 1 42%; } .coloring-submission-form { padding: 13px; } }
+@media print { .topbar,.ticker,.footer,.breadcrumbs,.coloring-toolbar,.coloring-save-status,.coloring-studio-actions,.coloring-interactions,.coloring-submission-form,.coloring-score,.coloring-work > .button,.notice { display:none!important; } .page-wrap { max-width:none; padding:0; } .page-panel.coloring-work { border:0; box-shadow:none; margin:0; padding:0; } .coloring-studio-canvas { max-width:100%; border:0; box-shadow:none; } }

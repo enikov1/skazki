@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ColoringCategory;
 use App\Models\ColoringPage;
+use App\Models\ColoringSubmission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -44,5 +45,25 @@ class ColoringController extends Controller
         $userRating = auth()->user()?->coloringRatings()->where('coloring_page_id', $page->id)->value('rating');
         $isFavorited = auth()->user()?->coloringFavorites()->where('coloring_page_id', $page->id)->exists() ?? false;
         return view('colorings.page', compact('category', 'page', 'rating', 'userRating', 'isFavorited'));
+    }
+
+    public function gallery(): View
+    {
+        $works = ColoringSubmission::query()->where('status', 'approved')->latest()->paginate(18);
+        return view('colorings.gallery', compact('works'));
+    }
+
+    public function galleryImage(ColoringSubmission $submission)
+    {
+        abort_unless($submission->status === 'approved', 404);
+        return $this->privateImage($submission);
+    }
+
+    private function privateImage(ColoringSubmission $submission)
+    {
+        abort_unless(preg_match('~^coloring-submissions/[A-Za-z0-9._/-]+\.png$~i', $submission->file_path) === 1, 404);
+        $path = \Illuminate\Support\Facades\Storage::disk('local')->path($submission->file_path);
+        abort_unless(is_file($path), 404);
+        return response()->file($path, ['Content-Type' => 'image/png', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'public, max-age=3600']);
     }
 }
