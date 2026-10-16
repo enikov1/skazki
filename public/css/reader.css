@@ -6,22 +6,27 @@
 
 .reader-page {
   min-height: 100vh;
-  padding: 0 24px 56px;
+  padding: 22px 24px 56px;
 }
 
 .ebook-reader {
   --reader-max-width: 700px;
-  max-width: 1120px;
+  max-width: 1040px;
   margin: 0 auto;
+  overflow: clip;
+  border: 1px solid #e9e2d5;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 18px 55px rgba(71, 59, 37, 0.062745098);
 }
 
 .ebook-chrome {
   position: sticky;
   top: 0;
   z-index: 20;
-  margin: 0 -24px;
-  padding: 0 max(24px, (100vw - 1120px) / 2);
-  background: rgba(255, 254, 250, 0.9333333333);
+  margin: 0;
+  padding: 0 clamp(20px, 5vw, 56px);
+  background: #fffefa;
   border-bottom: 1px solid #e7e1d5;
   box-shadow: 0 8px 22px rgba(64, 51, 26, 0.0392156863);
   backdrop-filter: blur(14px);
@@ -94,6 +99,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding-top: 7px;
 }
 
 .ebook-page-controls, .ebook-toolbar-actions {
@@ -121,7 +127,8 @@
 }
 
 .ebook-status {
-  padding: 8px 0 11px;
+  max-width: 390px;
+  padding: 2px 0 13px;
   display: grid;
   gap: 7px;
   color: #68786d;
@@ -179,14 +186,15 @@
 
 .ebook-paper {
   max-width: var(--reader-max-width);
-  margin: 38px auto 34px;
-  padding: clamp(28px, 5vw, 60px) clamp(22px, 6vw, 76px);
+  min-height: 660px;
+  margin: 32px auto 28px;
+  padding: clamp(40px, 6vw, 72px) clamp(30px, 6vw, 78px);
   border: 1px solid #eee8dc;
   border-radius: 18px;
   background: #fffaf0;
-  box-shadow: 0 16px 44px rgba(70, 55, 24, 0.0431372549);
+  box-shadow: 0 12px 34px rgba(70, 55, 24, 0.0352941176);
   color: #394940;
-  font: var(--reader-size, 20px)/1.95 Georgia, serif;
+  font: var(--reader-size, 20px)/1.85 Georgia, serif;
   overflow-wrap: anywhere;
   transition: background-color 0.2s, color 0.2s, max-width 0.2s;
 }
@@ -259,7 +267,7 @@
 
 .ebook-bottom-nav {
   max-width: var(--reader-max-width);
-  margin: 0 auto;
+  margin: 0 auto 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -276,11 +284,14 @@
 
 @media (max-width: 700px) {
   .reader-page {
-    padding: 0 14px 32px;
+    padding: 10px 10px 24px;
+  }
+  .ebook-reader {
+    border-radius: 15px;
   }
   .ebook-chrome {
-    margin: 0 -14px;
-    padding: 0 14px;
+    margin: 0;
+    padding: 0 15px;
   }
   .ebook-header {
     min-height: 58px;
@@ -317,9 +328,13 @@
     min-width: calc(50% - 6px);
     flex: 1 1 calc(50% - 6px);
   }
+  .ebook-status {
+    max-width: none;
+  }
   .ebook-paper {
-    margin: 20px auto 25px;
-    padding: 28px 22px;
+    min-height: 560px;
+    margin: 18px auto 22px;
+    padding: 32px 24px;
     border-radius: 13px;
     line-height: 1.82;
   }
@@ -328,6 +343,14 @@
   }
 }
 @media (max-width: 430px) {
+  .reader-page {
+    padding: 0;
+  }
+  .ebook-reader {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
   .ebook-brand span {
     display: none;
   }

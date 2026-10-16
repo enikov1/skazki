@@ -20,16 +20,26 @@ use App\Models\StoryQuizAttempt;
 use App\Models\StoryQuizQuestion;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class DemoContentSeeder extends Seeder
 {
+    private string $demoPassword;
+
+    private bool $demoLoginEnabled;
+
     public function run(): void
     {
         if (! app()->environment('local', 'testing')) {
             throw new RuntimeException('DemoContentSeeder доступен только в local/testing.');
         }
+
+        $configuredPassword = (string) env('DEMO_USER_PASSWORD', '');
+        $this->demoLoginEnabled = $configuredPassword !== '';
+        $this->demoPassword = $this->demoLoginEnabled ? $configuredPassword : Str::password(48);
 
         $this->call(RolePermissionSeeder::class);
         foreach (['Народные сказки', 'Приключения', 'Животные', 'Семейное чтение', 'Развитие', 'Тест'] as $genre) {
@@ -49,16 +59,16 @@ class DemoContentSeeder extends Seeder
         $this->seedColoringActivity($pages, $reader, $moderator);
         $this->seedInteractiveGames();
 
-        $this->command?->info('Демо-контент создан. Пользователи: demo-admin/editor/moderator/reader@example.test; пароль: DemoPassword-2026!');
+        $this->command?->info('Демо-контент создан. Вход для демо-пользователей '.($this->demoLoginEnabled ? 'включён переменной DEMO_USER_PASSWORD.' : 'отключён. Чтобы включить его локально, задайте DEMO_USER_PASSWORD в .env.'));
     }
 
     private function demoUser(string $email, string $name, string $role): User
     {
-        $user = User::firstOrCreate(['email' => $email], [
+        $user = User::updateOrCreate(['email' => $email], [
             'name' => $name,
-            'password' => 'DemoPassword-2026!',
+            'password' => Hash::make($this->demoPassword),
             'email_verified_at' => now(),
-            'password_login_enabled' => true,
+            'password_login_enabled' => $this->demoLoginEnabled,
         ]);
         $user->roles()->syncWithoutDetaching([Role::where('slug', $role)->value('id')]);
 

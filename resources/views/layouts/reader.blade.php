@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/site.css') }}?v=13">
   <link rel="stylesheet" href="{{ asset('css/ui.css') }}?v=5">
-  <link rel="stylesheet" href="{{ asset('css/reader.css') }}?v=2">
+  <link rel="stylesheet" href="{{ asset('css/reader.css') }}?v=3">
 </head>
 <body class="reader-mode" data-site-page="laravel">
   <main class="reader-page">@yield('content')</main>
