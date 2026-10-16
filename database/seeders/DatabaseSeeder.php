@@ -43,5 +43,8 @@ class DatabaseSeeder extends Seeder
         if (app()->environment('local', 'testing') && Story::count() === 0) {
             Story::create(['title' => 'Колобок', 'slug' => 'kolobok', 'author' => 'Русская народная сказка', 'genre' => 'Народные сказки', 'summary' => 'Добрая история о круглом хлебце, который отправился путешествовать.', 'body' => 'Жили-были старик со старухой. Попросил старик испечь колобок. Старуха по коробу поскребла, по сусеку помела, собрала муки горсти две и замесила тесто. Испекла колобок и положила на окошко простыть. Колобок полежал-полежал, да вдруг покатился — с окна на лавку, с лавки на пол, по полу к двери, перепрыгнул порог — и покатился по дорожке.', 'age_min' => 3, 'age_max' => 7, 'reading_minutes' => 5, 'cover_path' => 'demo/assets/covers/kolobok.jpg', 'status' => 'published', 'published_at' => now()]);
         }
+        if (app()->environment('local')) {
+            $this->call(DemoContentSeeder::class);
+        }
     }
 }

@@ -46,6 +46,27 @@ class LibraryTest extends TestCase
         $this->assertAuthenticatedAs($admin);
     }
 
+    public function test_demo_seeder_populates_main_sections_and_is_idempotent(): void
+    {
+        Storage::fake('local');
+        $this->seed(\Database\Seeders\DemoContentSeeder::class);
+        $this->seed(\Database\Seeders\DemoContentSeeder::class);
+
+        $this->assertSame(10, Story::count());
+        $this->assertSame(9, Story::published()->count());
+        $this->assertSame(5, Article::count());
+        $this->assertSame(4, ColoringCategory::count());
+        $this->assertSame(12, \App\Models\ColoringPage::count());
+        $this->assertSame(2, \App\Models\ColoringSubmission::count());
+        $this->assertSame(6, \App\Models\StoryQuizQuestion::count());
+        $this->assertDatabaseHas('comments', ['status' => 'pending']);
+        $this->assertDatabaseHas('article_comments', ['status' => 'pending']);
+        $this->assertDatabaseHas('coloring_submissions', ['status' => 'approved']);
+        $this->assertDatabaseHas('coloring_submissions', ['status' => 'pending']);
+        $this->assertDatabaseHas('users', ['email' => 'demo-admin@example.test']);
+        Storage::disk('local')->assertExists('coloring-submissions/demo-approved-fox.png');
+    }
+
     public function test_auth_routes_use_readable_paths_and_redirect_legacy_login_url(): void
     {
         $this->get('/login')->assertOk()->assertSee('data-ajax-form');
