@@ -5,10 +5,10 @@
 <header class="page-panel games-heading"><p class="eyebrow">{{ $game->type_label }}</p><h1 class="page-title">{{ $game->title }}</h1>@if($game->description)<p class="lead">{{ $game->description }}</p>@endif</header>
 <section class="interactive-game" data-interactive-game data-type="{{ $type }}" data-payload="{{ json_encode($game->data, JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_TAG|JSON_HEX_AMP) }}">
 @if($type === 'differences')
-<p class="game-instruction">Найдите все отличия на картинках. Нажимайте на место отличия на любой картинке. Найдено: <strong data-found>0</strong> из {{ count($game->data['differences'] ?? []) }}</p>
-<div class="difference-images">@foreach([$game->image_a, $game->image_b] as $image)<div class="difference-image" data-difference-image><img src="{{ asset($image) }}" alt="Картинка для игры {{ $game->title }}"><div class="difference-markers" aria-hidden="true"></div></div>@endforeach</div>
+<p class="game-instruction">Найдите все отличия на картинках. Нажимайте на место отличия на любой картинке. Найдено: <strong data-found aria-live="polite" aria-atomic="true">0</strong> из {{ count($game->data['differences'] ?? []) }}</p>
+<div class="difference-images">@foreach([$game->image_a, $game->image_b] as $image)<div class="difference-image" data-difference-image role="button" tabindex="0" aria-label="Отметить отличие на рисунке {{ $loop->iteration }}"><img src="{{ asset($image) }}" alt=""><div class="difference-markers" aria-hidden="true"></div></div>@endforeach</div>
 @else
-<p class="game-instruction">Нажимайте на две части, чтобы поменять их местами. Собрано: <strong data-mosaic-progress>0%</strong></p>
+<p class="game-instruction">Нажимайте на две части, чтобы поменять их местами. Собрано: <strong data-mosaic-progress aria-live="polite" aria-atomic="true">0%</strong></p>
 <div class="mosaic-board" data-mosaic-board data-image-src="{{ asset($game->image_a) }}" role="group" aria-label="Мозаика {{ $game->title }}"></div>
 @endif
 <div class="game-finish" data-game-finish hidden><strong>Отлично! Задание выполнено.</strong><button type="button" class="button button-soft" data-game-restart>Играть ещё раз</button></div>
@@ -19,14 +19,17 @@
  const type=root.dataset.type, payload=JSON.parse(root.dataset.payload);
  if(type==='differences'){
   const images=[...root.querySelectorAll('[data-difference-image]')], found=new Set(), output=root.querySelector('[data-found]');
-  images.forEach((wrap,index)=>wrap.addEventListener('click',event=>{
+  images.forEach((wrap,index)=>{
+   wrap.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();wrap.click();}});
+   wrap.addEventListener('click',event=>{
    const rect=wrap.getBoundingClientRect(), x=(event.clientX-rect.left)/rect.width, y=(event.clientY-rect.top)/rect.height;
    const match=(payload.differences||[]).findIndex((point,i)=>!found.has(i)&&Math.hypot((x-point.x)*rect.width,(y-point.y)*rect.height)<=Math.max(point.radius||.05,.025)*rect.width);
    if(match<0)return;
    found.add(match);output.textContent=found.size;
    images.forEach(image=>{const marker=document.createElement('span');marker.className='difference-hit';marker.style.left=`${payload.differences[match].x*100}%`;marker.style.top=`${payload.differences[match].y*100}%`;image.querySelector('.difference-markers').append(marker)});
    if(found.size===(payload.differences||[]).length)root.querySelector('[data-game-finish]').hidden=false;
-  }));
+   });
+  });
  } else {
   const board=root.querySelector('[data-mosaic-board]'), rows=payload.rows||3, cols=payload.columns||3, count=rows*cols;
   const sourceImage=new Image();sourceImage.onload=()=>{board.style.aspectRatio=`${sourceImage.naturalWidth}/${sourceImage.naturalHeight}`};sourceImage.src=board.dataset.imageSrc;board.style.setProperty('--mosaic-image',`url("${board.dataset.imageSrc}")`);
