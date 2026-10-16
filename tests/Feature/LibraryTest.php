@@ -791,7 +791,7 @@ class LibraryTest extends TestCase
         $this->patchJson(route('admin.coloring-submissions.update', $submission), ['status' => 'approved'])->assertOk();
         $this->get(route('colorings.gallery'))->assertOk()->assertSee('Моя звёздочка');
         $this->get(route('colorings.gallery.image', $submission))->assertOk()->assertHeader('Content-Type', 'image/png');
-        $this->get(route('profile.history'))->assertOk()->assertSee('Опубликована в галерее');
+        $this->actingAs($parent)->get(route('profile.history'))->assertOk()->assertSee('Опубликована в галерее');
     }
 
 }
