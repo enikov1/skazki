@@ -15,9 +15,11 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\ArticleCommentController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\StoryRatingController;
+use App\Http\Controllers\StoryQuizController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\GenreController;
+use App\Http\Controllers\Admin\StoryQuizAdminController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +36,8 @@ Route::get('/skazki/{story:slug}/audio', [StoryController::class, 'audio'])->nam
 Route::get('/skazki/{story:slug}/audio/download', [StoryController::class, 'downloadAudio'])->name('stories.audio.download');
 Route::post('/skazki/{story:slug}/comments', [CommentController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.store');
 Route::post('/skazki/{story:slug}/rating', [StoryRatingController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('stories.rate');
+Route::get('/skazki/{story:slug}/quiz', [StoryQuizController::class, 'show'])->name('stories.quiz');
+Route::post('/skazki/{story:slug}/quiz', [StoryQuizController::class, 'submit'])->middleware('throttle:public-write')->name('stories.quiz.submit');
 Route::post('/comments/{comment}/vote', [CommentController::class, 'vote'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('comments.vote');
 Route::get('/skazki/{story:slug}/read', [StoryController::class, 'read'])->name('stories.read');
 
@@ -102,6 +106,8 @@ Route::middleware(['auth', 'account.active'])->group(function (): void {
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'role:admin,moderator,editor'])->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/stories/{story}/preview', [AdminStoryController::class, 'preview'])->middleware('role:admin,editor')->name('stories.preview');
+    Route::get('/stories/{story}/quiz', [StoryQuizAdminController::class, 'edit'])->middleware('role:admin,editor')->name('stories.quiz.edit');
+    Route::put('/stories/{story}/quiz', [StoryQuizAdminController::class, 'update'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('stories.quiz.update');
     Route::get('/articles/{article}/preview', [AdminArticleController::class, 'preview'])->middleware('role:admin,editor')->name('articles.preview');
     Route::resource('stories', AdminStoryController::class)->except(['show', 'destroy']);
     Route::resource('articles', AdminArticleController::class)->except(['show', 'destroy']);

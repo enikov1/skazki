@@ -60,4 +60,9 @@ class Story extends Model
     {
         return $this->hasMany(StoryRating::class);
     }
+
+    public function quizQuestions(): HasMany
+    {
+        return $this->hasMany(StoryQuizQuestion::class);
+    }
 }

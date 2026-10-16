@@ -42,6 +42,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $history = $section === 'history' ? $user->readingHistories()->with('story')->whereHas('story', fn ($query) => $query->published())->latest('last_read_at')->paginate(12) : null;
+        $quizAttempts = $section === 'history' ? $user->storyQuizAttempts()->with('story')->whereHas('story', fn ($query) => $query->published())->latest()->limit(50)->get() : collect();
         $audioProgress = in_array($section, ['overview', 'history'], true) ? $user->audioPlaybackStates()->with('story')->whereHas('story', fn ($query) => $query->published()->whereNotNull('audio_path'))->where('position_seconds', '>', 0)->latest('updated_at')->limit($section === 'overview' ? 3 : 50)->get() : collect();
         $savedAudioQueue = in_array($section, ['overview', 'history'], true) ? $user->audioPlaybackStates()->with('story')->whereNotNull('queue_position')->whereHas('story', fn ($query) => $query->published()->whereNotNull('audio_path'))->orderBy('queue_position')->limit($section === 'overview' ? 3 : 50)->get() : collect();
         $avatarUrl = $user->avatar_path ? Storage::disk('public')->url($user->avatar_path) : null;
@@ -50,7 +51,7 @@ class ProfileController extends Controller
         $consentEvents = in_array($section, ['overview', 'settings'], true) ? $user->consentEvents()->whereIn('consent_type', ['terms', 'privacy_notice'])->orderBy('recorded_at')->get()->keyBy('consent_type') : collect();
         $socialAccounts = in_array($section, ['overview', 'security'], true) ? $user->socialAccounts()->orderBy('provider')->get() : collect();
 
-        return view('profile.show', compact('section', 'user', 'history', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
+        return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
     }
 
     public function update(Request $request): RedirectResponse|JsonResponse

@@ -264,3 +264,9 @@
   .admin-area .filter-panel,
   .admin-area .admin-user-filters { grid-template-columns: 1fr; padding: 14px; }
 }
+.admin-area .quiz-admin-form { max-width: 900px; }
+.admin-area .quiz-admin-questions { display: grid; gap: 16px; }
+.admin-area .quiz-admin-question { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.admin-area .quiz-admin-question legend { width: 100%; display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; color: var(--ink); font-weight: 700; }
+.admin-area .quiz-admin-options { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin: 12px 0; }
+@media(max-width:600px) { .admin-area .quiz-admin-question { padding: 14px; } .admin-area .quiz-admin-options { grid-template-columns: 1fr; gap: 8px; } }

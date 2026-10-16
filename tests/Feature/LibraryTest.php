@@ -702,4 +702,30 @@ class LibraryTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_story_quiz_is_authored_in_admin_and_results_are_saved_server_side(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $story = Story::create(['title' => 'Тестовая сказка', 'slug' => 'quiz-story', 'genre' => 'Тест', 'summary' => 'Короткое описание', 'body' => 'Текст истории', 'status' => 'published', 'published_at' => now()->subMinute()]);
+
+        $this->actingAs($admin)->get(route('admin.stories.quiz.edit', $story))->assertOk()->assertSee('Викторина по сказке')->assertSee('Добавить вопрос');
+        $this->putJson(route('admin.stories.quiz.update', $story), ['questions' => [
+            ['prompt' => 'Кто отправился в путь?', 'options' => ['Колобок', 'Медведь', 'Заяц', 'Лиса'], 'correct_option' => 0],
+            ['prompt' => 'Кого встретил герой?', 'options' => ['Кота', 'Зайца', 'Волка', 'Петуха'], 'correct_option' => 1],
+        ]])->assertOk();
+        $this->assertDatabaseCount('story_quiz_questions', 2);
+        $this->get(route('stories.show', $story))->assertOk()->assertSee(route('stories.quiz', $story));
+
+        $this->actingAs(User::factory()->create());
+        $this->get(route('stories.quiz', $story))->assertOk()->assertSee('Кто отправился в путь?');
+        $this->postJson(route('stories.quiz.submit', $story), ['answers' => [0, 3]])
+            ->assertOk()->assertJsonPath('score', 1)->assertJsonPath('total', 2)->assertJsonPath('redirect', route('stories.quiz', $story).'?result=1');
+        $this->assertDatabaseHas('story_quiz_attempts', ['story_id' => $story->id, 'score' => 1, 'question_count' => 2]);
+        $this->get(route('stories.quiz', [$story, 'result' => 1]))->assertOk()->assertSee('Ваш результат: 1 из 2');
+        $this->get(route('profile.history'))->assertOk()->assertSee('Пройденные викторины')->assertSee('1 из 2 верных ответов');
+        $this->actingAs(User::factory()->create())->get(route('stories.quiz', [$story, 'result' => 1]))->assertNotFound();
+        $this->postJson(route('stories.quiz.submit', $story), ['answers' => [0]])->assertUnprocessable();
+    }
+
 }
