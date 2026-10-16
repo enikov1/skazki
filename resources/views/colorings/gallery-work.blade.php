@@ -5,20 +5,21 @@
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('colorings.index') }}">Раскраски</a><span>/</span><a href="{{ route('colorings.gallery') }}">Галерея работ</a><span>/</span><span aria-current="page">{{ $submission->title }}</span></nav>
 <main class="coloring-gallery-work">
     <article class="page-panel coloring-work-detail">
-        <p class="eyebrow">Работа сообщества · {{ $submission->created_at->format('d.m.Y') }}</p>
+        <p class="eyebrow" data-print-hide>Работа сообщества · {{ $submission->created_at->format('d.m.Y') }}</p>
         <h1 class="page-title">{{ $submission->title }}</h1>
-        <figure class="coloring-work-image"><img src="{{ route('colorings.gallery.image', $submission) }}" alt="Работа «{{ $submission->title }}»"></figure>
-        <div class="coloring-work-actions">
+        <figure class="coloring-work-image" data-print-area="artwork"><img src="{{ route('colorings.gallery.image', $submission) }}" alt="Работа «{{ $submission->title }}»"></figure>
+        <div class="coloring-work-actions" data-print-hide>
             @auth
                 <form method="post" action="{{ route('colorings.gallery.like', $submission->slug) }}" data-ajax-form data-coloring-work-like>@csrf<button class="button {{ $liked ? '' : 'button-soft' }}" type="submit" aria-pressed="{{ $liked ? 'true' : 'false' }}">Нравится · <span data-like-count>{{ $likesCount }}</span></button></form>
             @else
                 <a class="button button-soft" href="{{ route('login', ['redirect' => request()->fullUrl()]) }}">Нравится · {{ $likesCount }}</a>
             @endauth
             <button class="button button-quiet" type="button" data-copy-link>Скопировать ссылку</button>
+            <button class="button button-quiet" type="button" data-print-page><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#printer"></use></svg> Распечатать работу</button>
             <a class="button button-quiet" href="{{ route('colorings.gallery') }}">К галерее</a>
         </div>
     </article>
-    <section class="page-panel coloring-comments" aria-labelledby="comments-title">
+    <section class="page-panel coloring-comments" aria-labelledby="comments-title" data-print-hide>
         <h2 id="comments-title">Комментарии</h2>
         <p class="form-hint">Комментарии появляются после проверки. Имена авторов не показываются.</p>
         @auth

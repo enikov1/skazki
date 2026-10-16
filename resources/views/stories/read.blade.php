@@ -3,8 +3,8 @@
 @section('description', $story->seo_description ?: $story->summary)
 @section('content')
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('stories.show', $story) }}">{{ $story->title }}</a><span>/</span><span aria-current="page">Чтение</span></nav>
-<main class="reading-shell laravel-reader" data-reader data-story="{{ $story->slug }}" data-resume="{{ $paragraphPosition }}" @auth data-progress-url="{{ route('stories.reading-progress', $story) }}" data-preferences-url="{{ route('profile.preferences') }}" @endauth>
-  <div class="reader-toolbar" aria-label="Настройки чтения">
+<main class="reading-shell laravel-reader" data-print-area="story" data-reader data-story="{{ $story->slug }}" data-resume="{{ $paragraphPosition }}" @auth data-progress-url="{{ route('stories.reading-progress', $story) }}" data-preferences-url="{{ route('profile.preferences') }}" @endauth>
+  <div class="reader-toolbar" aria-label="Настройки чтения"><button class="button button-quiet" type="button" data-print-page><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#printer"></use></svg> Распечатать</button>
     <a class="pill" href="{{ route('stories.show', $story) }}">← К сказке</a>
     <label>Буквы <select data-reader-font aria-label="Размер текста"><option value="16" @selected($readerFontSize === 16)>Небольшой</option><option value="18" @selected($readerFontSize === 18)>Меньше</option><option value="20" @selected($readerFontSize === 20)>Обычный</option><option value="22" @selected($readerFontSize === 22)>Крупный</option><option value="24" @selected($readerFontSize === 24)>Очень крупный</option></select></label>
     <label>Страница <select data-reader-theme aria-label="Цвет страницы"><option value="cream" @selected($readerTheme === 'cream')>Тёплая</option><option value="white" @selected($readerTheme === 'white')>Белая</option><option value="green" @selected($readerTheme === 'green')>Зелёная</option></select></label>

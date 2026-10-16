@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Нет доступа — СказкоМир')
+@section('code', '403')
+@section('heading', 'Нет доступа')
+@section('message', 'У вас нет прав для просмотра этой страницы.')

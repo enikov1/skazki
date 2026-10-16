@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Нужно войти — СказкоМир')
+@section('code', '401')
+@section('heading', 'Нужно войти')
+@section('message', 'Войдите в аккаунт, чтобы открыть эту страницу.')

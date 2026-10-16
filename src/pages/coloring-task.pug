@@ -6,7 +6,7 @@ block title
   title Раскраска онлайн — СказкоМир
 
 block content
-  - const paintColors = [{ name: 'Жёлтый', value: '#ffd34e', mark: '☀' }, { name: 'Оранжевый', value: '#ff9a52', mark: '●' }, { name: 'Красный', value: '#f16f69', mark: '♥' }, { name: 'Розовый', value: '#f5a8c4', mark: '●' }, { name: 'Фиолетовый', value: '#ad91db', mark: '●' }, { name: 'Синий', value: '#66aee8', mark: '●' }, { name: 'Голубой', value: '#93d8e8', mark: '●' }, { name: 'Зелёный', value: '#73bd79', mark: '●' }, { name: 'Салатовый', value: '#b8d96b', mark: '●' }, { name: 'Коричневый', value: '#a97856', mark: '●' }, { name: 'Серый', value: '#9ba8ad', mark: '●' }, { name: 'Чёрный', value: '#344650', mark: '●' }]
+  - const paintColors = [{ name: 'Жёлтый', value: '#ffd34e', mark: '●' }, { name: 'Оранжевый', value: '#ff9a52', mark: '●' }, { name: 'Красный', value: '#f16f69', mark: '●' }, { name: 'Розовый', value: '#f5a8c4', mark: '●' }, { name: 'Фиолетовый', value: '#ad91db', mark: '●' }, { name: 'Синий', value: '#66aee8', mark: '●' }, { name: 'Голубой', value: '#93d8e8', mark: '●' }, { name: 'Зелёный', value: '#73bd79', mark: '●' }, { name: 'Салатовый', value: '#b8d96b', mark: '●' }, { name: 'Коричневый', value: '#a97856', mark: '●' }, { name: 'Серый', value: '#9ba8ad', mark: '●' }, { name: 'Чёрный', value: '#344650', mark: '●' }]
 
   +siteHeader('activities')
   main.page-wrap.coloring-detail-page
@@ -26,7 +26,9 @@ block content
     section.coloring-studio(aria-label='Онлайн раскраска')
       aside.palette-panel
         .palette-heading
-          span.palette-bubble(aria-hidden='true') 🎨
+          span.palette-bubble(aria-hidden='true')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#palette')
           div
             h2 Палитра цветов
             p Выбери цвет и рисуй пальцем или мышкой

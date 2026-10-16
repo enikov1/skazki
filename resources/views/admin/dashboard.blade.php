@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Управление сайтом — СказкоМир')
 @section('content')
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><span aria-current="page">Панель управления</span></nav>
 <div class="admin-layout">
     <aside class="admin-sidebar" aria-label="Административная навигация">
         <p class="eyebrow">Рабочее место</p>

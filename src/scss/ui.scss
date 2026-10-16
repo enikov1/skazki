@@ -113,3 +113,61 @@
 @media(max-width:600px) { .coloring-heading { padding: 15px; } .coloring-search { align-items: stretch; flex-wrap: wrap; gap: 7px; padding: 11px; } .coloring-search .field { flex-basis: 100%; } .coloring-search .button { flex: 1; } .coloring-category-grid { grid-template-columns: 1fr; gap: 9px; } .coloring-category-card { grid-template-columns: 74px minmax(0,1fr) auto; gap: 11px; padding: 10px; } .coloring-category-image { width: 74px; height: 72px; } .coloring-page-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; } .coloring-card-meta { align-items: flex-start; flex-direction: column; } .coloring-interactions { align-items: stretch; flex-direction: column; } .coloring-interactions form { width: 100%; } }
 @media(max-width:600px) { .coloring-toolbar { align-items: flex-start; flex-direction: column; gap: 10px; } .coloring-size { width: 100%; } .coloring-size input { flex: 1; width: auto; } .coloring-palette { gap: 8px; } .color-swatch { width: 32px; height: 32px; } .coloring-studio-actions { align-items: stretch; } .coloring-studio-actions .button { flex: 1 1 42%; } .coloring-submission-form { padding: 13px; } }
 @media print { .topbar,.ticker,.footer,.breadcrumbs,.coloring-toolbar,.coloring-save-status,.coloring-studio-actions,.coloring-interactions,.coloring-submission-form,.coloring-score,.coloring-work > .button,.notice { display:none!important; } .page-wrap { max-width:none; padding:0; } .page-panel.coloring-work { border:0; box-shadow:none; margin:0; padding:0; } .coloring-studio-canvas { max-width:100%; border:0; box-shadow:none; } }
+
+/* Consistent print entry points and focused paper layouts. */
+.story-page-panel { padding: clamp(20px, 3vw, 34px); background: linear-gradient(145deg, #fff 0%, #fbfdfe 100%); }
+.story-page-panel .detail { grid-template-columns: minmax(170px, 230px) minmax(0, 1fr); align-items: start; gap: clamp(20px, 4vw, 42px); }
+.story-page-panel .detail > .cover { height: auto; min-height: 270px; aspect-ratio: 4 / 5; box-shadow: 0 12px 30px #233d4b20; }
+.story-page-panel .detail .cover-img { width: 100%; height: 100%; object-fit: cover; }
+.story-page-panel .story-title { max-width: 800px; font-size: clamp(27px, 4vw, 38px); line-height: 1.14; text-wrap: balance; }
+.story-page-panel .detail-meta { margin: 10px 0 14px; font-size: 15px; }
+.story-page-panel .meta-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.story-page-panel .meta-chips > span { padding: 6px 11px; border: 1px solid #e4edf0; border-radius: 999px; background: #f7fbfc; font-size: 13px; }
+.story-page-panel .story-source-credit { color: #61747d; font-size: 13px; }
+.story-page-panel .story-tags { margin-top: 8px; }
+.story-page-panel .story-actions { align-items: center; margin-top: 20px; }
+.story-page-panel .laravel-audio-box { max-width: 680px; margin-top: 18px; }
+.story-description.story-detail { max-width: 900px; margin: 22px auto; padding: clamp(20px, 4vw, 42px); border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.story-description.story-detail > h2 { margin-top: 0; font-size: 24px; }
+.story-description .reading-text { max-width: 760px; margin: 28px auto 0; }
+.button svg.icon,.article-print-action svg.icon { width: 18px; height: 18px; }
+.coloring-work-image { background: #fff; }
+.coloring-work-image img { width: 100%; height: auto; max-height: 78vh; object-fit: contain; }
+.empty svg.icon,.empty-comments svg.icon { width: 30px; height: 30px; color: var(--blue); }
+@media(max-width:700px) {
+ .story-page-panel .detail { grid-template-columns: 92px minmax(0, 1fr); gap: 15px; }
+ .story-page-panel .detail > .cover { min-height: 126px; }
+ .story-page-panel .story-title { font-size: 25px; }
+ .story-page-panel .meta-chips { gap: 6px; }
+ .story-page-panel .meta-chips > span { padding: 5px 8px; font-size: 12px; }
+ .story-page-panel .story-actions { grid-column: 1/-1; }
+}
+@media(max-width:420px) { .story-page-panel .detail { grid-template-columns: 1fr; } .story-page-panel .detail > .cover { width: 128px; min-height: 160px; } }
+@media print {
+ @page { margin: 16mm 14mm; }
+ html,body { background: #fff !important; color: #111 !important; font: 11pt/1.55 Georgia,serif !important; }
+ .topbar,.ticker,.footer,.breadcrumbs,.searchbar,.sticky-top,[data-print-hide],.story-comments,.article-comments,.related-section,.quiz-callout,.pagination,.toast { display:none!important; }
+ .page-wrap { width: 100%; max-width: none; margin: 0; padding: 0; }
+ .page-panel,.article-detail,.story-description.story-detail { max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+ .story-page-panel { break-after: avoid; }
+ .story-page-panel .detail { grid-template-columns: 28mm minmax(0,1fr); gap: 8mm; }
+ .story-page-panel .detail > .cover { min-height: 35mm; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+ .story-page-panel .story-title { font-size: 23pt; }
+ .story-page-panel .detail-meta,.story-page-panel .story-source-credit,.story-page-panel .meta-chips { font-size: 9pt; }
+ .story-description.story-detail { margin-top: 10mm; }
+ .story-description .reading-text,.article-reading-text { max-width: none!important; margin: 0!important; padding: 0!important; border: 0!important; background: #fff!important; color: #111!important; font: 11pt/1.65 Georgia,serif!important; }
+ .story-description h2 { font-size: 16pt; }
+ .article-detail { width: 100%; }
+ .article-detail-head h1 { font-size: 24pt; }
+ .article-detail-cover { max-width: 100%; max-height: 80mm; object-fit: contain; }
+ .coloring-gallery-work { display: block; }
+ .coloring-work-detail { padding: 0!important; }
+ .coloring-work-detail h1 { margin: 0 0 8mm; }
+ .coloring-work-image { max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; }
+ .coloring-work-image img { width: auto; max-width: 100%; max-height: 250mm; margin: auto; }
+ .coloring-work,.coloring-work-detail,.coloring-studio-canvas { border: 0!important; box-shadow: none!important; }
+ .coloring-studio-canvas { max-width: 100%; margin: 0; }
+ .coloring-studio-canvas canvas { max-height: 255mm; object-fit: contain; }
+ a { color: inherit; text-decoration: none; }
+ img,figure { break-inside: avoid; }
+}

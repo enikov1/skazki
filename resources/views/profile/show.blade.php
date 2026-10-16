@@ -2,7 +2,7 @@
 @section('title', match($section) { 'history' => 'История — Мой профиль', 'settings' => 'Настройки — Мой профиль', 'security' => 'Безопасность — Мой профиль', default => 'Мой профиль — СказкоМир' })
 @section('robots', 'noindex,nofollow')
 @section('content')
-<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><span aria-current="page">Мой профиль</span></nav>
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span>@if($section !== 'overview')<a href="{{ route('profile.show') }}">Мой профиль</a><span>/</span>@endif<span aria-current="page">{{ ['overview' => 'Мой профиль', 'history' => 'История и очередь', 'settings' => 'Настройки', 'security' => 'Безопасность'][$section] }}</span></nav>
 
 <section class="profile-welcome">
   @if($avatarUrl)
@@ -18,8 +18,8 @@
   <nav class="profile-nav" aria-label="Разделы профиля">
     <a href="{{ route('profile.show') }}" @class(['active' => $section === 'overview']) @if($section === 'overview') aria-current="page" @endif><span aria-hidden="true">⌂</span>Главная профиля</a>
     <a href="{{ route('profile.history') }}" @class(['active' => $section === 'history']) @if($section === 'history') aria-current="page" @endif><span aria-hidden="true">◷</span>История и очередь</a>
-    <a href="{{ route('profile.settings') }}" @class(['active' => $section === 'settings']) @if($section === 'settings') aria-current="page" @endif><span aria-hidden="true">⚙</span>Настройки</a>
-    <a href="{{ route('profile.security') }}" @class(['active' => $section === 'security']) @if($section === 'security') aria-current="page" @endif><span aria-hidden="true">♙</span>Безопасность</a>
+    <a href="{{ route('profile.settings') }}" @class(['active' => $section === 'settings']) @if($section === 'settings') aria-current="page" @endif><span aria-hidden="true"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#settings"></use></svg></span>Настройки</a>
+    <a href="{{ route('profile.security') }}" @class(['active' => $section === 'security']) @if($section === 'security') aria-current="page" @endif><span aria-hidden="true"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#user"></use></svg></span>Безопасность</a>
   </nav>
 
   <div class="profile-content">

@@ -26,6 +26,6 @@
             </article>
         @endforeach
     </div>
-    @if($genres->isEmpty())<div class="empty-state"><span aria-hidden="true">📚</span><h2>Жанров пока нет</h2><p>Добавьте первый жанр выше.</p></div>@endif
+    @if($genres->isEmpty())<div class="empty-state"><span aria-hidden="true"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#book"></use></svg></span><h2>Жанров пока нет</h2><p>Добавьте первый жанр выше.</p></div>@endif
 </section>
 @endsection

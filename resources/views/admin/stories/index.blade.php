@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Сказки — управление контентом')
 @section('content')
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('admin.dashboard') }}">Панель управления</a><span>/</span><span aria-current="page">Сказки</span></nav>
 <div class="admin-topline"><div><p class="eyebrow">Библиотека</p><h1>Сказки</h1></div><a class="button" href="{{ route('admin.stories.create') }}">Добавить сказку</a></div>
 @if($errors->any())<div class="form-errors" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
 <form class="filter-panel admin-content-filters" method="get" action="{{ route('admin.stories.index') }}" data-ajax-filter>
