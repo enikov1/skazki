@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Раскраски для детей — СказкоМир')
 @section('description', 'Раскраски по темам для детей: выбирайте категорию и открывайте новые рисунки.')
+@if(request()->query())@section('robots', 'noindex,follow')@endif
 @section('content')
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><span aria-current="page">Раскраски</span></nav>
 <header class="page-panel coloring-heading"><p class="eyebrow">Творческая мастерская</p><h1 class="page-title">Раскраски</h1><p class="lead">Выберите тему, найдите любимую картинку и раскрасьте её.</p></header>

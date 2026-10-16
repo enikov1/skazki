@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="description" content="@yield('description', 'Добрые сказки для чтения и прослушивания всей семьёй.')">
-  <meta name="robots" content="@yield('robots', 'index,follow')">
+  <meta name="robots" content="@yield('robots', request()->routeIs('admin.*', 'profile.*', 'login', 'register', 'password.*') ? 'noindex,nofollow' : 'index,follow')">
   <link rel="canonical" href="{{ url()->current() }}">
   <meta property="og:site_name" content="СказкоМир">
   <meta property="og:title" content="@yield('title', 'СказкоМир — сказки для всей семьи')">

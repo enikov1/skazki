@@ -369,7 +369,7 @@ class LibraryTest extends TestCase
         $this->actingAs($user)->get('/admin')->assertForbidden();
         $editor = User::factory()->create();
         $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
-        $this->actingAs($editor)->get('/admin')->assertOk()->assertSee('Управление сайтом')->assertSee('css/ui.css')->assertSee('css/admin.css');
+        $this->actingAs($editor)->get('/admin')->assertOk()->assertSee('Управление сайтом')->assertSee('css/ui.css')->assertSee('css/admin.css')->assertSee('content="noindex,nofollow"', false);
     }
 
     public function test_public_story_has_unique_title_and_canonical(): void
@@ -768,10 +768,12 @@ class LibraryTest extends TestCase
         $this->postJson(route('admin.colorings.pages.store'), ['category_id' => $category->id, 'title' => 'Лисёнок', 'outline_path' => 'storage/media/fox.png', 'is_published' => 1])->assertOk();
         $page = $category->pages()->firstOrFail();
         $this->get(route('colorings.index'))->assertOk()->assertSee('Лесные жители')->assertSee('1 раскраска');
+        $this->get(route('colorings.index', ['q' => 'лес']))->assertOk()->assertSee('content="noindex,follow"', false);
         $filteredCategories = $this->getJson(route('colorings.index', ['q' => 'лес']));
         $filteredCategories->assertOk()->assertJsonPath('count', 1);
         $this->assertStringContainsString('Лесные жители', $filteredCategories->json('html'));
         $this->get(route('colorings.category', $category))->assertOk()->assertSee('Лисёнок');
+        $this->get(route('colorings.category', [$category, 'q' => 'лиса']))->assertOk()->assertSee('content="noindex,follow"', false);
         $this->getJson(route('colorings.category', [$category, 'q' => 'не найдено']))->assertOk()->assertJsonPath('count', 0);
         $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('data-coloring-canvas', false)->assertSee('Скачать PNG')->assertSee('Ластик');
         $this->postJson(route('colorings.favorite', [$category, $page]))->assertOk()->assertJsonPath('saved', true);

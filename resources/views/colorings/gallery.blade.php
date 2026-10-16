@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Галерея детских работ — СказкоМир')
 @section('description', 'Раскраски, опубликованные после подтверждения родителя и проверки модератором.')
+@if(request()->query())@section('robots', 'noindex,follow')@endif
 @section('content')
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('colorings.index') }}">Раскраски</a><span>/</span><span aria-current="page">Галерея работ</span></nav>
 <header class="page-panel coloring-heading"><p class="eyebrow">Творчество сообщества</p><h1 class="page-title">Галерея работ</h1><p class="lead">Здесь размещены только рисунки, опубликованные после подтверждения родителя и проверки модератором.</p></header>
