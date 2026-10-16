@@ -759,6 +759,11 @@ class LibraryTest extends TestCase
         $this->postJson(route('colorings.rate', [$category, $page]), ['rating' => 4])->assertOk()->assertJsonPath('total', 1);
         $this->assertDatabaseCount('coloring_favorites', 1);
         $this->assertDatabaseCount('coloring_ratings', 1);
+        $this->postJson(route('colorings.progress.store', [$category, $page]), ['strokes' => [['color' => '#f37451', 'size' => 24, 'points' => [[0.1, 0.2], [0.4, 0.6]]]]])->assertOk()->assertJsonPath('message', 'Прогресс раскрашивания сохранён в профиле.');
+        $this->assertDatabaseHas('coloring_progress', ['user_id' => auth()->id(), 'coloring_page_id' => $page->id]);
+        $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('data-coloring-cloud-strokes', false);
+        $this->get(route('profile.history'))->assertOk()->assertSee('Прогресс раскрашивания')->assertSee('Продолжить раскрашивание');
+        $this->postJson(route('colorings.progress.store', [$category, $page]), ['strokes' => [['color' => 'red', 'size' => 1000, 'points' => [[2, 2]]]]])->assertUnprocessable();
         $this->get(route('profile.history'))->assertOk()->assertSee('Избранные раскраски')->assertSee('Лисёнок');
         $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertUnprocessable();
         $this->deleteJson(route('admin.colorings.pages.destroy', $page))->assertOk();

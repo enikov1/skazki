@@ -19,6 +19,7 @@ use App\Http\Controllers\StoryQuizController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ColoringController;
 use App\Http\Controllers\ColoringInteractionController;
+use App\Http\Controllers\ColoringProgressController;
 use App\Http\Controllers\ColoringSubmissionController;
 use App\Http\Controllers\ColoringWorkInteractionController;
 use App\Http\Controllers\Admin\ColoringWorkCommentModerationController;
@@ -46,6 +47,7 @@ Route::get('/raskraski/{category:slug}/{page:slug}', [ColoringController::class,
 Route::post('/raskraski/{category:slug}/{page:slug}/favorite', [ColoringInteractionController::class, 'favorite'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.favorite');
 Route::post('/raskraski/{category:slug}/{page:slug}/rating', [ColoringInteractionController::class, 'rate'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.rate');
 Route::post('/raskraski/{category:slug}/{page:slug}/submissions', [ColoringSubmissionController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.submissions.store');
+Route::post('/raskraski/{category:slug}/{page:slug}/progress', [ColoringProgressController::class, 'store'])->middleware(['auth', 'account.active', 'throttle:public-write'])->name('colorings.progress.store');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/roditelyam', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/roditelyam/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');

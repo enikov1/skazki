@@ -44,7 +44,8 @@ class ColoringController extends Controller
         $rating = $page->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
         $userRating = auth()->user()?->coloringRatings()->where('coloring_page_id', $page->id)->value('rating');
         $isFavorited = auth()->user()?->coloringFavorites()->where('coloring_page_id', $page->id)->exists() ?? false;
-        return view('colorings.page', compact('category', 'page', 'rating', 'userRating', 'isFavorited'));
+        $savedStrokes = auth()->user()?->coloringProgress()->where('coloring_page_id', $page->id)->first()?->strokes ?? [];
+        return view('colorings.page', compact('category', 'page', 'rating', 'userRating', 'isFavorited', 'savedStrokes'));
     }
 
     public function gallery(): View

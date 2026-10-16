@@ -29,4 +29,9 @@ class ColoringPage extends Model
     {
         return $this->hasMany(ColoringFavorite::class, 'coloring_page_id');
     }
+
+    public function progress(): HasMany
+    {
+        return $this->hasMany(ColoringProgress::class, 'coloring_page_id');
+    }
 }

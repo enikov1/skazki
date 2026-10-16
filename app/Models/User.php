@@ -57,6 +57,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(ColoringWorkLike::class);
     }
 
+    public function coloringProgress(): HasMany
+    {
+        return $this->hasMany(ColoringProgress::class);
+    }
+
     public function audioPlaybackStates(): HasMany
     {
         return $this->hasMany(AudioPlaybackState::class);
