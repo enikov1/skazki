@@ -53,8 +53,15 @@ class ProfileController extends Controller
         $newsletterConsent = in_array($section, ['overview', 'settings'], true) ? $user->consentEvents()->where('consent_type', 'newsletter')->orderByDesc('recorded_at')->orderByDesc('id')->first() : null;
         $consentEvents = in_array($section, ['overview', 'settings'], true) ? $user->consentEvents()->whereIn('consent_type', ['terms', 'privacy_notice'])->orderBy('recorded_at')->get()->keyBy('consent_type') : collect();
         $socialAccounts = in_array($section, ['overview', 'security'], true) ? $user->socialAccounts()->orderBy('provider')->get() : collect();
+        $achievements = $section === 'overview' ? [
+            ['icon' => '📚', 'title' => 'Первое чтение', 'description' => 'Откройте первую сказку', 'progress' => $user->readingHistories()->whereHas('story', fn ($query) => $query->published())->count(), 'target' => 1, 'url' => route('home')],
+            ['icon' => '🌟', 'title' => 'Любознательный читатель', 'description' => 'Откройте пять разных сказок', 'progress' => $user->readingHistories()->whereHas('story', fn ($query) => $query->published())->count(), 'target' => 5, 'url' => route('profile.history')],
+            ['icon' => '🧩', 'title' => 'Первый ответ', 'description' => 'Пройдите викторину', 'progress' => $user->storyQuizAttempts()->count(), 'target' => 1, 'url' => route('games.index')],
+            ['icon' => '🎨', 'title' => 'Начинающий художник', 'description' => 'Сохраните прогресс раскрашивания', 'progress' => $user->coloringProgress()->count(), 'target' => 1, 'url' => route('colorings.index')],
+            ['icon' => '🖼️', 'title' => 'В галерее', 'description' => 'Поделитесь работой после проверки', 'progress' => $user->coloringSubmissions()->where('status', 'approved')->count(), 'target' => 1, 'url' => route('colorings.gallery')],
+        ] : [];
 
-        return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts'));
+        return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
     }
 
     public function update(Request $request): RedirectResponse|JsonResponse
