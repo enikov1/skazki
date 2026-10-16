@@ -152,6 +152,8 @@ class LibraryTest extends TestCase
         $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
 
         $this->actingAs($editor)->get(route('admin.media.index', ['select' => 'cover_path']))->assertOk()->assertSee('Медиатека');
+        $this->get(route('admin.media.index', ['select' => 'gameImageA']))->assertOk()->assertSee('data-media-field="gameImageA"', false);
+        $this->get(route('admin.media.index', ['select' => 'gameImageB']))->assertOk()->assertSee('data-media-field="gameImageB"', false);
         $ajaxUpload = $this->postJson(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('ajax-cover.png', 400, 300)]);
         $ajaxUpload->assertOk()->assertJsonPath('media.name', basename($ajaxUpload->json('media.path')));
         $this->assertStringStartsWith('storage/media/', $ajaxUpload->json('media.path'));
