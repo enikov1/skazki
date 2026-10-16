@@ -1,153 +1,414 @@
-.laravel-reader {
-  max-width: 900px;
-  margin: 10px auto 34px;
-  border-color: #e4e8dc;
-  border-radius: 20px;
-  background: #fffefa;
+.reader-mode {
+  min-height: 100vh;
+  background: #f5f1e8;
+  color: #34443d;
 }
 
-.laravel-reader .reader-toolbar {
+.reader-page {
+  min-height: 100vh;
+  padding: 0 24px 56px;
+}
+
+.ebook-reader {
+  --reader-max-width: 700px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.ebook-chrome {
   position: sticky;
-  top: 58px;
-  display: flex;
-  flex-wrap: wrap;
+  top: 0;
+  z-index: 20;
+  margin: 0 -24px;
+  padding: 0 max(24px, (100vw - 1120px) / 2);
+  background: rgba(255, 254, 250, 0.9333333333);
+  border-bottom: 1px solid #e7e1d5;
+  box-shadow: 0 8px 22px rgba(64, 51, 26, 0.0392156863);
+  backdrop-filter: blur(14px);
+}
+
+.ebook-header {
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 18px;
+}
+
+.ebook-back, .ebook-brand {
+  display: inline-flex;
   align-items: center;
   gap: 9px;
-  padding: 12px 15px;
-  border-bottom: 1px solid #e9e9de;
-  background: #fffefa;
-}
-
-.laravel-reader .reader-toolbar label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #6d7b78;
-  font-size: 12px;
   font-weight: 700;
 }
 
-.laravel-reader .reader-toolbar select {
-  min-height: 36px;
-  max-width: 150px;
-  padding: 6px 28px 6px 9px;
-  border: 1px solid #dfe7df;
+.ebook-back {
+  justify-self: start;
+  color: #586a60;
+}
+
+.ebook-back:hover {
+  color: #287a5a;
+}
+
+.ebook-back .icon {
+  width: 19px;
+  height: 19px;
+}
+
+.ebook-brand {
+  color: #3c624c;
+  font-size: 17px;
+}
+
+.ebook-brand .icon {
+  width: 27px;
+  height: 27px;
+  color: #55936e;
+}
+
+.ebook-current-title {
+  justify-self: end;
+  min-width: 0;
+  display: grid;
+  text-align: right;
+  line-height: 1.35;
+}
+
+.ebook-current-title span {
+  color: #889188;
+  font-size: 11px;
+}
+
+.ebook-current-title strong {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.ebook-toolbar {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ebook-page-controls, .ebook-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ebook-toolbar .button {
+  min-height: 39px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ebook-toolbar .icon, .ebook-bottom-nav .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.ebook-toolbar .button:disabled, .ebook-bottom-nav .button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ebook-status {
+  padding: 8px 0 11px;
+  display: grid;
+  gap: 7px;
+  color: #68786d;
+  font-size: 12px;
+}
+
+.ebook-progress-track {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: #e9e6dd;
+}
+
+.ebook-progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: #79a879;
+  transition: width 0.25s ease;
+}
+
+.ebook-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 18px;
+  padding: 6px 0 16px;
+}
+
+.ebook-settings[hidden] {
+  display: none;
+}
+
+.ebook-settings label {
+  min-width: 145px;
+  display: grid;
+  gap: 4px;
+  color: #728077;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ebook-settings select {
+  width: 100%;
+  min-height: 38px;
+  padding: 6px 28px 6px 10px;
+  border: 1px solid #e1e3d8;
   border-radius: 9px;
   background: #fff;
-  color: #384e47;
+  color: #394c41;
   font: inherit;
 }
 
-.laravel-reader .reader-toolbar .pill {
-  min-height: 36px;
-  padding: 6px 10px;
-  font-size: 12px;
-}
-
-.laravel-reader .reading-progress {
-  padding: 7px 20px;
-  background: #f2f7ee;
-  color: #61765d;
-  font-size: 12px;
-}
-
-.laravel-reader .reader-text {
-  max-width: var(--reader-max-width, 700px);
-  margin: 22px auto 45px;
-  padding: 22px clamp(17px, 4vw, 34px);
-  border-radius: 16px;
+.ebook-paper {
+  max-width: var(--reader-max-width);
+  margin: 38px auto 34px;
+  padding: clamp(28px, 5vw, 60px) clamp(22px, 6vw, 76px);
+  border: 1px solid #eee8dc;
+  border-radius: 18px;
   background: #fffaf0;
+  box-shadow: 0 16px 44px rgba(70, 55, 24, 0.0431372549);
   color: #394940;
   font: var(--reader-size, 20px)/1.95 Georgia, serif;
   overflow-wrap: anywhere;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s, max-width 0.2s;
 }
 
-.laravel-reader .reader-text.reader-theme-white {
+.ebook-paper.reader-theme-white {
   background: #fff;
   color: #34434b;
 }
 
-.laravel-reader .reader-text.reader-theme-green {
+.ebook-paper.reader-theme-green {
   background: #f0f6ed;
   color: #344b3c;
 }
 
-.laravel-reader .reader-title {
+.ebook-book-heading {
+  margin: 0 0 44px;
   text-align: center;
-  font: 700 clamp(27px, 4vw, 38px)/1.2 Raleway, sans-serif;
+}
+
+.ebook-book-heading .eyebrow {
+  margin: 0 0 10px;
+  color: #829081;
+  font: 700 11px/1.4 Raleway, sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ebook-paper .reader-title {
+  margin: 0 0 12px;
+  color: inherit;
+  text-align: center;
+  font: 700 clamp(28px, 4vw, 40px)/1.2 Raleway, sans-serif;
   letter-spacing: -0.025em;
 }
 
-.laravel-reader .reader-author {
+.ebook-paper .reader-author {
+  margin: 0;
+  color: #87928a;
   text-align: center;
-  color: #85918a;
   font: 600 13px/1.5 Raleway, sans-serif;
 }
 
-.laravel-reader .reader-block {
-  scroll-margin-top: 160px;
-  margin: 0 0 1.2em;
+.ebook-paper .reader-block {
+  scroll-margin-top: 190px;
+  margin: 0 0 1.25em;
 }
 
-.laravel-reader .reader-block h2 {
+.ebook-paper .reader-block p {
+  margin: 0 0 1.1em;
+}
+
+.ebook-paper .reader-block h2 {
+  margin: 1.4em 0 0.6em;
   font: 700 1.25em/1.4 Raleway, sans-serif;
 }
 
-.laravel-reader .reader-block blockquote {
+.ebook-paper .reader-block blockquote {
   margin: 1em 0;
   padding-left: 1em;
   border-left: 3px solid #d4b477;
   color: #718071;
 }
 
-.laravel-reader .reader-end {
-  margin-top: 42px;
-  text-align: center;
+.ebook-paper .reader-end {
+  margin-top: 50px;
   color: #85918a;
+  text-align: center;
   font: italic 14px/1.5 Raleway, sans-serif;
 }
 
+.ebook-bottom-nav {
+  max-width: var(--reader-max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ebook-bottom-nav .button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 @media (max-width: 700px) {
-  .laravel-reader {
-    margin-inline: -5px;
-    border-radius: 15px;
+  .reader-page {
+    padding: 0 14px 32px;
   }
-  .laravel-reader .reader-toolbar {
-    top: 58px;
-    gap: 7px;
-    padding: 9px;
+  .ebook-chrome {
+    margin: 0 -14px;
+    padding: 0 14px;
   }
-  .laravel-reader .reader-toolbar label {
-    font-size: 11px;
+  .ebook-header {
+    min-height: 58px;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
   }
-  .laravel-reader .reader-toolbar select {
-    max-width: 115px;
-    min-height: 34px;
+  .ebook-brand {
+    font-size: 14px;
   }
-  .laravel-reader .reading-progress {
-    padding-inline: 12px;
+  .ebook-brand .icon {
+    width: 23px;
+    height: 23px;
   }
-  .laravel-reader .reader-text {
-    margin: 14px auto 30px;
-    padding: 18px 16px;
-    line-height: 1.85;
+  .ebook-current-title span {
+    display: none;
+  }
+  .ebook-current-title strong {
+    max-width: 34vw;
+    font-size: 12px;
+  }
+  .ebook-toolbar {
+    min-height: 52px;
+    gap: 8px;
+  }
+  .ebook-toolbar .button {
+    min-height: 36px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+  .ebook-settings {
+    gap: 9px;
+  }
+  .ebook-settings label {
+    min-width: calc(50% - 6px);
+    flex: 1 1 calc(50% - 6px);
+  }
+  .ebook-paper {
+    margin: 20px auto 25px;
+    padding: 28px 22px;
+    border-radius: 13px;
+    line-height: 1.82;
+  }
+  .ebook-book-heading {
+    margin-bottom: 32px;
   }
 }
-@media (max-width: 420px) {
-  .laravel-reader .reader-toolbar {
-    align-items: stretch;
+@media (max-width: 430px) {
+  .ebook-brand span {
+    display: none;
   }
-  .laravel-reader .reader-toolbar label {
-    flex: 1 1 42%;
+  .ebook-toolbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+    padding-bottom: 7px;
+  }
+  .ebook-page-controls, .ebook-toolbar-actions {
+    flex: 1 1 100%;
     justify-content: space-between;
   }
-  .laravel-reader .reader-toolbar label select {
+  .ebook-page-controls .button, .ebook-toolbar-actions .button {
     flex: 1;
-    min-width: 0;
-    margin-left: 6px;
   }
-  .laravel-reader .reader-toolbar .pill {
-    justify-content: center;
+  .ebook-current-title strong {
+    max-width: 56vw;
+  }
+  .ebook-bottom-nav {
+    flex-wrap: wrap;
+  }
+  .ebook-bottom-nav .button {
+    flex: 1 1 42%;
+    font-size: 12px;
+  }
+  .ebook-bottom-nav a {
+    order: 3;
+    flex: 1 1 100%;
+  }
+}
+@media print {
+  body.print-story .reader-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  body.print-story .reader-page > :not(.story-print-sheet) {
+    display: none !important;
+  }
+  body.print-story .reader-page .story-print-sheet {
+    display: block !important;
+    position: relative;
+    min-height: 250mm;
+    padding: 0;
+    color: #111;
+    background: #fff;
+  }
+  body.print-story .story-print-sheet h1 {
+    margin: 0 0 8mm;
+    font: 700 22pt/1.2 Georgia, serif;
+    text-align: center;
+  }
+  body.print-story .story-print-illustration {
+    display: block;
+    max-width: 100%;
+    max-height: 85mm;
+    margin: 0 auto 9mm;
+    object-fit: contain;
+  }
+  body.print-story .story-print-text {
+    max-width: none;
+    color: #111;
+    font: 11pt/1.65 Georgia, serif;
+  }
+  body.print-story .story-print-watermark {
+    position: fixed;
+    right: 5mm;
+    bottom: 4mm;
+    z-index: 1000;
+    width: 22mm;
+    height: 22mm;
+    object-fit: contain;
+    opacity: 0.42;
+  }
+  body.print-story .story-print-sheet *, body.print-story .story-print-sheet {
+    box-shadow: none !important;
+  }
+  body.print-story .story-print-text p {
+    orphans: 3;
+    widows: 3;
   }
 }

@@ -84,7 +84,89 @@ function initAudioCatalog(){
 }
 function initReader(){const b=currentBook(),text=document.getElementById('readerText'),title=text.querySelector('.reader-title'),author=text.querySelector('.reader-author');if(title)title.textContent=b.title;if(author)author.textContent=b.author;text.querySelectorAll('[data-paragraph]').forEach(p=>p.remove());const ending=text.querySelector('.reader-end');b.text.split('\n\n').forEach((copy,index)=>{const p=document.createElement('p');p.dataset.paragraph=String(index);p.textContent=copy;ending.before(p)});const pageTitle=document.querySelector('.page-title a');if(pageTitle){pageTitle.textContent=b.title;pageTitle.href='story.html?id='+b.id}let size=19,night=false;text.style.setProperty('--reader-size',size+'px');if(night)text.classList.add('night');document.getElementById('fontDown').onclick=()=>{size=Math.max(16,size-1);text.style.setProperty('--reader-size',size+'px');};document.getElementById('fontUp').onclick=()=>{size=Math.min(30,size+1);text.style.setProperty('--reader-size',size+'px');};document.getElementById('readerTheme').onclick=()=>{night=!night;text.classList.toggle('night',night);};const paras=[...text.querySelectorAll('[data-paragraph]')];function update(){const i=paras.findIndex(p=>p.getBoundingClientRect().bottom>innerHeight*.35);document.getElementById('readingProgress').textContent=`Прогресс чтения: ${Math.max(0,i+1)} из ${paras.length} абзацев`;}addEventListener('scroll',update,{passive:true});update()}
 
-function initLaravelReader(){const root=document.querySelector('[data-reader]');if(!root)return;const text=root.querySelector('[data-reader-text]'),blocks=[...root.querySelectorAll('[data-reader-block]')],status=root.querySelector('[data-reader-status]'),font=root.querySelector('[data-reader-font]'),theme=root.querySelector('[data-reader-theme]'),width=root.querySelector('[data-reader-width]'),key='skazkomir-reader:'+root.dataset.story,progressUrl=root.dataset.progressUrl,preferencesUrl=root.dataset.preferencesUrl;let saved;try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch{saved={}}if(!progressUrl){if(saved.font)font.value=saved.font;if(saved.theme)theme.value=saved.theme;if(saved.width)width.value=saved.width}function apply(){text.style.setProperty('--reader-size',font.value+'px');text.style.setProperty('--reader-max-width',{narrow:'560px',medium:'700px',wide:'900px'}[width.value]);text.classList.remove('reader-theme-cream','reader-theme-white','reader-theme-green');text.classList.add('reader-theme-'+theme.value)}function current(){let i=blocks.findIndex(node=>node.getBoundingClientRect().bottom>innerHeight*.35);return i<0?Math.max(0,blocks.length-1):i}let timer;async function save(){const paragraph=current();status.textContent=`Место чтения: ${paragraph+1} из ${blocks.length}`;saved={...saved,paragraph,font:font.value,theme:theme.value,width:width.value};try{localStorage.setItem(key,JSON.stringify(saved))}catch{}if(progressUrl){try{await fetch(progressUrl,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content||''},body:JSON.stringify({paragraph})})}catch{}}}function schedule(){clearTimeout(timer);timer=setTimeout(save,900)}async function saveSettings(){apply();schedule();if(preferencesUrl){try{const response=await fetch(preferencesUrl,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content||''},body:JSON.stringify({reader_font_size:Number(font.value),reader_theme:theme.value,reader_width:width.value})});status.textContent=response.ok?'Настройки чтения сохранены.':'Не удалось сохранить настройки.'}catch{status.textContent='Настройки применятся сейчас, но не удалось сохранить их в профиле.'}}}font.addEventListener('change',saveSettings);theme.addEventListener('change',saveSettings);width.addEventListener('change',saveSettings);addEventListener('scroll',schedule,{passive:true});root.querySelector('[data-reader-top]')?.addEventListener('click',()=>{blocks[0]?.scrollIntoView({behavior:'smooth',block:'start'});schedule()});apply();const position=progressUrl?Number(root.dataset.resume||0):Number(saved.paragraph||0);status.textContent=blocks.length?`Место чтения: ${Math.min(position+1,blocks.length)} из ${blocks.length}`:'Сказка';if(position>0&&blocks[position])requestAnimationFrame(()=>blocks[position].scrollIntoView({block:'start'}));}
+function initLaravelReader(){
+  const root=document.querySelector('[data-reader]');
+  if(!root)return;
+  const text=root.querySelector('[data-reader-text]');
+  const blocks=[...root.querySelectorAll('[data-reader-block]')];
+  const status=root.querySelector('[data-reader-status]');
+  const progressBar=root.querySelector('[data-reader-progressbar]');
+  const progressTrack=root.querySelector('[role="progressbar"]');
+  const font=root.querySelector('[data-reader-font]');
+  const theme=root.querySelector('[data-reader-theme]');
+  const width=root.querySelector('[data-reader-width]');
+  const settings=root.querySelector('[data-reader-settings]');
+  const settingsToggle=root.querySelector('[data-reader-settings-toggle]');
+  const prevButtons=[...root.querySelectorAll('[data-reader-prev]')];
+  const nextButtons=[...root.querySelectorAll('[data-reader-next]')];
+  const key='skazkomir-reader:'+root.dataset.story;
+  const progressUrl=root.dataset.progressUrl;
+  const preferencesUrl=root.dataset.preferencesUrl;
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch{}
+  if(!progressUrl){if(saved.font)font.value=saved.font;if(saved.theme)theme.value=saved.theme;if(saved.width)width.value=saved.width}
+  function apply(){
+    text.style.setProperty('--reader-size',font.value+'px');
+    text.style.setProperty('--reader-max-width',{narrow:'560px',medium:'700px',wide:'900px'}[width.value]||'700px');
+    text.classList.remove('reader-theme-cream','reader-theme-white','reader-theme-green');
+    text.classList.add('reader-theme-'+theme.value);
+  }
+  function current(){
+    const visible=blocks.findIndex(node=>node.getBoundingClientRect().bottom>innerHeight*.35);
+    return visible<0?Math.max(0,blocks.length-1):visible;
+  }
+  function updateNavigation(){
+    const index=current(),total=blocks.length,percent=total?Math.min(100,Math.round((index+1)/total*100)):100;
+    status.textContent=total?`Фрагмент ${index+1} из ${total} · ${percent}%`:'Сказка';
+    if(progressBar)progressBar.style.width=percent+'%';
+    progressTrack?.setAttribute('aria-valuenow',String(percent));
+    prevButtons.forEach(button=>button.disabled=index<=0);
+    nextButtons.forEach(button=>button.disabled=index>=total-1);
+  }
+  let timer;
+  async function save(){
+    const paragraph=current();
+    saved={...saved,paragraph,font:font.value,theme:theme.value,width:width.value};
+    try{localStorage.setItem(key,JSON.stringify(saved))}catch{}
+    if(progressUrl){
+      try{await fetch(progressUrl,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content||''},body:JSON.stringify({paragraph})})}catch{}
+    }
+  }
+  function schedule(){updateNavigation();clearTimeout(timer);timer=setTimeout(save,900)}
+  async function saveSettings(){
+    apply();schedule();
+    if(preferencesUrl){
+      try{const response=await fetch(preferencesUrl,{method:'PUT',headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]')?.content||''},body:JSON.stringify({reader_font_size:Number(font.value),reader_theme:theme.value,reader_width:width.value})});if(!response.ok)status.textContent='Настройки применены, но не удалось сохранить их в профиле.'}
+      catch{status.textContent='Настройки применятся сейчас, но не удалось сохранить их в профиле.'}
+    }
+  }
+  function goTo(index){
+    const target=Math.max(0,Math.min(blocks.length-1,index));
+    if(blocks[target])blocks[target].scrollIntoView({behavior:'smooth',block:'start'});
+    schedule();
+  }
+  prevButtons.forEach(button=>button.addEventListener('click',()=>goTo(current()-1)));
+  nextButtons.forEach(button=>button.addEventListener('click',()=>goTo(current()+1)));
+  font.addEventListener('change',saveSettings);
+  theme.addEventListener('change',saveSettings);
+  width.addEventListener('change',saveSettings);
+  settingsToggle?.addEventListener('click',()=>{
+    const open=settingsToggle.getAttribute('aria-expanded')!=='true';
+    settingsToggle.setAttribute('aria-expanded',String(open));
+    settings.hidden=!open;
+  });
+  root.querySelector('[data-reader-top]')?.addEventListener('click',()=>goTo(0));
+  document.addEventListener('keydown',event=>{
+    if(event.altKey&&event.key==='ArrowLeft'){event.preventDefault();goTo(current()-1)}
+    if(event.altKey&&event.key==='ArrowRight'){event.preventDefault();goTo(current()+1)}
+    if(event.key==='Escape'&&settingsToggle?.getAttribute('aria-expanded')==='true'){settings.hidden=true;settingsToggle.setAttribute('aria-expanded','false');settingsToggle.focus()}
+  });
+  addEventListener('scroll',schedule,{passive:true});
+  apply();
+  const position=progressUrl?Number(root.dataset.resume||0):Number(saved.paragraph||0);
+  updateNavigation();
+  if(position>0&&blocks[position])requestAnimationFrame(()=>blocks[position].scrollIntoView({block:'start'}));
+}
 const LOGIC_SETS={
 repka:[['Кто тянул репку первым?',['Дед','Внучка','Мышка'],0],['Кого позвали после бабки?',['Кошку','Внучку','Собаку'],1],['Кто помог вытянуть репку последним?',['Жучка','Кошка','Мышка'],2],['Что помогло героям?',['Работали вместе','Ждали дождя','Позвали волка'],0],['Кто стоит перед кошкой в цепочке?',['Жучка','Мышка','Дед'],0]],
 kolobok:[['От кого Колобок укатился первым?',['От зайца','От медведя','От лисы'],0],['Кто встретился Колобку в конце?',['Лиса','Заяц','Волк'],0],['Что Колобок делал при встрече?',['Пел песенку','Строил дом','Собирал ягоды'],0],['Где остыл Колобок?',['На окошке','В лесу','У реки'],0],['Кто испёк Колобка?',['Бабушка','Старуха','Лиса'],1]],

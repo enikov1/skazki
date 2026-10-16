@@ -12,6 +12,7 @@
             <a class="admin-link" href="{{ route('admin.articles.index') }}">Статьи</a>
             <a class="admin-link" href="{{ route('admin.media.index') }}">Медиатека</a>
             <a class="admin-link" href="{{ route('admin.colorings.pages.index') }}">Раскраски</a>
+            <a class="admin-link" href="{{ route('admin.games.index') }}">Игры</a>
         @endif
         @if(auth()->user()->hasRole('admin'))
             <a class="admin-link" href="{{ route('admin.genres.index') }}">Жанры</a>

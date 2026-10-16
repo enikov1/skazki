@@ -6,6 +6,7 @@ use App\Models\Story;
 use App\Models\Article;
 use App\Models\ColoringCategory;
 use App\Models\ColoringSubmission;
+use App\Models\InteractiveGame;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -17,7 +18,7 @@ class SitemapController extends Controller
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
             echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
             echo '<url><loc>'.htmlspecialchars(route('home'), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc></url>';
-            foreach ([route('audio.index'), route('games.index'), route('colorings.index'), route('colorings.gallery'), route('articles.index')] as $url) {
+            foreach ([route('audio.index'), route('games.index'), route('games.differences.index'), route('games.mosaics.index'), route('colorings.index'), route('colorings.gallery'), route('articles.index'), route('privacy-policy')] as $url) {
                 echo '<url><loc>'.htmlspecialchars($url, ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc></url>';
             }
             foreach (Story::published()->orderBy('id')->cursor(['slug', 'updated_at']) as $story) {
@@ -34,6 +35,10 @@ class SitemapController extends Controller
                 ->orderBy('coloring_pages.id')->select(['coloring_pages.slug as page_slug', 'coloring_categories.slug as category_slug', 'coloring_pages.updated_at']);
             foreach ($coloringPages->cursor() as $page) {
                 echo '<url><loc>'.htmlspecialchars(route('colorings.page', [$page->category_slug, $page->page_slug]), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$page->updated_at.'</lastmod></url>';
+            }
+            foreach (InteractiveGame::published()->orderBy('id')->cursor(['type', 'slug', 'updated_at']) as $game) {
+                $route = $game->type === 'differences' ? 'games.differences.show' : 'games.mosaics.show';
+                echo '<url><loc>'.htmlspecialchars(route($route, $game->slug), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$game->updated_at->toAtomString().'</lastmod></url>';
             }
             foreach (Story::published()->whereHas('quizQuestions')->orderBy('id')->cursor(['slug', 'updated_at']) as $story) {
                 echo '<url><loc>'.htmlspecialchars(route('stories.quiz', $story->slug), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$story->updated_at->toAtomString().'</lastmod></url>';

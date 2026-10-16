@@ -17,7 +17,7 @@
       <label class="check-line"><input type="checkbox" name="terms" value="1" @checked(old('terms')) required><span>Согласен(на) с правилами сайта и политикой конфиденциальности</span></label><label class="check-line"><input type="checkbox" name="newsletter" value="1" @checked(old('newsletter'))><span>Хочу получать новости проекта по почте <small>(по желанию, выбор можно изменить в профиле)</small></span></label>
       <button class="btn auth-submit" type="submit">Зарегистрироваться</button>
     </form>
-    <p class="auth-switch">Уже есть аккаунт? <a href="{{ route('login') }}">Войти</a></p><p class="auth-legal">Продолжая, вы соглашаетесь с <a href="{{ url('/demo/privacy.html') }}">политикой конфиденциальности</a>.</p>
+    <p class="auth-switch">Уже есть аккаунт? <a href="{{ route('login') }}">Войти</a></p><p class="auth-legal">Продолжая, вы соглашаетесь с <a href="{{ route('privacy-policy') }}">политикой конфиденциальности</a>.</p>
   </section>
 </div>
 @endsection

@@ -15,7 +15,7 @@
       <label class="check-line"><input type="checkbox" name="remember" value="1"><span>Запомнить меня на этом устройстве</span></label>
       <button class="btn auth-submit" type="submit">Войти</button>
     </form>
-    <p class="auth-switch">Нет аккаунта? <a href="{{ route('register') }}">Зарегистрироваться</a></p><p class="auth-legal">Продолжая, вы соглашаетесь с <a href="{{ url('/demo/privacy.html') }}">политикой конфиденциальности</a>.</p>
+    <p class="auth-switch">Нет аккаунта? <a href="{{ route('register') }}">Зарегистрироваться</a></p><p class="auth-legal">Продолжая, вы соглашаетесь с <a href="{{ route('privacy-policy') }}">политикой конфиденциальности</a>.</p>
   </section>
 </div>
 @endsection

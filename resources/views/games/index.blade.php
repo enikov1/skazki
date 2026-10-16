@@ -7,7 +7,8 @@
 @endpush
 @section('content')
 <nav class="breadcrumbs"><a href="{{ route('home') }}">Главная</a><span>/</span><span aria-current="page">Игры и занятия</span></nav>
-<header class="page-panel games-heading"><p class="eyebrow">Играем и вспоминаем</p><h1 class="page-title">Игры и викторины</h1><p class="lead">Выберите сказку и ответьте на вопросы о героях и событиях.</p></header>
+<header class="page-panel games-heading"><p class="eyebrow">Играем и вспоминаем</p><h1 class="page-title">Игры и викторины</h1><p class="lead">Пройдите викторину по сказке, найдите отличия или соберите мозаику.</p></header>
+<nav class="game-type-nav" aria-label="Виды игр"><a class="active" href="{{ route('games.index') }}">Викторины</a><a href="{{ route('games.differences.index') }}">Найди отличия</a><a href="{{ route('games.mosaics.index') }}">Мозаики</a></nav>
 <section class="games-catalog" aria-labelledby="games-title">
     <div class="section-heading"><div><p class="eyebrow">Задания по сказкам</p><h2 id="games-title">Выберите викторину</h2></div><span class="result-count" data-games-count>{{ $stories->total() }} {{ trans_choice('викторина|викторины|викторин', $stories->total()) }}</span></div>
     <form class="games-filter" method="get" action="{{ route('games.index') }}" data-games-filter>

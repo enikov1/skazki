@@ -663,7 +663,7 @@ class LibraryTest extends TestCase
         $story = Story::where('slug', 'kolobok')->firstOrFail();
         $this->actingAs($reader)->get(route('stories.show', $story))->assertOk();
         $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id]);
-        $this->get(route('stories.read', $story))->assertOk()->assertSee('data-reader')->assertSee('Настройки чтения');
+        $this->get(route('stories.read', $story))->assertOk()->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')->assertSee('<meta name="robots" content="noindex,nofollow">', false)->assertSee('data-reader')->assertSee('Настройки чтения')->assertSee('data-reader-prev')->assertSee('data-reader-next')->assertDontSee('Основная навигация');
         $this->postJson(route('stories.reading-progress', $story), ['paragraph' => 1])->assertOk()->assertJsonPath('saved', true);
         $this->assertDatabaseHas('reading_histories', ['user_id' => $reader->id, 'story_id' => $story->id, 'paragraph_position' => 1]);
         $this->get(route('profile.show'))->assertOk()->assertSee('Главная профиля')->assertSee('История чтения')->assertSee($story->title)->assertSee('Достижения')->assertSee('Первое чтение')->assertSee('Любознательный читатель')->assertSee('aria-label="Первое чтение: 1 из 1"', false);

@@ -13,6 +13,7 @@ use App\Models\ColoringWorkComment;
 use App\Models\ColoringWorkLike;
 use App\Models\Comment;
 use App\Models\Genre;
+use App\Models\InteractiveGame;
 use App\Models\Role;
 use App\Models\Story;
 use App\Models\StoryQuizAttempt;
@@ -46,6 +47,7 @@ class DemoContentSeeder extends Seeder
         $this->seedAudioAndQuizzes($stories, $reader);
         $pages = $this->seedColorings();
         $this->seedColoringActivity($pages, $reader, $moderator);
+        $this->seedInteractiveGames();
 
         $this->command?->info('Демо-контент создан. Пользователи: demo-admin/editor/moderator/reader@example.test; пароль: DemoPassword-2026!');
     }
@@ -183,6 +185,32 @@ class DemoContentSeeder extends Seeder
 
         $reader->readingHistories()->updateOrCreate(['story_id' => $stories['kolobok']->id], ['last_read_at' => now()->subMinutes(12), 'paragraph_position' => 2]);
         $reader->readingHistories()->updateOrCreate(['story_id' => $stories['tri-porosenka']->id], ['last_read_at' => now()->subDays(2), 'paragraph_position' => 0]);
+    }
+
+    private function seedInteractiveGames(): void
+    {
+        InteractiveGame::updateOrCreate(['slug' => 'lesnaya-progulka-demo'], [
+            'type' => 'differences',
+            'title' => 'Лесная прогулка',
+            'description' => 'Сравните две картинки и найдите три изменения.',
+            'image_a' => 'assets/games/differences-a.svg',
+            'image_b' => 'assets/games/differences-b.svg',
+            'data' => ['differences' => [
+                ['x' => 0.8125, 'y' => 0.2083, 'radius' => 0.06, 'label' => 'У солнышка появилось лицо'],
+                ['x' => 0.505, 'y' => 0.627, 'radius' => 0.045, 'label' => 'Изменился цвет окошка'],
+                ['x' => 0.65, 'y' => 0.592, 'radius' => 0.045, 'label' => 'На дереве не хватает яблока'],
+            ]],
+            'is_published' => true,
+        ]);
+        InteractiveGame::updateOrCreate(['slug' => 'mozaika-lesnaya-polyana-demo'], [
+            'type' => 'mosaics',
+            'title' => 'Мозаика: лесная поляна',
+            'description' => 'Соберите сказочную картинку из девяти частей.',
+            'image_a' => 'assets/games/differences-a.svg',
+            'image_b' => null,
+            'data' => ['rows' => 3, 'columns' => 3, 'shuffle' => true],
+            'is_published' => true,
+        ]);
     }
 
     /** @return array<string, ColoringPage> */
