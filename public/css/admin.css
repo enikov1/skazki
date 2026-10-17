@@ -1406,6 +1406,13 @@
   background: #fff;
 }
 
+.admin-area .coloring-admin-row .admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .admin-area .coloring-admin-row > .form-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -1437,8 +1444,11 @@
     width: 70px;
     height: 68px;
   }
-  .admin-area .coloring-admin-row > .form-grid, .admin-area .coloring-admin-row > form:last-child {
+  .admin-area .coloring-admin-row > .form-grid, .admin-area .coloring-admin-row > form:last-child, .admin-area .coloring-admin-row .admin-actions {
     grid-column: 1/-1;
+  }
+  .admin-area .coloring-admin-row .admin-actions {
+    justify-content: flex-start;
   }
 }
 /* Interactive games constructor */

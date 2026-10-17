@@ -39,6 +39,31 @@ class ColoringPageController extends Controller
         return $this->respond($request, 'Раскраска сохранена.', route('admin.colorings.pages.index', ['created' => $page->id]));
     }
 
+    public function edit(ColoringPage $coloring): View
+    {
+        $categories = ColoringCategory::query()->orderBy('name')->get();
+
+        return view('admin.colorings.form', compact('coloring', 'categories'));
+    }
+
+    public function update(Request $request, ColoringPage $coloring): JsonResponse|RedirectResponse
+    {
+        $data = $request->validate([
+            'category_id' => ['required', 'integer', Rule::exists('coloring_categories', 'id')],
+            'title' => ['required', 'string', 'max:160'],
+            'slug' => ['nullable', 'alpha_dash:ascii', 'max:180', Rule::unique('coloring_pages', 'slug')->ignore($coloring->id)],
+            'preview_path' => ['nullable', 'string', 'max:255'],
+            'outline_path' => ['required', 'string', 'max:255'],
+        ]);
+
+        // Keep the established public URL unless an editor explicitly changes it.
+        $data['slug'] = filled($data['slug'] ?? null) ? $data['slug'] : $coloring->slug;
+        $data['is_published'] = $request->boolean('is_published');
+        $coloring->update($data);
+
+        return $this->respond($request, 'Изменения раскраски сохранены.', route('admin.colorings.pages.index'));
+    }
+
     public function destroy(Request $request, ColoringPage $coloring): JsonResponse|RedirectResponse
     {
         $coloring->delete();

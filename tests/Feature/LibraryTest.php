@@ -1103,6 +1103,26 @@ class LibraryTest extends TestCase
         $this->get(route('profile.history'))->assertOk()->assertSee('Прогресс раскрашивания')->assertSee('Продолжить раскрашивание');
         $this->postJson(route('colorings.progress.store', [$category, $page]), ['strokes' => [['color' => 'red', 'size' => 1000, 'points' => [[2, 2]]]]])->assertUnprocessable();
         $this->get(route('profile.history'))->assertOk()->assertSee('Избранные раскраски')->assertSee('Лисёнок');
+        $this->get(route('admin.colorings.pages.edit', $page))->assertOk()->assertSee('Изменить раскраску')->assertSee('Выбрать контур');
+        $this->putJson(route('admin.colorings.pages.update', $page), [
+            'category_id' => $category->id,
+            'title' => 'Лисёнок обновлён',
+            'preview_path' => 'storage/media/fox-preview.png',
+            'outline_path' => 'storage/media/fox-updated.png',
+            'is_published' => 1,
+        ])->assertOk()->assertJsonPath('message', 'Изменения раскраски сохранены.');
+        $this->assertDatabaseHas('coloring_pages', [
+            'id' => $page->id,
+            'slug' => 'lisenok',
+            'title' => 'Лисёнок обновлён',
+            'outline_path' => 'storage/media/fox-updated.png',
+        ]);
+        $this->get(route('colorings.page', [$category, $page]))->assertOk()->assertSee('Лисёнок обновлён');
+        $this->putJson(route('admin.colorings.pages.update', $page), [
+            'category_id' => 999999,
+            'title' => '',
+            'outline_path' => '',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['category_id', 'title', 'outline_path']);
         $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertUnprocessable();
         $this->deleteJson(route('admin.colorings.pages.destroy', $page))->assertOk();
         $this->deleteJson(route('admin.coloring-categories.destroy', $category))->assertOk();

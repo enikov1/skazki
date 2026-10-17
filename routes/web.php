@@ -175,7 +175,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'r
     Route::patch('/coloring-categories/{category}', [ColoringCategoryController::class, 'update'])->middleware('role:admin')->name('coloring-categories.update');
     Route::delete('/coloring-categories/{category}', [ColoringCategoryController::class, 'destroy'])->middleware('role:admin')->name('coloring-categories.destroy');
     Route::get('/colorings', [ColoringPageController::class, 'index'])->middleware('role:admin,editor')->name('colorings.pages.index');
+    Route::get('/colorings/{coloring}/edit', [ColoringPageController::class, 'edit'])->middleware('role:admin,editor')->name('colorings.pages.edit');
     Route::post('/colorings', [ColoringPageController::class, 'store'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('colorings.pages.store');
+    Route::put('/colorings/{coloring}', [ColoringPageController::class, 'update'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('colorings.pages.update');
     Route::delete('/colorings/{coloring}', [ColoringPageController::class, 'destroy'])->middleware('role:admin,editor')->name('colorings.pages.destroy');
     Route::get('/coloring-submissions', [ColoringSubmissionModerationController::class, 'index'])->middleware('role:admin,moderator')->name('coloring-submissions.index');
     Route::get('/coloring-submissions/{submission}/image', [ColoringSubmissionModerationController::class, 'image'])->middleware('role:admin,moderator')->name('coloring-submissions.image');
