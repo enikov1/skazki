@@ -1284,7 +1284,7 @@ class LibraryTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $other->id, 'email' => 'preserved-user@example.test']);
         $this->assertDatabaseHas('reading_histories', ['user_id' => $other->id, 'story_id' => $story->id]);
         $this->assertDatabaseHas('stories', ['id' => $story->id, 'created_by' => null]);
-        $this->assertDatabaseHas('audit_logs', ['action' => 'user.blocked', 'actor_id' => null, 'subject_id' => null, 'summary' => '[аккаунт удалён] заблокирован']);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'user.blocked', 'actor_id' => null, 'subject_id' => null, 'summary' => 'Аккаунт [аккаунт удалён] заблокирован']);
         Storage::disk('public')->assertMissing('avatars/delete-owner.png');
         Storage::disk('local')->assertMissing('coloring-submissions/delete-owner.png');
     }
