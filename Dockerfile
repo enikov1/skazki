@@ -8,7 +8,7 @@ RUN npm run build
 FROM php:8.3-apache-bookworm
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libcurl4-openssl-dev libicu-dev libonig-dev libpq-dev libxml2-dev libzip-dev unzip \
-    && docker-php-ext-install -j"$(nproc)" curl intl mbstring pdo_pgsql xml zip \
+    && docker-php-ext-install -j"$(nproc)" curl intl mbstring pdo_pgsql pdo_sqlite xml zip \
     && a2enmod rewrite headers \
     
     && rm -rf /var/lib/apt/lists/*
