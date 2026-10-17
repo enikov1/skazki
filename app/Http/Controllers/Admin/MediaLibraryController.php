@@ -45,6 +45,8 @@ class MediaLibraryController extends Controller
             ->filter(fn (string $path): bool => strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'mp3')
             ->map(fn (string $path): array => ['path' => $path, 'name' => basename($path), 'size' => Storage::disk('local')->size($path)])
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values();
+        $attachedStories = Story::query()->whereIn('audio_path', $audio->pluck('path'))->get(['title', 'audio_path'])->groupBy('audio_path');
+        $audio = $audio->map(fn (array $item): array => $item + ['stories' => $attachedStories->get($item['path'], collect())]);
 
         return view('admin.media.index', [
             'media' => $media,
@@ -99,6 +101,8 @@ class MediaLibraryController extends Controller
             'name' => basename($path),
             'size' => Storage::disk('local')->size($path),
             'url' => route('admin.audio.preview', ['filename' => basename($path)]),
+            'delete_url' => route('admin.audio.destroy', ['filename' => basename($path)]),
+            'stories' => [],
         ];
         if ($request->expectsJson()) {
             return response()->json(['message' => 'MP3 загружен в приватное хранилище.', 'audio' => $item]);
@@ -111,5 +115,31 @@ class MediaLibraryController extends Controller
         $path = 'audio/'.$filename;
         abort_unless(strtolower(pathinfo($filename, PATHINFO_EXTENSION)) === 'mp3' && Storage::disk('local')->exists($path), 404);
         return response()->file(Storage::disk('local')->path($path), ['Content-Type' => 'audio/mpeg', 'X-Content-Type-Options' => 'nosniff']);
+    }
+
+    public function destroyAudio(Request $request, string $filename): JsonResponse|RedirectResponse
+    {
+        Gate::authorize('create', Story::class);
+        abort_unless(preg_match('/\\A[A-Za-z0-9._-]+\\.mp3\\z/i', $filename) === 1, 404);
+
+        $path = 'audio/'.$filename;
+        abort_unless(Storage::disk('local')->exists($path), 404);
+        if (Story::query()->where('audio_path', $path)->exists()) {
+            $message = 'Нельзя удалить MP3: сначала отключите его во всех сказках.';
+
+            return $request->expectsJson()
+                ? response()->json(['message' => $message], 409)
+                : back()->withErrors(['audio' => $message]);
+        }
+
+        if (! Storage::disk('local')->delete($path)) {
+            $message = 'Не удалось удалить MP3. Проверьте доступ к хранилищу.';
+
+            return $request->expectsJson()
+                ? response()->json(['message' => $message], 500)
+                : back()->withErrors(['audio' => $message]);
+        }
+
+        return $this->respond($request, 'Неиспользуемый MP3 удалён.');
     }
 }

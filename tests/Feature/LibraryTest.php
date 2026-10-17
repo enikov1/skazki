@@ -255,6 +255,16 @@ class LibraryTest extends TestCase
         $this->assertTrue($published->fresh()->allow_download);
         $this->get(route('stories.audio.download', $published))->assertOk()->assertHeader('Content-Type', 'audio/mpeg')->assertHeader('Content-Disposition');
 
+        $this->get(route('admin.media.index'))->assertOk()->assertSee('Опубликованное аудио')->assertSee('Черновое аудио')->assertSee('Подключён к:');
+        $filename = basename($path);
+        $this->deleteJson(route('admin.audio.destroy', ['filename' => $filename]))
+            ->assertStatus(409)->assertJsonPath('message', 'Нельзя удалить MP3: сначала отключите его во всех сказках.');
+        $draft->update(['audio_path' => null]);
+        $published->update(['audio_path' => null]);
+        $this->deleteJson(route('admin.audio.destroy', ['filename' => $filename]))
+            ->assertOk()->assertJsonPath('message', 'Неиспользуемый MP3 удалён.');
+        Storage::disk('local')->assertMissing($path);
+
         $this->postJson(route('admin.audio.store'), ['audio' => UploadedFile::fake()->create('track.txt', 10, 'text/plain')])->assertUnprocessable();
     }
 

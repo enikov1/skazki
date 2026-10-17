@@ -165,6 +165,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'r
     Route::get('/media', [MediaLibraryController::class, 'index'])->middleware('role:admin,editor')->name('media.index');
     Route::post('/media', [MediaLibraryController::class, 'store'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('media.store');
     Route::post('/audio', [MediaLibraryController::class, 'storeAudio'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('audio.store');
+    Route::delete('/audio/{filename}', [MediaLibraryController::class, 'destroyAudio'])->where('filename', '[A-Za-z0-9._-]+')->middleware('role:admin,editor')->name('audio.destroy');
     Route::get('/audio/{filename}', [MediaLibraryController::class, 'previewAudio'])->where('filename', '[A-Za-z0-9._-]+')->middleware('role:admin,editor')->name('audio.preview');
     Route::get('/genres', [GenreController::class, 'index'])->middleware('role:admin')->name('genres.index');
     Route::post('/genres', [GenreController::class, 'store'])->middleware('role:admin')->name('genres.store');

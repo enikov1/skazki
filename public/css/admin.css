@@ -652,6 +652,13 @@
   width: 100%;
 }
 
+.admin-area .audio-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .admin-area .admin-ajax-results {
   transition: opacity 0.16s ease;
 }
@@ -1304,6 +1311,9 @@
   .admin-area .audio-library-item {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+  .admin-area .audio-library-actions {
+    justify-content: flex-start;
   }
   .admin-area .admin-panel {
     padding: 17px;

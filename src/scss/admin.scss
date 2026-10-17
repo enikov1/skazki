@@ -140,6 +140,7 @@
 .admin-area .audio-library-item code { overflow: hidden; color: var(--admin-muted); text-overflow: ellipsis; }
 .admin-area .audio-library-item small { color: var(--admin-muted); font-size: 11px; }
 .admin-area .audio-library-item audio { width: 100%; }
+.admin-area .audio-library-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .admin-area .admin-ajax-results { transition: opacity .16s ease; }
 .admin-area .admin-ajax-results.is-loading { opacity: .5; pointer-events: none; }
 .admin-area .ajax-form-feedback { padding: 10px 13px; border: 1px solid #e4e9e4; border-radius: 10px; background: #f7faf7; color: #53665a; font-size: 13px; }
@@ -259,6 +260,7 @@
   .admin-area .table-wrap { overflow-x: auto; }
   .admin-area table { min-width: 680px; }
   .admin-area .audio-library-item { grid-template-columns: 1fr; gap: 10px; }
+  .admin-area .audio-library-actions { justify-content: flex-start; }
   .admin-area .admin-panel { padding: 17px; }
   .admin-area .genre-create-form,
   .admin-area .genre-row { grid-template-columns: 1fr; }
