@@ -85,4 +85,9 @@ class ColoringController extends Controller
 
     private function privateImage(ColoringSubmission $submission)
     {
-        abort_unless(preg_match('~^coloring-submissions/[A-Za-z0-9._/-]+\.png$~i', $submission->fi
+        abort_unless(preg_match('~^coloring-submissions/[A-Za-z0-9._/-]+\.png$~i', $submission->file_path) === 1, 404);
+        $path = \Illuminate\Support\Facades\Storage::disk('local')->path($submission->file_path);
+        abort_unless(is_file($path), 404);
+        return response()->file($path, ['Content-Type' => 'image/png', 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'public, max-age=3600']);
+    }
+}

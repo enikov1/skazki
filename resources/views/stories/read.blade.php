@@ -25,4 +25,9 @@
   <article class="ebook-paper reader-text reader-theme-{{ $readerTheme }}" style="--reader-size: {{ $readerFontSize }}px; --reader-max-width: {{ $readerWidth }}px" data-reader-text>
     <div class="ebook-book-heading"><p class="eyebrow">{{ $story->genre }}</p><h1 class="reader-title">{{ $story->title }}</h1><p class="reader-author">{{ $story->author ?: 'СказкоМир' }}</p></div>
     @php($readerBlocks = preg_split('/\n\s*\n/', trim($story->body ?? '')) ?: [])
-    @fore
+    @forelse($readerBlocks as $index => $block)<div class="reader-block" data-reader-block="{{ $index }}">{!! app(\App\Support\BBEditor::class)->render($block) !!}</div>@empty<div class="reader-block" data-reader-block="0">{!! app(\App\Support\BBEditor::class)->render($story->summary) !!}</div>@endforelse
+    <p class="reader-end">Конец сказки</p>
+  </article>
+  <nav class="ebook-bottom-nav" aria-label="Продолжить чтение" data-print-hide><button class="button button-soft" type="button" data-reader-prev><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-left"></use></svg> Предыдущий фрагмент</button><a class="button button-quiet" href="{{ route('stories.show', $story) }}">Вернуться к сказке</a><button class="button" type="button" data-reader-next>Следующий фрагмент <svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#arrow-right"></use></svg></button></nav>
+</div>
+@endsection

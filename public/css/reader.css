@@ -284,4 +284,313 @@
 
 @media (max-width: 700px) {
   .reader-page {
-    p
+    padding: 10px 10px 24px;
+  }
+  .ebook-reader {
+    border-radius: 15px;
+  }
+  .ebook-chrome {
+    margin: 0;
+    padding: 0 15px;
+  }
+  .ebook-header {
+    min-height: 58px;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+  }
+  .ebook-brand {
+    font-size: 14px;
+  }
+  .ebook-brand .icon {
+    width: 23px;
+    height: 23px;
+  }
+  .ebook-current-title span {
+    display: none;
+  }
+  .ebook-current-title strong {
+    max-width: 34vw;
+    font-size: 12px;
+  }
+  .ebook-toolbar {
+    min-height: 52px;
+    gap: 8px;
+  }
+  .ebook-toolbar .button {
+    min-height: 36px;
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+  .ebook-settings {
+    gap: 9px;
+  }
+  .ebook-settings label {
+    min-width: calc(50% - 6px);
+    flex: 1 1 calc(50% - 6px);
+  }
+  .ebook-status {
+    max-width: none;
+  }
+  .ebook-paper {
+    min-height: 560px;
+    margin: 18px auto 22px;
+    padding: 32px 24px;
+    border-radius: 13px;
+    line-height: 1.82;
+  }
+  .ebook-book-heading {
+    margin-bottom: 32px;
+  }
+}
+@media (max-width: 430px) {
+  .reader-page {
+    padding: 0;
+  }
+  .ebook-reader {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .ebook-brand span {
+    display: none;
+  }
+  .ebook-toolbar {
+    align-items: stretch;
+    flex-wrap: wrap;
+    padding-bottom: 7px;
+  }
+  .ebook-page-controls, .ebook-toolbar-actions {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+  .ebook-page-controls .button, .ebook-toolbar-actions .button {
+    flex: 1;
+  }
+  .ebook-current-title strong {
+    max-width: 56vw;
+  }
+  .ebook-bottom-nav {
+    flex-wrap: wrap;
+  }
+  .ebook-bottom-nav .button {
+    flex: 1 1 42%;
+    font-size: 12px;
+  }
+  .ebook-bottom-nav a {
+    order: 3;
+    flex: 1 1 100%;
+  }
+}
+@media print {
+  body.print-story .reader-page {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  body.print-story .reader-page > :not(.story-print-sheet) {
+    display: none !important;
+  }
+  body.print-story .reader-page .story-print-sheet {
+    display: block !important;
+    position: relative;
+    min-height: 250mm;
+    padding: 0;
+    color: #111;
+    background: #fff;
+  }
+  body.print-story .story-print-sheet h1 {
+    margin: 0 0 8mm;
+    font: 700 22pt/1.2 Georgia, serif;
+    text-align: center;
+  }
+  body.print-story .story-print-illustration {
+    display: block;
+    max-width: 100%;
+    max-height: 85mm;
+    margin: 0 auto 9mm;
+    object-fit: contain;
+  }
+  body.print-story .story-print-text {
+    max-width: none;
+    color: #111;
+    font: 11pt/1.65 Georgia, serif;
+  }
+  body.print-story .story-print-watermark {
+    position: fixed;
+    right: 5mm;
+    bottom: 4mm;
+    z-index: 1000;
+    width: 22mm;
+    height: 22mm;
+    object-fit: contain;
+    opacity: 0.42;
+  }
+  body.print-story .story-print-sheet *, body.print-story .story-print-sheet {
+    box-shadow: none !important;
+  }
+  body.print-story .story-print-text p {
+    orphans: 3;
+    widows: 3;
+  }
+}
+.reader-select-wrap {
+  position: relative;
+  display: block;
+}
+
+.ebook-settings select {
+  appearance: none;
+  padding-right: 38px;
+  min-height: 43px;
+  border-color: #dce4da;
+  border-radius: 11px;
+  box-shadow: 0 2px 5px rgba(37, 61, 28, 0.031372549);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.ebook-settings select:hover {
+  border-color: #a8c4a5;
+  background: #fcfefb;
+}
+
+.ebook-settings select:focus-visible {
+  outline: 3px solid #d6e8d1;
+  border-color: #79a879;
+}
+
+.reader-select-wrap > .icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  color: #62806b;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.ebook-settings {
+  padding: 12px 0 18px;
+}
+
+.ebook-settings label {
+  min-width: 160px;
+  gap: 7px;
+  color: #65766b;
+  font-size: 12px;
+}
+
+.ebook-settings label > span:first-child {
+  padding-left: 2px;
+}
+
+@media (max-width: 430px) {
+  .ebook-settings label {
+    min-width: 100%;
+    flex-basis: 100%;
+  }
+  .reader-select-wrap, .reader-select-wrap select {
+    width: 100%;
+  }
+}
+.reader-native-select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.reader-dropdown-trigger {
+  width: 100%;
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 12px;
+  border: 1px solid #dce4da;
+  border-radius: 11px;
+  background: #fff;
+  color: #394c41;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(37, 61, 28, 0.031372549);
+}
+
+.reader-dropdown-trigger:hover, .reader-dropdown-trigger[aria-expanded=true] {
+  border-color: #90b997;
+  background: #fcfefb;
+}
+
+.reader-dropdown-trigger:focus-visible, .reader-dropdown-option:focus-visible {
+  outline: 3px solid #d6e8d1;
+  outline-offset: 2px;
+}
+
+.reader-dropdown-trigger .icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: #62806b;
+  transition: transform 0.18s;
+}
+
+.reader-dropdown-trigger[aria-expanded=true] .icon {
+  transform: rotate(180deg);
+}
+
+.reader-dropdown-options {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow: auto;
+  padding: 5px;
+  border: 1px solid #e0e7de;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(32, 61, 42, 0.1098039216);
+}
+
+.reader-dropdown-options[hidden] {
+  display: none;
+}
+
+.reader-dropdown-option {
+  width: 100%;
+  display: block;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #43594a;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+}
+
+.reader-dropdown-option:hover, .reader-dropdown-option[aria-selected=true] {
+  background: #edf6ed;
+  color: #2f7048;
+}
+
+.reader-select-wrap > svg.icon {
+  display: none;
+}
