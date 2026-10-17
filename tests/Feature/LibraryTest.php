@@ -168,11 +168,11 @@ class LibraryTest extends TestCase
             ->assertStatus(429)->assertJsonStructure(['message']);
 
         foreach ([419, 500, 503] as $status) {
-            \\Illuminate\\Support\\Facades\\Route::get('/__test/errors/'.$status, fn () => abort($status));
+            \Illuminate\Support\Facades\Route::get('/__test/errors/'.$status, fn () => abort($status));
             $this->get('/__test/errors/'.$status)
                 ->assertStatus($status)->assertSee('name="robots" content="noindex,nofollow"', false)->assertSee((string) $status);
         }
-        \\Illuminate\\Support\\Facades\\Route::post('/__test/errors/419', fn () => abort(419));
+        \Illuminate\Support\Facades\Route::post('/__test/errors/419', fn () => abort(419));
         $this->postJson('/__test/errors/419')->assertStatus(419)->assertJsonStructure(['message']);
     }
 
