@@ -133,6 +133,48 @@ class LibraryTest extends TestCase
             ->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
 
+    public function test_error_pages_render_for_html_and_ajax_errors_keep_json_responses(): void
+    {
+        config(['app.debug' => false]);
+
+        $this->get(route('profile.show'))->assertRedirect(route('login'));
+        $this->getJson(route('profile.show'))->assertUnauthorized()->assertJsonStructure(['message']);
+
+        $this->seed();
+        $reader = User::factory()->create();
+        $reader->roles()->attach(Role::where('slug', 'user')->value('id'));
+        $this->actingAs($reader)->get(route('admin.genres.index'))
+            ->assertForbidden()->assertSee('Нет доступа — СказкоМир')->assertSee('403');
+
+        $this->get('/this-page-does-not-exist')
+            ->assertNotFound()->assertSee('Страница не найдена — СказкоМир')->assertSee('404');
+        $this->post('/skazki')
+            ->assertStatus(405)->assertSee('Действие недоступно — СказкоМир')->assertSee('405');
+
+        $this->postJson(route('login.store'), [])
+            ->assertUnprocessable()->assertJsonStructure(['message', 'errors'])->assertJsonValidationErrors(['email', 'password']);
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->post(route('login.store'), ['email' => 'error-test@example.test', 'password' => 'invalid-password']);
+        }
+        $this->post(route('login.store'), ['email' => 'error-test@example.test', 'password' => 'invalid-password'])
+            ->assertStatus(429)->assertSee('Слишком много запросов — СказкоМир')->assertSee('429');
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->postJson(route('login.store'), ['email' => 'ajax-error-test@example.test', 'password' => 'invalid-password']);
+        }
+        $this->postJson(route('login.store'), ['email' => 'ajax-error-test@example.test', 'password' => 'invalid-password'])
+            ->assertStatus(429)->assertJsonStructure(['message']);
+
+        foreach ([419, 500, 503] as $status) {
+            \\Illuminate\\Support\\Facades\\Route::get('/__test/errors/'.$status, fn () => abort($status));
+            $this->get('/__test/errors/'.$status)
+                ->assertStatus($status)->assertSee('name="robots" content="noindex,nofollow"', false)->assertSee((string) $status);
+        }
+        \\Illuminate\\Support\\Facades\\Route::post('/__test/errors/419', fn () => abort(419));
+        $this->postJson('/__test/errors/419')->assertStatus(419)->assertJsonStructure(['message']);
+    }
+
     public function test_bbeditor_renders_only_allowed_formatting_and_escapes_html(): void
     {
         $html = app(\App\Support\BBEditor::class)->render('[h2]Заголовок[/h2][b]Жирный[/b] <script>alert(1)</script>');
