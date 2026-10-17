@@ -1196,11 +1196,11 @@ class LibraryTest extends TestCase
         $reader->readingHistories()->create(['story_id' => $draftStory->id, 'last_read_at' => now()]);
         $reader->storyQuizAttempts()->create(['story_id' => $draftStory->id, 'score' => 1, 'question_count' => 1, 'answers' => []]);
 
-        $publishedGame = App\Models\InteractiveGame::create([
+        $publishedGame = \App\Models\InteractiveGame::create([
             'type' => 'mosaics', 'title' => 'Опубликованная мозаика', 'slug' => 'published-achievement-game',
             'data' => ['rows' => 2, 'columns' => 2], 'is_published' => true,
         ]);
-        $draftGame = App\Models\InteractiveGame::create([
+        $draftGame = \App\Models\InteractiveGame::create([
             'type' => 'mosaics', 'title' => 'Черновая мозаика', 'slug' => 'draft-achievement-game',
             'data' => ['rows' => 2, 'columns' => 2], 'is_published' => false,
         ]);
