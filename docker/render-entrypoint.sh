@@ -33,6 +33,8 @@ if [ "${SEED_DEMO_CONTENT:-false}" = "true" ]; then
     APP_ENV=local su -s /bin/sh www-data -c 'php artisan db:seed --force'
 fi
 
+su -s /bin/sh www-data -c 'php artisan db:seed --class=CatalogTaxonomySeeder --force'
+
 # Seeding can create audio/art directories as root. Apache must be able to
 # upload into those directories after startup, including on mounted storage.
 chown -R www-data:www-data storage bootstrap/cache

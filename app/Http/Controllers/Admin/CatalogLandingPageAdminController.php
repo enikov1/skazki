@@ -85,7 +85,8 @@ class CatalogLandingPageAdminController extends Controller
     {
         return [
             'genres' => Genre::query()->orderBy('name')->pluck('name'),
-            'authors' => Story::query()->whereNotNull('author')->where('author', '<>', '')->distinct()->orderBy('author')->pluck('author'),
+            'authors' => Story::query()->whereNotNull('author')->where('author', '<>', '')->distinct()->pluck('author')
+                ->merge(CatalogLandingPage::where('type', 'author')->pluck('filter_value'))->filter()->unique()->sort()->values(),
         ];
     }
 
