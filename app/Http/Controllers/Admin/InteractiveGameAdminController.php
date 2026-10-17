@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Http\Controllers\Controller;
 use App\Models\InteractiveGame;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -18,33 +19,39 @@ class InteractiveGameAdminController extends Controller
 
     public function index(): View
     {
-        return view('admin.games.index', ['games' => InteractiveGame::latest()->paginate(20)]);
+        Gate::authorize('viewAny', InteractiveGame::class);
+        return view('admin.games.index', ['games' => InteractiveGame::with(['creator:id,name', 'updater:id,name'])->latest()->paginate(20)]);
     }
 
     public function create(): View
     {
+        Gate::authorize('create', InteractiveGame::class);
         return view('admin.games.form', ['game' => new InteractiveGame()]);
     }
 
     public function store(Request $request): JsonResponse|RedirectResponse
     {
-        $game = InteractiveGame::create($this->validated($request));
+        Gate::authorize('create', InteractiveGame::class);
+        $game = InteractiveGame::create($this->validated($request) + ['created_by' => $request->user()->id, 'updated_by' => $request->user()->id]);
         return $this->respond($request, 'Игра создана.', route('admin.games.edit', $game));
     }
 
     public function edit(InteractiveGame $game): View
     {
+        Gate::authorize('update', $game);
         return view('admin.games.form', compact('game'));
     }
 
     public function update(Request $request, InteractiveGame $game): JsonResponse|RedirectResponse
     {
-        $game->update($this->validated($request, $game));
+        Gate::authorize('update', $game);
+        $game->update($this->validated($request, $game) + ['updated_by' => $request->user()->id]);
         return $this->respond($request, 'Изменения игры сохранены.', route('admin.games.edit', $game));
     }
 
     public function destroy(Request $request, InteractiveGame $game): JsonResponse|RedirectResponse
     {
+        Gate::authorize('update', $game);
         $game->delete();
         return $this->respond($request, 'Игра удалена.', route('admin.games.index'));
     }

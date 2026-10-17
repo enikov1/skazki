@@ -1080,6 +1080,41 @@ class LibraryTest extends TestCase
         $this->actingAs($reader)->postJson(route('admin.games.store'), $invalid)->assertForbidden();
     }
 
+    public function test_interactive_game_editing_is_limited_to_its_creating_editor_or_an_admin(): void
+    {
+        $this->seed();
+        $editor = User::factory()->create();
+        $editor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $data = [
+            'type' => 'differences',
+            'title' => 'Моя тестовая игра',
+            'slug' => 'my-owned-game',
+            'image_a' => 'assets/games/differences-a.svg',
+            'image_b' => 'assets/games/differences-b.svg',
+            'payload_json' => json_encode(['differences' => [['x' => 0.5, 'y' => 0.5]]], JSON_THROW_ON_ERROR),
+        ];
+        $this->actingAs($editor)->postJson(route('admin.games.store'), $data)->assertOk();
+        $game = \App\Models\InteractiveGame::where('slug', 'my-owned-game')->firstOrFail();
+        $this->assertSame($editor->id, $game->created_by);
+        $this->get(route('admin.games.index'))->assertOk()->assertSee('Автор: '.$editor->name)->assertSee('Изменил: '.$editor->name);
+
+        $otherEditor = User::factory()->create();
+        $otherEditor->roles()->attach(Role::where('slug', 'editor')->value('id'));
+        $this->actingAs($otherEditor)->get(route('admin.games.edit', $game))->assertForbidden();
+        $this->putJson(route('admin.games.update', $game), $data)->assertForbidden();
+        $this->deleteJson(route('admin.games.destroy', $game))->assertForbidden();
+        $this->assertDatabaseHas('interactive_games', ['id' => $game->id, 'title' => 'Моя тестовая игра']);
+
+        $admin = User::factory()->create();
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+        $this->actingAs($admin)->get(route('admin.games.edit', $game))->assertOk();
+        $this->deleteJson(route('admin.games.destroy', $game))->assertOk();
+
+        $moderator = User::factory()->create();
+        $moderator->roles()->attach(Role::where('slug', 'moderator')->value('id'));
+        $this->actingAs($moderator)->get(route('admin.games.index'))->assertForbidden();
+    }
+
     public function test_coloring_categories_and_pages_are_managed_in_admin_and_publicly_scoped(): void
     {
         $this->seed();

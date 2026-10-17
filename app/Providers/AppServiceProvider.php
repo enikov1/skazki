@@ -6,11 +6,13 @@ use App\Models\Story;
 use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\AuditLog;
+use App\Models\InteractiveGame;
 use App\Models\Comment;
 use App\Models\User;
 use App\Policies\ArticleCommentPolicy;
 use App\Policies\ArticlePolicy;
 use App\Policies\AuditLogPolicy;
+use App\Policies\InteractiveGamePolicy;
 use App\Policies\CommentPolicy;
 use App\Policies\StoryPolicy;
 use App\Policies\UserPolicy;
@@ -33,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ArticleComment::class, ArticleCommentPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
+        Gate::policy(InteractiveGame::class, InteractiveGamePolicy::class);
         Gate::before(fn ($user) => $user->hasRole('admin') ? true : null);
 
         RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
