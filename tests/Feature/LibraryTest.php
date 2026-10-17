@@ -1018,13 +1018,13 @@ class LibraryTest extends TestCase
     public function test_completed_interactive_games_are_saved_to_the_players_profile_history(): void
     {
         $this->seed();
-        $differences = \\App\\Models\\InteractiveGame::create([
+        $differences = \App\Models\InteractiveGame::create([
             'type' => 'differences', 'title' => 'Лесная полянка', 'slug' => 'lesnaya-polyanka',
             'description' => 'Найдите отличия.', 'image_a' => 'assets/games/forest-a.png',
             'image_b' => 'assets/games/forest-b.png', 'data' => ['differences' => [['x' => 0.5, 'y' => 0.5]]],
             'is_published' => true,
         ]);
-        $mosaic = \\App\\Models\\InteractiveGame::create([
+        $mosaic = \App\Models\InteractiveGame::create([
             'type' => 'mosaics', 'title' => 'Солнечная мозаика', 'slug' => 'solnechnaya-mozaika',
             'description' => 'Соберите картинку.', 'image_a' => 'assets/games/forest-a.png',
             'image_b' => null, 'data' => ['rows' => 3, 'columns' => 3], 'is_published' => true,
@@ -1041,7 +1041,7 @@ class LibraryTest extends TestCase
         $this->postJson(route('games.attempts.store', ['type' => 'mosaics', 'slug' => $mosaic->slug]), ['duration_seconds' => 125])
             ->assertCreated()->assertJsonPath('attempt.duration_seconds', 125);
 
-        $unpublished = \\App\\Models\\InteractiveGame::create([
+        $unpublished = \App\Models\InteractiveGame::create([
             'type' => 'mosaics', 'title' => 'Секретная игра', 'slug' => 'secret-game',
             'data' => ['rows' => 2, 'columns' => 2], 'is_published' => false,
         ]);
