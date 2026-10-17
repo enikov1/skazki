@@ -571,7 +571,7 @@ class LibraryTest extends TestCase
     public function test_registration_sends_signed_verification_email_and_user_can_resend_it(): void
     {
         $this->seed();
-        \\Illuminate\\Support\\Facades\\Notification::fake();
+        \Illuminate\Support\Facades\Notification::fake();
         $password = Str::password(24);
 
         $this->post(route('register.store'), [
@@ -583,17 +583,17 @@ class LibraryTest extends TestCase
         ])->assertRedirect(route('home'));
 
         $user = User::where('email', 'verification@example.test')->firstOrFail();
-        $notification = \\Illuminate\\Auth\\Notifications\\VerifyEmail::class;
+        $notification = \Illuminate\Auth\Notifications\VerifyEmail::class;
         $this->assertNull($user->email_verified_at);
-        \\Illuminate\\Support\\Facades\\Notification::assertSentTo($user, $notification);
+        \Illuminate\Support\Facades\Notification::assertSentTo($user, $notification);
 
         $this->actingAs($user)
             ->postJson(route('verification.send'))
             ->assertOk()
             ->assertJsonPath('message', 'Письмо для подтверждения отправлено.');
-        $this->assertCount(2, \\Illuminate\\Support\\Facades\\Notification::sent($user, $notification));
+        $this->assertCount(2, \Illuminate\Support\Facades\Notification::sent($user, $notification));
 
-        $signedUrl = \\Illuminate\\Support\\Facades\\URL::temporarySignedRoute(
+        $signedUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(30),
             ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
