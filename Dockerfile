@@ -10,11 +10,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libcurl4-openssl-dev libicu-dev libonig-dev libpq-dev libxml2-dev libzip-dev unzip \
     && docker-php-ext-install -j"$(nproc)" curl intl mbstring pdo_pgsql xml zip \
     && a2enmod rewrite headers \
-    && sed -ri 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf \
-    && sed -ri '/DocumentRoot/a\\    <Directory /var/www/html/public>\\n        AllowOverride All\\n        Require all granted\\n    </Directory>' /etc/apache2/sites-available/000-default.conf \
+    
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
 WORKDIR /var/www/html
 COPY . .
 RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader \
