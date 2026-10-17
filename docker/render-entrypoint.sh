@@ -31,4 +31,8 @@ if [ "${SEED_DEMO_CONTENT:-false}" = "true" ]; then
     APP_ENV=local php artisan db:seed --force
 fi
 
+# Seeding can create audio/art directories as root. Apache must be able to
+# upload into those directories after startup, including on mounted storage.
+chown -R www-data:www-data storage bootstrap/cache
+
 exec apache2-foreground
