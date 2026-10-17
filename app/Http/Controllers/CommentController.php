@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\Comment;
 use App\Models\Story;
+use App\Support\GuestInteraction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,7 +20,8 @@ class CommentController extends Controller
     {
         abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
         $data = $request->validate(['body' => ['required', 'string', 'min:3', 'max:2000']]);
-        Comment::create(['story_id' => $story->id, 'user_id' => $request->user()->id, 'body' => trim($data['body']), 'status' => 'pending']);
+        $guestName = GuestInteraction::guestName($request);
+        Comment::create(['story_id' => $story->id, 'user_id' => $request->user()?->id, 'guest_name' => $guestName, 'body' => trim($data['body']), 'status' => 'pending']);
         return $this->respond($request, 'Спасибо! Комментарий появится после проверки.', route('stories.show', $story), false);
     }
 
@@ -29,7 +31,8 @@ class CommentController extends Controller
         $data = $request->validate(['vote' => ['required', Rule::in(['like', 'dislike'])]]);
         DB::transaction(function () use ($comment, $request, $data): void {
             $locked = Comment::query()->lockForUpdate()->findOrFail($comment->id);
-            $current = $locked->votes()->where('user_id', $request->user()->id)->first();
+            $identity = GuestInteraction::identity($request);
+            $current = $locked->votes()->where(GuestInteraction::lookup($request))->first();
             if ($current?->vote === $data['vote']) {
                 $locked->decrement($data['vote'] === 'like' ? 'likes_count' : 'dislikes_count');
                 $current->delete();
@@ -39,7 +42,7 @@ class CommentController extends Controller
                 $locked->decrement($current->vote === 'like' ? 'likes_count' : 'dislikes_count');
                 $current->update(['vote' => $data['vote']]);
             } else {
-                $locked->votes()->create(['user_id' => $request->user()->id, 'vote' => $data['vote']]);
+                $locked->votes()->create($identity + ['vote' => $data['vote']]);
             }
             $locked->increment($data['vote'] === 'like' ? 'likes_count' : 'dislikes_count');
         });

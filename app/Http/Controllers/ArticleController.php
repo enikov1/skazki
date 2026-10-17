@@ -39,7 +39,7 @@ class ArticleController extends Controller
         $comments = $article->comments()->with('user:id,name')->where('status', 'approved')->latest()->paginate(10);
         $related = Article::published()->where('category', $article->category)->where('id', '<>', $article->id)->latest('published_at')->limit(3)->get();
         $rating = $article->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
-        $userRating = auth()->id() ? $article->ratings()->where('user_id', auth()->id())->value('rating') : null;
+        $userRating = $article->ratings()->where(\App\Support\GuestInteraction::lookup(request()))->value('rating');
         return view('articles.show', compact('article', 'comments', 'related', 'rating', 'userRating'));
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\ColoringPage;
+use App\Support\GuestInteraction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class ColoringInteractionController extends Controller
     {
         $coloringPage = $this->publishedPage($category, $page);
         $data = $request->validate(['rating' => ['required', 'integer', 'between:1,5']]);
-        $coloringPage->ratings()->updateOrCreate(['user_id' => $request->user()->id], ['rating' => $data['rating']]);
+        $coloringPage->ratings()->updateOrCreate(GuestInteraction::lookup($request), GuestInteraction::identity($request) + ['rating' => $data['rating']]);
         $rating = $coloringPage->ratings()->selectRaw('COALESCE(AVG(rating), 0) AS average, COUNT(*) AS total')->first();
         if ($request->expectsJson()) {
             return response()->json(['message' => 'Ваша оценка сохранена.', 'average' => (float) $rating->average, 'total' => (int) $rating->total, 'user_rating' => $data['rating']]);

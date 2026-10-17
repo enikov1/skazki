@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\ColoringSubmission;
 use App\Models\ColoringPage;
+use App\Support\GuestInteraction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,7 +35,8 @@ class ColoringWorkInteractionController extends Controller
     {
         $work = ColoringSubmission::query()->where('slug', $submission)->where('status', 'approved')->firstOrFail();
         $data = $request->validate(['body' => ['required', 'string', 'min:3', 'max:1500']]);
-        $work->comments()->create(['user_id' => $request->user()->id, 'body' => trim($data['body']), 'status' => 'pending']);
+        $guestName = GuestInteraction::guestName($request);
+        $work->comments()->create(['user_id' => $request->user()?->id, 'guest_name' => $guestName, 'body' => trim($data['body']), 'status' => 'pending']);
         return $request->expectsJson()
             ? response()->json(['message' => 'Комментарий отправлен на проверку.'])
             : $this->respond($request, 'Комментарий отправлен на проверку.');
@@ -46,8 +48,10 @@ class ColoringWorkInteractionController extends Controller
             ->whereHas('category', fn ($query) => $query->where('slug', $category)->where('is_published', true))
             ->firstOrFail();
         $data = $request->validate(['body' => ['required', 'string', 'min:3', 'max:1500']]);
+        $guestName = GuestInteraction::guestName($request);
         $coloringPage->comments()->create([
-            'user_id' => $request->user()->id,
+            'user_id' => $request->user()?->id,
+            'guest_name' => $guestName,
             'body' => trim($data['body']),
             'status' => 'pending',
         ]);

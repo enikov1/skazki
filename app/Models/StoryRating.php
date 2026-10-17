@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StoryRating extends Model
 {
-    protected $fillable = ['user_id', 'rating'];
+    protected $fillable = ['user_id', 'guest_token', 'rating'];
 
     public function story(): BelongsTo { return $this->belongsTo(Story::class); }
     public function user(): BelongsTo { return $this->belongsTo(User::class); }

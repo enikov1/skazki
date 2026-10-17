@@ -22,14 +22,11 @@
     <section class="page-panel coloring-comments" aria-labelledby="comments-title" data-print-hide>
         <h2 id="comments-title">Комментарии</h2>
         <p class="form-hint">Комментарии появляются после проверки. Имена авторов не показываются.</p>
-        @auth
-            <form class="coloring-comment-form" method="post" action="{{ route('colorings.gallery.comment', $submission->slug) }}" data-ajax-form data-coloring-work-comment>@csrf
+        <form class="coloring-comment-form" method="post" action="{{ route('colorings.gallery.comment', $submission->slug) }}" data-ajax-form data-coloring-work-comment>@csrf
+                @guest<label class="field"><span>Как вас называть?</span><input type="text" name="guest_name" minlength="2" maxlength="40" required autocomplete="nickname"><small class="form-hint">Можно указать псевдоним — фамилия и почта не нужны.</small></label>@endguest
                 <label class="field"><span>Ваш комментарий</span><textarea name="body" rows="3" minlength="3" maxlength="1500" required placeholder="Поделитесь добрыми словами"></textarea></label>
                 <button class="button" type="submit">Отправить на проверку</button>
             </form>
-        @else
-            <p><a class="text-link" href="{{ route('login', ['redirect' => request()->fullUrl()]) }}">Войдите</a>, чтобы оставить комментарий.</p>
-        @endauth
         <div class="coloring-comment-list">
             @forelse($comments as $comment)<article class="coloring-comment"><strong>Читатель</strong><time datetime="{{ $comment->created_at->toAtomString() }}">{{ $comment->created_at->format('d.m.Y') }}</time><p>{{ $comment->body }}</p></article>
             @empty<p class="form-hint">Пока нет опубликованных комментариев.</p>@endforelse

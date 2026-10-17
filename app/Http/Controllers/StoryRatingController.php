@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Models\Story;
+use App\Support\GuestInteraction;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class StoryRatingController extends Controller
     {
         abort_unless($story->status === 'published' && $story->published_at?->isPast(), 404);
         $data = $request->validate(['rating' => ['required', 'integer', 'between:1,5']]);
-        $story->ratings()->updateOrCreate(['user_id' => $request->user()->id], ['rating' => $data['rating']]);
+        $story->ratings()->updateOrCreate(GuestInteraction::lookup($request), GuestInteraction::identity($request) + ['rating' => $data['rating']]);
 
         return $this->respond($request, 'Ваша оценка сказки сохранена.', route('stories.show', $story).'#story-rating', false);
     }

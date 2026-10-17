@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ColoringRating extends Model
 {
-    protected $fillable = ['user_id', 'coloring_page_id', 'rating'];
+    protected $fillable = ['user_id', 'guest_token', 'coloring_page_id', 'rating'];
 
     protected function casts(): array
     {
