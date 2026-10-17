@@ -1,0 +1,53 @@
+databases:
+  - name: skazkomir-preview-db
+    databaseName: skazkomir_preview
+    user: skazkomir_preview
+    plan: free
+    region: frankfurt
+
+services:
+  - type: web
+    name: skazkomir-preview
+    runtime: docker
+    branch: codex/laravel-production-foundation
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: frankfurt
+    healthCheckPath: /up
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_NAME
+        value: СказкоМир — тестовый стенд
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://skazkomir-preview.onrender.com
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: skazkomir-preview-db
+          property: connectionString
+      - key: CACHE_STORE
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: SEED_DEMO_CONTENT
+        value: "true"
+      - key: DEMO_USER_PASSWORD
+        sync: false
+      - key: MAIL_MAILER
+        value: log
