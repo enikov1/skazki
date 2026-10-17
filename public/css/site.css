@@ -7827,3 +7827,23 @@ body {
     font-size: 0.9rem;
   }
 }
+/* Keep supporting copy readable against the light site surfaces. */
+:root {
+  --muted: #65737d;
+}
+
+.lead, .copyright, .filter-hint, .coloring-scene-caption, .coloring-filter-options .catalog-count, .audio-filter-panel .catalog-count, .coloring-category-copy p, .coloring-card-body > p, .coloring-detail-head .back-link, .coloring-community-intro p, .share-buttons {
+  color: var(--muted);
+}
+
+.feature-tile p {
+  color: #4f6069;
+}
+
+.promo p {
+  color: #766341;
+}
+
+.pill {
+  color: #5f707a;
+}

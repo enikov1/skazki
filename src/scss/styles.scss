@@ -213,3 +213,10 @@ body { font-family: $font-stack; }
 .legal-page p { line-height:1.75; }
 @media(max-width:850px){.game-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.game-card-grid{grid-template-columns:1fr}.difference-images{grid-template-columns:1fr}.game-finish{align-items:flex-start;flex-direction:column}.game-type-nav{gap:.4rem}.game-type-nav a{padding:.6rem .8rem;font-size:.9rem}}
+
+/* Keep supporting copy readable against the light site surfaces. */
+:root { --muted: #65737d; }
+.lead,.copyright,.filter-hint,.coloring-scene-caption,.coloring-filter-options .catalog-count,.audio-filter-panel .catalog-count,.coloring-category-copy p,.coloring-card-body>p,.coloring-detail-head .back-link,.coloring-community-intro p,.share-buttons { color: var(--muted); }
+.feature-tile p { color: #4f6069; }
+.promo p { color: #766341; }
+.pill { color: #5f707a; }
