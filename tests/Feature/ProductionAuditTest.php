@@ -59,7 +59,8 @@ class ProductionAuditTest extends TestCase
         $response = $this->postJson(route('stories.quiz.submit', $story), ['answers' => [0]])->assertOk();
         $url = $response->json('redirect');
         $this->get($url)->assertOk()->assertSee('Ваш результат: 1 из 1');
-        $this->withSession(['quiz_attempt_ids' => []])->get($url)->assertNotFound();
+        $foreign = \App\Models\StoryQuizAttempt::create(['story_id' => $story->id, 'user_id' => null, 'score' => 0, 'question_count' => 1, 'answers' => [1]]);
+        $this->get(route('stories.quiz', [$story, 'result' => $foreign->id]))->assertNotFound();
     }
 
     public function test_private_image_delivery_rejects_parent_directory_segments(): void

@@ -26,7 +26,9 @@ class CatalogLandingPageTest extends TestCase
         $this->get(route('catalog-pages.story-genre', $genre->slug))->assertOk()->assertSee('Сказки о приключениях')->assertSee('Лесная сказка')->assertViewHas('stories', fn ($stories) => $stories->total() === 1 && $stories->first()->slug === 'forest-tale')->assertSee('index,follow');
         $this->get(route('catalog-pages.author', 'anna-avtorova'))->assertOk()->assertSee('Лесная сказка')->assertViewHas('stories', fn ($stories) => $stories->total() === 1 && $stories->first()->slug === 'forest-tale');
         $this->get(route('catalog-pages.age', '4-7-let'))->assertOk()->assertSee('Лесная сказка')->assertViewHas('stories', fn ($stories) => $stories->total() === 1 && $stories->first()->slug === 'forest-tale');
-        $this->get(route('sitemap'))->assertOk()->assertSee(route('catalog-pages.story-genre', $genre->slug), false)->assertSee(route('catalog-pages.author', 'anna-avtorova'), false);
+        $sitemap = $this->get(route('sitemap'))->assertOk()->streamedContent();
+        $this->assertStringContainsString(route('catalog-pages.story-genre', $genre->slug), $sitemap);
+        $this->assertStringContainsString(route('catalog-pages.author', 'anna-avtorova'), $sitemap);
     }
 
     public function test_admin_can_create_catalog_landing_page_and_description_is_limited_to_two_thousand_characters(): void
