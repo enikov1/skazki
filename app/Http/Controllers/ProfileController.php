@@ -201,6 +201,7 @@ class ProfileController extends Controller
                 DB::table('audit_logs')->where('id', $entry->id)->update($changes);
             }
 
+            Auth::logout();
             $user->delete();
         });
 
@@ -216,7 +217,6 @@ class ProfileController extends Controller
             Log::warning('Account deleted, but one or more private profile files could not be removed.', ['user_id' => $user->id]);
         }
 
-        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
