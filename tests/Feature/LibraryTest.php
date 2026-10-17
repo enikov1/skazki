@@ -1232,7 +1232,7 @@ class LibraryTest extends TestCase
         $response = $this->actingAs($owner)->get(route('profile.data-export'))
             ->assertOk()
             ->assertDownload()
-            ->assertHeader('Cache-Control', 'private, no-store, max-age=0');
+            ->assertHeader('Cache-Control', 'max-age=0, no-store, private');
         $payload = json_decode($response->streamedContent(), true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame('export-owner@example.test', $payload['account']['email']);
