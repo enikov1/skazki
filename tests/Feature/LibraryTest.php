@@ -202,6 +202,12 @@ class LibraryTest extends TestCase
         $this->assertStringStartsWith('storage/media/', $ajaxUpload->json('media.path'));
         $this->post(route('admin.media.store', ['select' => 'cover_path']), ['image' => UploadedFile::fake()->image('illustration.webp', 400, 300)])
             ->assertRedirect(route('admin.media.index', ['select' => 'cover_path']));
+        $this->postJson(route('admin.media.store', ['select' => 'cover_path']), [
+            'image' => UploadedFile::fake()->create('vector.svg', 20, 'image/svg+xml'),
+        ])->assertUnprocessable()->assertJsonValidationErrors('image');
+        $this->postJson(route('admin.media.store', ['select' => 'cover_path']), [
+            'image' => UploadedFile::fake()->image('oversized.png', 40, 40)->size(8193),
+        ])->assertUnprocessable()->assertJsonValidationErrors('image');
         $files = Storage::disk('public')->allFiles('media');
         $this->assertCount(2, $files);
         Storage::disk('public')->assertExists($files[0]);
