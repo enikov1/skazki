@@ -10,7 +10,7 @@
     @foreach($achievements as $achievement)
       @php($progress = min($achievement['progress'], $achievement['target']))
       <a class="profile-achievement {{ $progress >= $achievement['target'] ? 'is-earned' : '' }}" href="{{ $achievement['url'] }}">
-        <span class="profile-achievement-icon" aria-hidden="true">{{ $achievement['icon'] }}</span>
+        <span class="profile-achievement-icon" aria-hidden="true"><svg class="icon" aria-hidden="true" focusable="false"><use href="{{ asset('assets/icons.svg') }}#{{ $achievement['icon'] }}"></use></svg></span>
         <span class="profile-achievement-copy"><strong>{{ $achievement['title'] }}</strong><small>{{ $achievement['description'] }}</small></span>
         <progress max="{{ $achievement['target'] }}" value="{{ $progress }}" aria-label="{{ $achievement['title'] }}: {{ $progress }} из {{ $achievement['target'] }}"></progress>
         <span class="profile-achievement-count">{{ $progress }}/{{ $achievement['target'] }}</span>
