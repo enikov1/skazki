@@ -43,6 +43,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $history = $section === 'history' ? $user->readingHistories()->with('story')->whereHas('story', fn ($query) => $query->published())->latest('last_read_at')->paginate(12) : null;
         $quizAttempts = $section === 'history' ? $user->storyQuizAttempts()->with('story')->whereHas('story', fn ($query) => $query->published())->latest()->limit(50)->get() : collect();
+        $gameAttempts = $section === 'history' ? $user->interactiveGameAttempts()->with('game')->whereHas('game', fn ($query) => $query->published())->latest('completed_at')->limit(50)->get() : collect();
         $coloringFavorites = $section === 'history' ? $user->coloringFavorites()->with('page.category')->whereHas('page', fn ($query) => $query->where('is_published', true)->whereHas('category', fn ($category) => $category->where('is_published', true)))->latest()->limit(50)->get() : collect();
         $coloringProgress = $section === 'history' ? $user->coloringProgress()->with('page.category')->whereHas('page', fn ($query) => $query->where('is_published', true)->whereHas('category', fn ($category) => $category->where('is_published', true)))->latest()->limit(50)->get() : collect();
         $coloringSubmissions = $section === 'history' ? $user->coloringSubmissions()->with('page')->latest()->limit(50)->get() : collect();
@@ -61,7 +62,7 @@ class ProfileController extends Controller
             ['icon' => 'image', 'title' => 'В галерее', 'description' => 'Поделитесь работой после проверки', 'progress' => $user->coloringSubmissions()->where('status', 'approved')->count(), 'target' => 1, 'url' => route('colorings.gallery')],
         ] : [];
 
-        return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
+        return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'gameAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
     }
 
     public function update(Request $request): RedirectResponse|JsonResponse

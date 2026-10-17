@@ -1015,6 +1015,43 @@ class LibraryTest extends TestCase
         $this->get(route('games.differences.index'))->assertOk()->assertSee('Лесная прогулка')->assertDontSee('Черновик');
     }
 
+    public function test_completed_interactive_games_are_saved_to_the_players_profile_history(): void
+    {
+        $this->seed();
+        \\App\\Models\\InteractiveGame $differences = \\App\\Models\\InteractiveGame::create([
+            'type' => 'differences', 'title' => 'Лесная полянка', 'slug' => 'lesnaya-polyanka',
+            'description' => 'Найдите отличия.', 'image_a' => 'assets/games/forest-a.png',
+            'image_b' => 'assets/games/forest-b.png', 'data' => ['differences' => [['x' => 0.5, 'y' => 0.5]]],
+            'is_published' => true,
+        ]);
+        $mosaic = \\App\\Models\\InteractiveGame::create([
+            'type' => 'mosaics', 'title' => 'Солнечная мозаика', 'slug' => 'solnechnaya-mozaika',
+            'description' => 'Соберите картинку.', 'image_a' => 'assets/games/forest-a.png',
+            'image_b' => null, 'data' => ['rows' => 3, 'columns' => 3], 'is_published' => true,
+        ]);
+
+        $this->postJson(route('games.attempts.store', ['type' => 'differences', 'slug' => $differences->slug]), ['duration_seconds' => 75])
+            ->assertUnauthorized();
+        $reader = User::factory()->create();
+        $this->actingAs($reader);
+        $this->postJson(route('games.attempts.store', ['type' => 'differences', 'slug' => $differences->slug]), ['duration_seconds' => 0])
+            ->assertUnprocessable()->assertJsonValidationErrors('duration_seconds');
+        $this->postJson(route('games.attempts.store', ['type' => 'differences', 'slug' => $differences->slug]), ['duration_seconds' => 75])
+            ->assertCreated()->assertJsonPath('attempt.duration_seconds', 75);
+        $this->postJson(route('games.attempts.store', ['type' => 'mosaics', 'slug' => $mosaic->slug]), ['duration_seconds' => 125])
+            ->assertCreated()->assertJsonPath('attempt.duration_seconds', 125);
+
+        $unpublished = \\App\\Models\\InteractiveGame::create([
+            'type' => 'mosaics', 'title' => 'Секретная игра', 'slug' => 'secret-game',
+            'data' => ['rows' => 2, 'columns' => 2], 'is_published' => false,
+        ]);
+        $this->postJson(route('games.attempts.store', ['type' => 'mosaics', 'slug' => $unpublished->slug]), ['duration_seconds' => 45])
+            ->assertNotFound();
+        $this->assertDatabaseCount('interactive_game_attempts', 2);
+        $this->get(route('profile.history'))
+            ->assertOk()->assertSee('Пройденные игры')->assertSee($differences->title)->assertSee($mosaic->title)->assertSee('01:15')->assertSee('02:05');
+    }
+
     public function test_interactive_game_import_validates_json_and_requires_editor_permissions(): void
     {
         $this->seed();

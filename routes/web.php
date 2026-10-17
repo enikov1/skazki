@@ -18,6 +18,7 @@ use App\Http\Controllers\StoryRatingController;
 use App\Http\Controllers\StoryQuizController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\InteractiveGameController;
+use App\Http\Controllers\InteractiveGameAttemptController;
 use App\Http\Controllers\Admin\InteractiveGameAdminController;
 use App\Http\Controllers\ColoringController;
 use App\Http\Controllers\ColoringInteractionController;
@@ -46,6 +47,7 @@ Route::get('/igry/naydi-otlichiya', [InteractiveGameController::class, 'differen
 Route::get('/igry/naydi-otlichiya/{slug}', [InteractiveGameController::class, 'differencesShow'])->name('games.differences.show');
 Route::get('/igry/mozaiki', [InteractiveGameController::class, 'mosaicsIndex'])->name('games.mosaics.index');
 Route::get('/igry/mozaiki/{slug}', [InteractiveGameController::class, 'mosaicsShow'])->name('games.mosaics.show');
+Route::post('/igry/{type}/{slug}/attempts', [InteractiveGameAttemptController::class, 'store'])->whereIn('type', ['differences', 'mosaics'])->middleware(['auth', 'account.active', 'throttle:20,1'])->name('games.attempts.store');
 Route::get('/raskraski', [ColoringController::class, 'index'])->name('colorings.index');
 Route::get('/raskraski/raboty', [ColoringController::class, 'gallery'])->name('colorings.gallery');
 Route::get('/raskraski/raboty/{submission:slug}', [ColoringController::class, 'galleryWork'])->name('colorings.gallery.work');
