@@ -24,11 +24,13 @@ if [ "${DB_CONNECTION:-pgsql}" = "sqlite" ]; then
     fi
 fi
 
-php artisan migrate --force
-php artisan db:seed --class=RolePermissionSeeder --force
+# Use the same filesystem identity as Apache. SQLite journals and generated
+# media must remain writable by requests after the startup process exits.
+su -s /bin/sh www-data -c 'php artisan migrate --force'
+su -s /bin/sh www-data -c 'php artisan db:seed --class=RolePermissionSeeder --force'
 php artisan storage:link --force
 if [ "${SEED_DEMO_CONTENT:-false}" = "true" ]; then
-    APP_ENV=local php artisan db:seed --force
+    APP_ENV=local su -s /bin/sh www-data -c 'php artisan db:seed --force'
 fi
 
 # Seeding can create audio/art directories as root. Apache must be able to

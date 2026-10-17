@@ -105,4 +105,12 @@ class ProductionAuditTest extends TestCase
         $admin->roles()->attach(Role::create(['name' => 'Администратор', 'slug' => 'admin']));
         $this->actingAs($admin)->postJson(route('admin.catalog-pages.store'), ['title' => ['unexpected'], 'type' => 'author', 'status' => 'draft'])->assertUnprocessable()->assertJsonValidationErrors('title');
     }
+
+    public function test_reader_and_public_layout_use_the_same_content_versioned_script(): void
+    {
+        $story = $this->story();
+        $version = substr(hash_file('sha256', public_path('js/app.js')), 0, 12);
+        $this->get(route('home'))->assertOk()->assertSee('js/app.js?v='.$version, false);
+        $this->get(route('stories.read', $story))->assertOk()->assertSee('js/app.js?v='.$version, false);
+    }
 }

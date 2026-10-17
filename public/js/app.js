@@ -451,7 +451,18 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
   form.addEventListener('invalid',event=>{
     event.preventDefault();
     const field=event.target;
-    fieldError(field,field.validationMessage||'Проверьте это поле.');
+    const validity=field.validity;
+    let message='Проверьте это поле.';
+    if(validity.customError)message=field.validationMessage;
+    else if(validity.valueMissing)message=field.type==='checkbox'?'Подтвердите согласие.':'Заполните это поле.';
+    else if(validity.typeMismatch)message=field.type==='email'?'Введите корректный адрес электронной почты.':'Введите корректный адрес ссылки.';
+    else if(validity.tooShort)message=`Введите не менее ${field.minLength} символов.`;
+    else if(validity.tooLong)message=`Введите не более ${field.maxLength} символов.`;
+    else if(validity.rangeUnderflow)message=`Минимальное значение — ${field.min}.`;
+    else if(validity.rangeOverflow)message=`Максимальное значение — ${field.max}.`;
+    else if(validity.badInput||validity.stepMismatch)message='Введите допустимое число.';
+    else if(validity.patternMismatch)message=field.title||'Проверьте формат значения.';
+    fieldError(field,message);
     setFeedback('Проверьте обязательные поля и исправьте отмеченные ошибки.');
   },true);
   form.addEventListener('submit',async event=>{
