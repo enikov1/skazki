@@ -38,6 +38,8 @@ services:
         value: local
       - key: SEED_DEMO_CONTENT
         value: "true"
+      - key: SITE_INDEXABLE
+        value: "false"
       - key: DEMO_USER_PASSWORD
         sync: false
       - key: MAIL_MAILER

@@ -23,7 +23,7 @@ class RegisterController extends Controller
 
     public function store(Request $request): RedirectResponse|JsonResponse
     {
-        $request->merge(['email' => Str::lower(trim((string) $request->input('email')))]);
+        if (is_string($request->input('email'))) $request->merge(['email' => Str::lower(trim($request->input('email')))]);
         $data = $request->validate(['name' => ['required', 'string', 'max:120'], 'email' => ['required', 'email', 'max:254', 'unique:users,email'], 'password' => ['required', 'string', 'min:10', 'confirmed'], 'terms' => ['accepted'], 'newsletter' => ['sometimes', 'boolean']]);
         $user = DB::transaction(function () use ($data, $request): User {
             $user = User::create(['name' => $data['name'], 'email' => strtolower($data['email']), 'password' => Hash::make($data['password'])]);

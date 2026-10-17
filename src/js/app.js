@@ -356,8 +356,7 @@ document.querySelectorAll('[data-rich-editor]').forEach(editor=>{
   source.addEventListener('invalid',()=>quill.focus(),true);
   editor.classList.add('is-enhanced');
   const renderPreview=()=>{
-    const escaped=document.createElement('div');escaped.textContent=source.value;
-    preview.innerHTML=escaped.innerHTML.replace(/\[b\](.*?)\[\/b\]/gis,'<strong>$1</strong>').replace(/\[i\](.*?)\[\/i\]/gis,'<em>$1</em>').replace(/\[u\](.*?)\[\/u\]/gis,'<u>$1</u>').replace(/\[h2\](.*?)\[\/h2\]/gis,'<h2>$1</h2>').replace(/\[quote\](.*?)\[\/quote\]/gis,'<blockquote>$1</blockquote>').replace(/\[list\]/gi,'<ul>').replace(/\[\/list\]/gi,'</ul>').replace(/\[olist\]/gi,'<ol>').replace(/\[\/olist\]/gi,'</ol>').replace(/\[li\](.*?)\[\/li\]/gis,'<li>$1</li>').replace(/\[img\](https:\/\/[^\s\]]+|\/(?:storage|assets)\/[^\s\]]+)\[\/img\]/gi,'<img src="$1" alt="">').replace(/\n/g,'<br>');
+    preview.replaceChildren(...[...quill.root.childNodes].map(node=>node.cloneNode(true)));
     if(!source.value.trim())preview.innerHTML='<p class="rich-editor-empty">Предпросмотр появится здесь.</p>';
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>{const selected=tab.dataset.richTab;editor.querySelectorAll('[data-rich-pane]').forEach(pane=>pane.hidden=pane.dataset.richPane!==selected);tabs.forEach(item=>{const active=item===tab;item.classList.toggle('is-active',active);item.setAttribute('aria-selected',String(active))});if(selected==='preview'){sync();renderPreview()}}));
@@ -467,11 +466,14 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
       let data;try{data=await response.json()}catch{throw new Error('Сервер вернул неполный ответ. Повторите попытку.')}
       if(!response.ok){
         const errors=data.errors||{};let first=null;
-        Object.entries(errors).forEach(([name,messages])=>{const field=form.elements.namedItem(name.split('.')[0]);const control=field instanceof RadioNodeList?field[0]:field;if(control){fieldError(control,Array.isArray(messages)?messages[0]:String(messages));first??=control}});
+        Object.entries(errors).forEach(([name,messages])=>{const field=form.elements.namedItem(name.replace(/\.(\w+)/g,'[$1]'))||form.elements.namedItem(name.split('.')[0]);const control=field instanceof RadioNodeList?field[0]:field;if(control){fieldError(control,Array.isArray(messages)?messages[0]:String(messages));first??=control}});
         setFeedback(first?'Проверьте отмеченные поля.':(data.message||'Не удалось отправить форму. Проверьте данные и попробуйте ещё раз.'));
         first?.focus();return;
       }
       setFeedback(data.message||'Изменения сохранены.','success');
+      if(form.hasAttribute('data-content-rating')&&data.user_rating){const section=form.closest('.article-rating'),average=section?.querySelector('.rating-score strong'),count=section?.querySelector('.rating-score>span:last-child'),legend=form.querySelector('legend');if(average)average.textContent=Number(data.average).toFixed(1).replace('.',',');if(count)count.textContent=`Оценок: ${data.total}`;if(legend)legend.textContent=`Ваша оценка: ${data.user_rating} из 5`;const submit=form.querySelector('button[type="submit"]');if(submit)submit.textContent='Изменить оценку'}
+      if(data.comment_votes){form.parentElement.querySelectorAll('form').forEach(voteForm=>{const value=voteForm.querySelector('[name="vote"]')?.value,button=voteForm.querySelector('button');if(button&&value in data.comment_votes){button.textContent=(value==='like'?'Нравится':'Не нравится')+' · '+data.comment_votes[value];button.setAttribute('aria-pressed',String(data.current_vote===value))}})}
+
       if(form.hasAttribute('data-print-branding')&&data.logo_url){let preview=form.querySelector('[data-print-logo-preview]');if(!preview){preview=document.createElement('div');preview.className='admin-current-logo';const label=document.createElement('span');label.textContent='Сейчас используется';preview.append(label);form.append(preview)}let image=preview.querySelector('img');if(!image){image=document.createElement('img');image.alt='Текущий логотип для печати';preview.append(image)}image.src=data.logo_url}
       if(form.hasAttribute('data-genre-create')&&data.genre){
         const list=document.querySelector('[data-genre-list]');
@@ -521,11 +523,12 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
         }
       }
       if(form.hasAttribute('data-ajax-clear'))form.reset();
+      if(form.hasAttribute('data-story-favorite')){const button=form.querySelector('button[type="submit"]'),value=form.querySelector('[name="saved"]');if(button){button.setAttribute('aria-pressed',String(data.saved));const label=button.querySelector('span');if(label)label.textContent=data.saved?'В моей полке':'В мою полку'}if(value)value.value=data.saved?'0':'1'}
       if(form.hasAttribute('data-coloring-favorite')){const button=form.querySelector('button[type="submit"]');if(button){button.setAttribute('aria-pressed',data.saved?'true':'false');button.textContent=data.saved?(form.dataset.savedLabel||'В избранном'):(form.dataset.unsavedLabel||'В избранное')}}
       if(form.hasAttribute('data-coloring-work-like')){const button=form.querySelector('button[type="submit"]'),count=button?.querySelector('[data-like-count]');if(button){button.setAttribute('aria-pressed',data.liked?'true':'false');button.classList.toggle('button-soft',!data.liked)}if(count)count.textContent=String(data.count??0)}
       if(form.hasAttribute('data-coloring-work-comment')){const field=form.querySelector('[name="body"]');if(field)field.value=''}
       if(form.hasAttribute('data-coloring-rating')){const average=document.querySelector('[data-coloring-average]'),count=document.querySelector('[data-coloring-rating-count]'),legend=form.querySelector('legend');if(average)average.textContent=Number(data.average||0).toFixed(1).replace('.',',');if(count)count.textContent=String(data.total||0);if(legend)legend.textContent=`Ваша оценка: ${data.user_rating} из 5`}
-      if(form.hasAttribute('data-coloring-submission')){const button=form.querySelector('[data-coloring-share]');if(button){button.disabled=true;button.textContent='Отправлено на проверку'}}
+      if(form.hasAttribute('data-coloring-submission')){const button=form.querySelector('[data-coloring-share]');if(button){button.disabled=true;button.textContent='Отправлено на проверку';form.dataset.submissionSent='true'}}
       const row=form.closest('.admin-users-table tr');
       if(row){const results=form.closest('[data-ajax-results]');if(results)loadAdminResults(location.href,results)}
       const moderationCard=form.closest('.moderation-card');
@@ -534,7 +537,7 @@ root.querySelectorAll('form[data-ajax-form]').forEach(form=>{
     }catch(error){
       setFeedback(error.message||'Не удалось связаться с сервером. Проверьте подключение и повторите попытку.');
     }finally{
-      form.removeAttribute('aria-busy');form.classList.remove('is-submitting');submitters.forEach(button=>button.disabled=false);
+      form.removeAttribute('aria-busy');form.classList.remove('is-submitting');submitters.forEach(button=>button.disabled=form.dataset.submissionSent==='true');
     }
   });
 });
@@ -614,7 +617,7 @@ document.querySelectorAll('[data-custom-audio]').forEach(player=>{
  const audio=player.querySelector('audio'),toggle=player.querySelector('[data-audio-toggle]'),seek=player.querySelector('[data-audio-seek]'),current=player.querySelector('[data-audio-current]'),duration=player.querySelector('[data-audio-duration]'),volume=player.querySelector('[data-audio-volume]');
  if(!audio||!toggle)return;const iconSource=toggle.querySelector('use')?.getAttribute('href')?.split('#')[0]||'/assets/icons.svg';const fmt=value=>{if(!Number.isFinite(value))return'0:00';const seconds=Math.floor(value);return`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`};
  const paint=()=>{toggle.setAttribute('aria-label',audio.paused?'Воспроизвести аудиосказку':'Приостановить аудиосказку');toggle.querySelector('use')?.setAttribute('href',`${iconSource}#${audio.paused?'play':'pause'}`);if(current)current.textContent=fmt(audio.currentTime);if(duration)duration.textContent=fmt(audio.duration);if(seek&&Number.isFinite(audio.duration)&&audio.duration>0)seek.value=String(Math.round(audio.currentTime/audio.duration*1000))};
- toggle.addEventListener('click',()=>audio.paused?audio.play().catch(()=>{}):audio.pause());audio.addEventListener('play',paint);audio.addEventListener('pause',paint);audio.addEventListener('timeupdate',paint);audio.addEventListener('loadedmetadata',paint);audio.addEventListener('durationchange',paint);audio.addEventListener('ended',paint);
+ toggle.addEventListener('click',()=>audio.paused?audio.play().catch(()=>notify('Не удалось воспроизвести аудиосказку. Попробуйте ещё раз.')):audio.pause());audio.addEventListener('play',paint);audio.addEventListener('pause',paint);audio.addEventListener('timeupdate',paint);audio.addEventListener('loadedmetadata',paint);audio.addEventListener('durationchange',paint);audio.addEventListener('ended',paint);
  seek?.addEventListener('input',()=>{if(Number.isFinite(audio.duration))audio.currentTime=audio.duration*Number(seek.value)/1000});volume?.addEventListener('input',()=>{audio.volume=Number(volume.value);audio.muted=audio.volume===0});paint();
 });
 const savedStoryAudio=document.querySelector('#storyAudio[data-audio-progress-url]');

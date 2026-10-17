@@ -104,7 +104,7 @@ class StoryController extends Controller
 
     private function validated(Request $request, ?Story $story = null): array
     {
-        if (blank($request->input('slug')) && filled($request->input('title'))) {
+        if (blank($request->input('slug')) && is_string($request->input('title')) && filled($request->input('title'))) {
             $request->merge(['slug' => Str::slug($request->input('title'))]);
         }
         $data = $request->validate([

@@ -16,8 +16,17 @@ git fetch origin "%BRANCH%" || exit /b 1
 git merge --ff-only "origin/%BRANCH%" || exit /b 1
 if exist package.json (
   where npm >nul 2>nul || (echo Node.js and npm are required to rebuild the site assets. & exit /b 1)
-  if not exist node_modules\gulp (call npm install || exit /b 1)
+  call npm ci || exit /b 1
   call npm run build || exit /b 1
+)
+if exist artisan (
+  where php >nul 2>nul || (echo PHP is required. & exit /b 1)
+  where composer >nul 2>nul || (echo Composer is required. & exit /b 1)
+  call composer install --no-interaction --prefer-dist || exit /b 1
+  php artisan optimize:clear || exit /b 1
+  php artisan migrate --force || exit /b 1
+  php artisan storage:link --force || exit /b 1
+  php artisan view:cache || exit /b 1
 )
 echo Updated branch: %BRANCH%
 endlocal

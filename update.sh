@@ -26,8 +26,18 @@ if [ -f package.json ]; then
     echo "Node.js and npm are required to rebuild the site assets." >&2
     exit 1
   fi
-  if [ ! -d node_modules/gulp ]; then npm install; fi
+  npm ci
   npm run build
+fi
+
+if [ -f artisan ]; then
+  command -v php >/dev/null 2>&1 || { echo "PHP is required." >&2; exit 1; }
+  command -v composer >/dev/null 2>&1 || { echo "Composer is required." >&2; exit 1; }
+  composer install --no-interaction --prefer-dist
+  php artisan optimize:clear
+  php artisan migrate --force
+  php artisan storage:link --force
+  php artisan view:cache
 fi
 
 echo "Updated branch: $branch"

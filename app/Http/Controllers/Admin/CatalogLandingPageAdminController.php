@@ -45,7 +45,7 @@ class CatalogLandingPageAdminController extends Controller
             foreach (['age' => 'Сказки', 'audio_age' => 'Аудиосказки'] as $type => $prefix) {
                 $created += CatalogLandingPage::firstOrCreate(
                     ['type' => $type, 'age_min' => $min, 'age_max' => $max],
-                    ['title' => $prefix.' для детей '.$min.'–'.$max.' лет', 'slug' => $min.'-'.$max.'-let', 'status' => 'draft'],
+                    ['title' => $prefix.' для детей '.$min.'–'.$max.' лет', 'slug' => $this->generatedSlug($type, $min.'-'.$max.'-let'), 'status' => 'draft'],
                 )->wasRecentlyCreated ? 1 : 0;
             }
         }
@@ -58,7 +58,8 @@ class CatalogLandingPageAdminController extends Controller
     {
         $slug = $base ?: 'page';
         $suffix = 2;
-        while (CatalogLandingPage::query()->where('type', $type)->where('slug', $slug)->exists()) {
+        while (CatalogLandingPage::query()->where('type', $type)->where('slug', $slug)->exists()
+            || \App\Models\CatalogLandingRedirect::query()->where('type', $type)->where('old_slug', $slug)->exists()) {
             $slug = ($base ?: 'page').'-'.$suffix++;
         }
         return $slug;
@@ -93,7 +94,7 @@ class CatalogLandingPageAdminController extends Controller
         $oldSlug = $catalogPage->slug;
         $catalogPage->update($this->validated($request, $catalogPage));
         if ($oldSlug !== $catalogPage->slug) {
-            $catalogPage->slugRedirects()->firstOrCreate(['old_slug' => $oldSlug]);
+            $catalogPage->slugRedirects()->firstOrCreate(['type' => $catalogPage->type, 'old_slug' => $oldSlug]);
             $catalogPage->slugRedirects()->where('old_slug', $catalogPage->slug)->delete();
         }
         return $this->respond($request, 'SEO-страница каталога обновлена.');
@@ -101,14 +102,14 @@ class CatalogLandingPageAdminController extends Controller
 
     private function validated(Request $request, ?CatalogLandingPage $page = null): array
     {
-        if (blank($request->input('slug')) && filled($request->input('title'))) $request->merge(['slug' => Str::slug($request->input('title'))]);
+        if (blank($request->input('slug')) && is_string($request->input('title')) && filled($request->input('title'))) $request->merge(['slug' => Str::slug($request->input('title'))]);
 
         $data = $request->validate([
             'type' => ['required', Rule::in(CatalogLandingPage::TYPES)],
             'title' => ['required', 'string', 'max:180'],
-            'slug' => ['required', 'alpha_dash:ascii', 'max:180', Rule::unique('catalog_landing_pages', 'slug')->where(fn ($query) => $query->where('type', $request->input('type')))->ignore($page?->id)],
-            'filter_value' => ['nullable', 'string', 'max:180'],
-            'age_min' => ['nullable', 'integer', 'between:0,18'],
+            'slug' => ['required', 'alpha_dash:ascii', 'max:180', Rule::unique('catalog_landing_pages', 'slug')->where(fn ($query) => $query->where('type', $request->input('type')))->ignore($page?->id), Rule::unique('catalog_landing_redirects', 'old_slug')->where('type', $request->input('type'))->ignore($page?->id, 'catalog_landing_page_id')],
+            'filter_value' => ['nullable', 'string', 'max:180', Rule::unique('catalog_landing_pages', 'filter_value')->where('type', $request->input('type'))->ignore($page?->id)],
+            'age_min' => ['nullable', 'integer', 'between:0,18', Rule::unique('catalog_landing_pages', 'age_min')->where(fn ($query) => $query->where('type', $request->input('type'))->where('age_max', $request->input('age_max')))->ignore($page?->id)],
             'age_max' => ['nullable', 'integer', 'between:0,18', 'gte:age_min'],
             'description' => ['nullable', 'string', 'max:2000'],
             'cover_path' => ['nullable', 'string', 'max:255'],
@@ -143,6 +144,11 @@ class CatalogLandingPageAdminController extends Controller
             }
         }
 
+        if (in_array($data['type'], ['age', 'audio_age'], true)) {
+            $data['filter_value'] = null;
+        } else {
+            $data['age_min'] = $data['age_max'] = null;
+        }
         return $data;
     }
 }

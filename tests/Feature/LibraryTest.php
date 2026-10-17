@@ -575,6 +575,7 @@ class LibraryTest extends TestCase
     public function test_guests_can_comment_rate_and_vote_on_stories(): void
     {
         $this->seed();
+        $this->withCredentials()->withCookie(config('session.cookie'), session()->getId());
         $story = Story::where('slug', 'kolobok')->firstOrFail();
         $this->postJson(route('comments.store', $story), ['guest_name' => 'Читатель', 'body' => 'Добрая история!'])->assertOk();
         $comment = Comment::where('guest_name', 'Читатель')->firstOrFail();
@@ -595,6 +596,7 @@ class LibraryTest extends TestCase
     public function test_guests_can_rate_and_comment_on_articles_and_coloring_pages(): void
     {
         $this->seed();
+        $this->withCredentials()->withCookie(config('session.cookie'), session()->getId());
         $article = Article::create(['title' => 'Совет для родителей', 'slug' => 'guest-parent-advice', 'category' => 'Чтение', 'summary' => 'Описание.', 'body' => 'Текст.', 'status' => 'published', 'published_at' => now()]);
         $this->postJson(route('article-comments.store', $article), ['guest_name' => 'Гость статьи', 'body' => 'Очень полезная статья!'])->assertOk();
         $articleComment = ArticleComment::where('guest_name', 'Гость статьи')->firstOrFail();

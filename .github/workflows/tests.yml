@@ -17,7 +17,19 @@ jobs:
           extensions: pdo_sqlite, mbstring, xml, curl, fileinfo, gd
           coverage: none
       - run: composer install --no-interaction --prefer-dist
+      - name: Prepare dependency lock for reproducible release
+        run: |
+          if ! git ls-files --error-unmatch composer.lock > /dev/null 2>&1; then
+            echo DEPENDENCY_LOCK_BEGIN
+            base64 -w76 composer.lock
+            echo DEPENDENCY_LOCK_END
+          fi
       - run: cp .env.example .env && php artisan key:generate
       - run: touch database/database.sqlite
       - run: DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite php artisan migrate --force --seed
+      - name: Compile and lint every Blade template
+        run: |
+          php artisan view:cache
+          find storage/framework/views -name '*.php' -print0 | xargs -0 -n1 php -l
+          php artisan view:clear
       - run: DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite composer test

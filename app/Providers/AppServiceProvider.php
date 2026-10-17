@@ -29,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (app()->environment('production') && str_starts_with((string) config('app.url'), 'https://')) {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
         Gate::policy(Story::class, StoryPolicy::class);
         Gate::policy(Article::class, ArticlePolicy::class);
         Gate::policy(Comment::class, CommentPolicy::class);
@@ -38,8 +41,14 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(InteractiveGame::class, InteractiveGamePolicy::class);
         Gate::before(fn ($user) => $user->hasRole('admin') ? true : null);
 
-        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(5)->by(strtolower((string) $request->input('email')).'|'.$request->ip()));
-        RateLimiter::for('public-write', fn (Request $request) => Limit::perMinute(8)->by(($request->user()?->id ?? $request->ip()).'|'.$request->path()));
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(30)->by('login-ip:'.$request->ip()),
+            Limit::perMinute(5)->by('login-account:'.(is_string($request->input('email')) ? strtolower(trim($request->input('email'))) : '').'|'.$request->ip()),
+        ]);
+        RateLimiter::for('public-write', fn (Request $request) => [
+            Limit::perMinute(60)->by('write-ip:'.$request->ip()),
+            Limit::perMinute(8)->by('write-action:'.($request->user()?->id ?? $request->ip()).'|'.$request->path()),
+        ]);
         Event::listen(\SocialiteProviders\Manager\SocialiteWasCalled::class, function ($event): void {
             $event->extendSocialite('yandex', \SocialiteProviders\Yandex\Provider::class);
             $event->extendSocialite('vkontakte', \SocialiteProviders\VKontakte\Provider::class);

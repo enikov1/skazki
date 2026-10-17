@@ -15,10 +15,22 @@ class LoginController extends Controller
 {
     use RespondsToAjax;
 
-    public function create(): View { return view('auth.login'); }
+    public function create(Request $request): View
+    {
+        $target = $request->query('redirect');
+        if (is_string($target)) {
+            $parts = parse_url($target);
+            $relative = str_starts_with($target, '/') && ! str_starts_with($target, '//') && ! str_contains($target, '\\');
+            $sameHost = is_array($parts) && ($parts['host'] ?? null) === $request->getHost()
+                && in_array($parts['scheme'] ?? '', ['https', 'http'], true) && ! isset($parts['user']) && ! isset($parts['pass']);
+            if (($relative || $sameHost) && ! preg_match('/[\x00-\x20]/', $target)) $request->session()->put('url.intended', $target);
+        }
+        return view('auth.login');
+    }
 
     public function store(Request $request): RedirectResponse|JsonResponse
     {
+        if (is_string($request->input('email'))) $request->merge(['email' => \Illuminate\Support\Str::lower(trim($request->input('email')))]);
         $credentials = $request->validate(['email' => ['required', 'email', 'max:254'], 'password' => ['required', 'string', 'max:200']]);
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             $message = 'Проверьте адрес почты и пароль.';

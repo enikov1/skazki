@@ -79,7 +79,10 @@ class StoryController extends Controller
         $stories = Story::published()->when($filters['q'] ?? null, fn ($query, $q) => $query->where(fn ($sub) => $sub->where('title', 'like', '%'.$q.'%')->orWhere('summary', 'like', '%'.$q.'%')))->when($filters['genre'] ?? null, fn ($query, $genre) => $query->where('genre', $genre))->when($filters['age'] ?? null, fn ($query, $age) => $query->where('age_min', '<=', $age)->where('age_max', '>=', $age))->latest('published_at')->paginate(12)->withQueryString();
         $genres = cache()->remember('stories:genres:v1', 600, fn () => Story::published()->select('genre')->distinct()->orderBy('genre')->pluck('genre'));
 
-        return view('stories.index', compact('stories', 'genres', 'filters'));
+        $libraryStats = ['stories' => Story::published()->count(), 'audio' => Story::published()->whereNotNull('audio_path')->count(), 'colorings' => \App\Models\ColoringPage::query()->where('is_published', true)->whereHas('category', fn ($query) => $query->where('is_published', true))->count()];
+        $latestComments = \App\Models\Comment::query()->where('status', 'approved')->whereHas('story', fn ($query) => $query->published())->with(['user:id,name', 'story:id,title,slug'])->latest()->limit(3)->get();
+        $popularStories = Story::published()->withAvg('ratings', 'rating')->withCount('ratings')->orderByDesc('ratings_count')->orderByDesc('published_at')->limit(5)->get();
+        return view('stories.index', compact('stories', 'genres', 'filters', 'libraryStats', 'latestComments', 'popularStories'));
     }
 
     public function catalog(Request $request): View|\Illuminate\Http\JsonResponse

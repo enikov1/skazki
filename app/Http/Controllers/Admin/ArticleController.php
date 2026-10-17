@@ -117,7 +117,7 @@ class ArticleController extends Controller
 
     private function validated(Request $request, ?Article $article = null): array
     {
-        if (blank($request->input('slug')) && filled($request->input('title'))) $request->merge(['slug' => Str::slug($request->input('title'))]);
+        if (blank($request->input('slug')) && is_string($request->input('title')) && filled($request->input('title'))) $request->merge(['slug' => Str::slug($request->input('title'))]);
         $data = $request->validate([
             'title' => ['required', 'string', 'max:180'], 'slug' => ['nullable', 'alpha_dash:ascii', 'max:200', Rule::unique('articles', 'slug')->ignore($article?->id), function (string $attribute, mixed $value, $fail) use ($article): void {
                 $redirect = \App\Models\SlugRedirect::query()->where('redirectable_type', Article::class)->where('old_slug', $value)->when($article, fn ($query) => $query->where('redirectable_id', '!=', $article->id))->exists();

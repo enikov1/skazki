@@ -46,6 +46,10 @@ class CommentController extends Controller
             }
             $locked->increment($data['vote'] === 'like' ? 'likes_count' : 'dislikes_count');
         });
+        if ($request->expectsJson()) {
+            $comment->refresh();
+            return response()->json(['message' => 'Ваш голос сохранён.', 'comment_votes' => ['like' => $comment->likes_count, 'dislike' => $comment->dislikes_count], 'current_vote' => $comment->votes()->where(GuestInteraction::lookup($request))->value('vote')]);
+        }
         return $this->respond($request, 'Ваш голос сохранён.', route('stories.show', $comment->story->slug).'#comment-'.$comment->id, false);
     }
 }

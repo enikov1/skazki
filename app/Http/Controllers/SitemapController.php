@@ -19,7 +19,7 @@ class SitemapController extends Controller
             echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
             echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
             echo '<url><loc>'.htmlspecialchars(route('home'), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc></url>';
-            foreach ([route('audio.index'), route('games.index'), route('games.differences.index'), route('games.mosaics.index'), route('colorings.index'), route('colorings.gallery'), route('articles.index'), route('privacy-policy')] as $url) {
+            foreach ([route('stories.index'), route('audio.index'), route('games.index'), route('games.differences.index'), route('games.mosaics.index'), route('colorings.index'), route('colorings.gallery'), route('articles.index'), route('privacy-policy')] as $url) {
                 echo '<url><loc>'.htmlspecialchars($url, ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc></url>';
             }
             foreach (Story::published()->orderBy('id')->cursor(['slug', 'updated_at']) as $story) {

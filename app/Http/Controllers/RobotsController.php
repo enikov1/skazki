@@ -8,6 +8,9 @@ class RobotsController extends Controller
 {
     public function __invoke(): Response
     {
+        if (! config('site.indexable')) {
+            return response("User-agent: *\nDisallow: /\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+        }
         $body = implode("\n", [
             'User-agent: *',
             'Allow: /',

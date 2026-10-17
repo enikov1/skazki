@@ -49,6 +49,7 @@ class ProfileController extends Controller
     private function page(Request $request, string $section): View
     {
         $user = $request->user();
+        $storyFavorites = $section === 'history' ? $user->storyFavorites()->with('story')->whereHas('story', fn ($query) => $query->published())->latest()->limit(100)->get() : collect();
         $history = $section === 'history' ? $user->readingHistories()->with('story')->whereHas('story', fn ($query) => $query->published())->latest('last_read_at')->paginate(12) : null;
         $quizAttempts = $section === 'history' ? $user->storyQuizAttempts()->with('story')->whereHas('story', fn ($query) => $query->published())->latest()->limit(50)->get() : collect();
         $gameAttempts = $section === 'history' ? $user->interactiveGameAttempts()->with('game')->whereHas('game', fn ($query) => $query->published())->latest('completed_at')->limit(50)->get() : collect();
@@ -89,7 +90,7 @@ class ProfileController extends Controller
             ];
         }
 
-        return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'gameAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
+        return view('profile.show', compact('section', 'user', 'history', 'storyFavorites', 'quizAttempts', 'gameAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
     }
 
     public function exportData(Request $request): StreamedResponse
@@ -130,11 +131,12 @@ class ProfileController extends Controller
                 'queue_position' => $state->queue_position,
                 'updated_at' => $state->updated_at?->toIso8601String(),
             ])->all(),
-            'coloring_favorites' => $user->coloringFavorites()->with('page:id,title,slug,coloring_category_id', 'page.category:id,name,slug')->get()->map(fn ($favorite) => [
+            'story_favorites' => $user->storyFavorites()->with('story:id,title,slug')->get()->map(fn ($favorite) => ['story' => $favorite->story?->only(['title', 'slug']), 'created_at' => $favorite->created_at?->toIso8601String()])->all(),
+            'coloring_favorites' => $user->coloringFavorites()->with('page:id,title,slug,category_id', 'page.category:id,name,slug')->get()->map(fn ($favorite) => [
                 'page' => $favorite->page ? ['title' => $favorite->page->title, 'slug' => $favorite->page->slug, 'category' => $favorite->page->category?->name] : null,
                 'created_at' => $favorite->created_at?->toIso8601String(),
             ])->all(),
-            'coloring_progress' => $user->coloringProgress()->with('page:id,title,slug,coloring_category_id', 'page.category:id,name,slug')->get()->map(fn ($progress) => [
+            'coloring_progress' => $user->coloringProgress()->with('page:id,title,slug,category_id', 'page.category:id,name,slug')->get()->map(fn ($progress) => [
                 'page' => $progress->page ? ['title' => $progress->page->title, 'slug' => $progress->page->slug, 'category' => $progress->page->category?->name] : null,
                 'strokes' => $progress->strokes,
                 'updated_at' => $progress->updated_at?->toIso8601String(),

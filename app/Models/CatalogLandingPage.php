@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class CatalogLandingPage extends Model
@@ -38,8 +38,8 @@ class CatalogLandingPage extends Model
         };
     }
 
-    public function slugRedirects(): MorphMany
+    public function slugRedirects(): HasMany
     {
-        return $this->morphMany(SlugRedirect::class, 'redirectable');
+        return $this->hasMany(CatalogLandingRedirect::class);
     }
 }

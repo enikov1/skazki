@@ -58,6 +58,8 @@ class InteractiveGameAdminController extends Controller
 
     private function validated(Request $request, ?InteractiveGame $game = null): array
     {
+        if (is_string($request->input('slug')) && filled($request->input('slug'))) $request->merge(['slug' => Str::slug($request->input('slug'))]);
+        if (blank($request->input('slug')) && is_string($request->input('title'))) $request->merge(['slug' => Str::slug($request->input('title'))]);
         $type = $request->input('type');
         $rules = [
             'type' => ['required', Rule::in(['differences', 'mosaics'])],
@@ -84,7 +86,7 @@ class InteractiveGameAdminController extends Controller
             $validator = validator($payload, ['rows' => ['required', 'integer', 'between:2,8'], 'columns' => ['required', 'integer', 'between:2,8']]);
         }
         $validator->validate();
-        $slug = Str::slug($data['slug'] ?: $data['title']);
+        $slug = Str::slug(($data['slug'] ?? '') ?: $data['title']);
         if ($slug === '') $slug = 'game-'.Str::random(8);
         return [
             'type' => $type, 'title' => $data['title'], 'slug' => $slug,

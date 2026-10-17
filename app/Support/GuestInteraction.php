@@ -27,8 +27,8 @@ final class GuestInteraction
 
     public static function guestName(Request $request): ?string
     {
-        if (! $request->user()) {
-            $request->merge(['guest_name' => trim((string) $request->input('guest_name'))]);
+        if (! $request->user() && is_string($request->input('guest_name'))) {
+            $request->merge(['guest_name' => trim($request->input('guest_name'))]);
         }
 
         $data = $request->validate([

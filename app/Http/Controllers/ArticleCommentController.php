@@ -21,6 +21,7 @@ class ArticleCommentController extends Controller
         abort_unless($article->status === 'published' && $article->published_at?->isPast(), 404);
         $data = $request->validate(['rating' => ['required', 'integer', 'between:1,5']]);
         $article->ratings()->updateOrCreate(GuestInteraction::lookup($request), GuestInteraction::identity($request) + ['rating' => $data['rating']]);
+        if ($request->expectsJson()) return response()->json(['message' => 'Ваша оценка сохранена.', 'average' => (float) $article->ratings()->avg('rating'), 'total' => $article->ratings()->count(), 'user_rating' => (int) $data['rating']]);
         return $this->respond($request, 'Ваша оценка сохранена.', route('articles.show', $article).'#article-rating', false);
     }
 
@@ -54,6 +55,10 @@ class ArticleCommentController extends Controller
             }
             $locked->increment($data['vote'] === 'like' ? 'likes_count' : 'dislikes_count');
         });
+        if ($request->expectsJson()) {
+            $comment->refresh();
+            return response()->json(['message' => 'Ваш голос сохранён.', 'comment_votes' => ['like' => $comment->likes_count, 'dislike' => $comment->dislikes_count], 'current_vote' => $comment->votes()->where(GuestInteraction::lookup($request))->value('vote')]);
+        }
         return $this->respond($request, 'Ваш голос сохранён.', route('articles.show', $comment->article->slug).'#article-comment-'.$comment->id, false);
     }
 }

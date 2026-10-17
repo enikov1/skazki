@@ -131,6 +131,7 @@ Route::post('/logout', [LoginController::class, 'destroy'])->middleware(['auth',
 Route::post('/vykhod', [LoginController::class, 'destroy'])->middleware(['auth', 'account.active']);
 Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/skazki/{story:slug}/favorite', [\App\Http\Controllers\StoryFavoriteController::class, 'store'])->middleware('throttle:public-write')->name('stories.favorite');
     Route::get('/profile/history', [ProfileController::class, 'history'])->name('profile.history');
     Route::get('/profile/settings', [ProfileController::class, 'settings'])->name('profile.settings');
     Route::get('/profile/security', [ProfileController::class, 'security'])->name('profile.security');

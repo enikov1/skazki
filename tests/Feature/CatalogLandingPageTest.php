@@ -23,9 +23,9 @@ class CatalogLandingPageTest extends TestCase
         CatalogLandingPage::create(['type' => 'author', 'title' => 'Сказки Анны Авторовой', 'slug' => 'anna-avtorova', 'filter_value' => 'Анна Авторова', 'status' => 'published']);
         CatalogLandingPage::create(['type' => 'age', 'title' => 'Сказки для детей 4–7 лет', 'slug' => '4-7-let', 'age_min' => 4, 'age_max' => 7, 'status' => 'published']);
 
-        $this->get(route('catalog-pages.story-genre', $genre->slug))->assertOk()->assertSee('Сказки о приключениях')->assertSee('Лесная сказка')->assertDontSee('Другая сказка')->assertSee('index,follow');
-        $this->get(route('catalog-pages.author', 'anna-avtorova'))->assertOk()->assertSee('Лесная сказка')->assertDontSee('Другая сказка');
-        $this->get(route('catalog-pages.age', '4-7-let'))->assertOk()->assertSee('Лесная сказка')->assertDontSee('Другая сказка');
+        $this->get(route('catalog-pages.story-genre', $genre->slug))->assertOk()->assertSee('Сказки о приключениях')->assertSee('Лесная сказка')->assertViewHas('stories', fn ($stories) => $stories->total() === 1 && $stories->first()->slug === 'forest-tale')->assertSee('index,follow');
+        $this->get(route('catalog-pages.author', 'anna-avtorova'))->assertOk()->assertSee('Лесная сказка')->assertViewHas('stories', fn ($stories) => $stories->total() === 1 && $stories->first()->slug === 'forest-tale');
+        $this->get(route('catalog-pages.age', '4-7-let'))->assertOk()->assertSee('Лесная сказка')->assertViewHas('stories', fn ($stories) => $stories->total() === 1 && $stories->first()->slug === 'forest-tale');
         $this->get(route('sitemap'))->assertOk()->assertSee(route('catalog-pages.story-genre', $genre->slug), false)->assertSee(route('catalog-pages.author', 'anna-avtorova'), false);
     }
 

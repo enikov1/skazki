@@ -8,13 +8,14 @@ RUN npm run build
 FROM php:8.3-apache-bookworm
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libcurl4-openssl-dev libicu-dev libonig-dev libpq-dev libsqlite3-dev libxml2-dev libzip-dev unzip \
-    && docker-php-ext-install -j"$(nproc)" curl intl mbstring pdo_pgsql pdo_sqlite xml zip \
+    && docker-php-ext-install -j"$(nproc)" curl intl mbstring pdo_mysql pdo_pgsql pdo_sqlite xml zip opcache \
     && a2enmod rewrite headers \
     
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/production.ini /usr/local/etc/php/conf.d/production.ini
 WORKDIR /var/www/html
 COPY . .
 RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader \

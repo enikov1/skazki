@@ -21,6 +21,7 @@ class StoryQuizController extends Controller
             $result = StoryQuizAttempt::query()->where('story_id', $story->id)->find(request()->integer('result'));
             abort_if(! $result, 404);
             abort_if($result->user_id !== null && $result->user_id !== auth()->id(), 404);
+            abort_if($result->user_id === null && ! in_array($result->id, request()->session()->get('quiz_attempt_ids', []), true), 404);
         }
 
         return view('stories.quiz', compact('story', 'questions', 'result'));
@@ -32,7 +33,7 @@ class StoryQuizController extends Controller
         $questions = $story->quizQuestions()->orderBy('position')->get();
         abort_if($questions->isEmpty(), 404);
         $data = $request->validate([
-            'answers' => ['required', 'array', 'size:'.$questions->count()],
+            'answers' => ['required', 'array', 'list', 'size:'.$questions->count()],
             'answers.*' => ['required', 'integer', 'between:0,3'],
         ]);
 
@@ -49,6 +50,11 @@ class StoryQuizController extends Controller
             'question_count' => $questions->count(),
             'answers' => $data['answers'],
         ]);
+        if (! $request->user()) {
+            $ids = $request->session()->get('quiz_attempt_ids', []);
+            $ids[] = $attempt->id;
+            $request->session()->put('quiz_attempt_ids', array_slice($ids, -100));
+        }
         $message = "Вы ответили верно на {$score} из {$questions->count()} вопросов.";
 
         if ($request->expectsJson()) {

@@ -24,8 +24,8 @@ class PasswordController extends Controller
     public function sendLink(Request $request): RedirectResponse|JsonResponse
     {
         $request->validate(['email' => ['required', 'email', 'max:254']]);
-        $status = Password::sendResetLink(['email' => Str::lower(trim((string) $request->input('email')))]);
-        return $this->respond($request, __($status));
+        Password::sendResetLink(['email' => Str::lower(trim((string) $request->input('email')))]);
+        return $this->respond($request, 'Если аккаунт с таким адресом существует, мы отправили инструкцию по восстановлению пароля. Проверьте почту и папку «Спам».');
     }
 
     public function resetForm(Request $request, string $token): View
@@ -35,7 +35,8 @@ class PasswordController extends Controller
 
     public function reset(Request $request): RedirectResponse|JsonResponse
     {
-        $data = $request->validate(['token' => ['required'], 'email' => ['required', 'email', 'max:254'], 'password' => ['required', 'confirmed', PasswordRule::min(10)->mixedCase()->numbers()],]);
+        if (is_string($request->input('email'))) $request->merge(['email' => Str::lower(trim($request->input('email')))]);
+        $data = $request->validate(['token' => ['required', 'string', 'max:255'], 'email' => ['required', 'email', 'max:254'], 'password' => ['required', 'string', 'max:200', 'confirmed', PasswordRule::min(10)->mixedCase()->numbers()],]);
         $status = Password::reset($data, function ($user, string $password): void {
             $user->forceFill(['password' => Hash::make($password), 'password_login_enabled' => true, 'oauth_provider' => null, 'oauth_id' => null, 'remember_token' => Str::random(60)])->save();
             event(new PasswordReset($user));
