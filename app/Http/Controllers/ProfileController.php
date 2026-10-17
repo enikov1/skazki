@@ -145,7 +145,7 @@ class ProfileController extends Controller
         return response()->streamDownload(
             fn () => print json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
             'skazkomir-data-'.$user->id.'-'.now()->format('Y-m-d').'.json',
-            ['Content-Type' => 'application/json; charset=utf-8']
+            ['Content-Type' => 'application/json; charset=utf-8', 'Cache-Control' => 'private, no-store, max-age=0']
         );
     }
 

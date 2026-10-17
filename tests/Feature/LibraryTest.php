@@ -1227,9 +1227,12 @@ class LibraryTest extends TestCase
         $owner->consentEvents()->create(['consent_type' => 'newsletter', 'action' => 'granted', 'source' => 'profile', 'recorded_at' => now()]);
         $other->readingHistories()->create(['story_id' => $story->id, 'last_read_at' => now()]);
 
+        $this->get(route('profile.data-export'))->assertRedirect(route('login'));
+
         $response = $this->actingAs($owner)->get(route('profile.data-export'))
             ->assertOk()
-            ->assertDownload();
+            ->assertDownload()
+            ->assertHeader('Cache-Control', 'private, no-store, max-age=0');
         $payload = json_decode($response->streamedContent(), true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame('export-owner@example.test', $payload['account']['email']);
