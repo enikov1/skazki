@@ -13,6 +13,7 @@ use App\Models\SocialAccount;
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProfileController extends Controller
 {
@@ -84,7 +85,7 @@ class ProfileController extends Controller
         return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'gameAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
     }
 
-    public function exportData(Request $request): Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportData(Request $request): StreamedResponse
     {
         $user = $request->user();
 
