@@ -318,7 +318,7 @@ document.querySelectorAll('[data-copy-link]').forEach(button=>button.addEventLis
 document.querySelectorAll('[data-share-target]').forEach(button=>button.addEventListener('click',async()=>{const target=button.dataset.shareTarget,url=encodeURIComponent(location.href),title=encodeURIComponent(document.title);if(target==='copy'){try{await navigator.clipboard.writeText(location.href);notify('Ссылка скопирована')}catch{notify('Скопируйте ссылку из адресной строки')}return}const shareUrl=target==='vk'?`https://vk.com/share.php?url=${url}`:`https://t.me/share/url?url=${url}&text=${title}`;window.open(shareUrl,'_blank','noopener,noreferrer')}));
 
 document.querySelectorAll('[data-media-picker]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();const popup=window.open(link.href,'skazkomir-media-library','popup,width=1040,height=760');if(!popup)location.assign(link.href)}));
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.data?.type!=='skazkomir:media-selected'||typeof event.data.path!=='string')return;const imageFields=['cover_path','gameImageA','gameImageB'];const validImage=imageFields.includes(event.data.field)&&/^(storage\/media|assets\/(covers|illustrations))\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp|gif)$/i.test(event.data.path);const validAudio=event.data.field==='audio_path'&&/^audio\/[a-zA-Z0-9._-]+\.mp3$/i.test(event.data.path);if(!validImage&&!validAudio)return;const field=document.getElementsByName(event.data.field)[0]||document.getElementById(event.data.field);if(!field)return;field.value=event.data.path;field.dispatchEvent(new Event('input',{bubbles:true}));notify(validAudio?'Аудиофайл выбран':'Изображение выбрано')});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.data?.type!=='skazkomir:media-selected'||typeof event.data.path!=='string')return;const imageFields=['cover_path','gameImageA','gameImageB','richImage'];const validImage=imageFields.includes(event.data.field)&&/^(storage\/media|assets\/(covers|illustrations))\/[a-zA-Z0-9._-]+\.(jpg|jpeg|png|webp|gif)$/i.test(event.data.path);const validAudio=event.data.field==='audio_path'&&/^audio\/[a-zA-Z0-9._-]+\.mp3$/i.test(event.data.path);if(!validImage&&!validAudio)return;if(event.data.field==='richImage'){const host=document.querySelector('[data-rich-host]'),quill=host?.__quill;if(!quill)return;const range=quill.getSelection(true)||{index:quill.getLength()};quill.insertEmbed(range.index,'image','/'+event.data.path,'user');quill.setSelection(range.index+1);notify('Изображение добавлено в описание');return}const field=document.getElementsByName(event.data.field)[0]||document.getElementById(event.data.field);if(!field)return;field.value=event.data.path;field.dispatchEvent(new Event('input',{bubbles:true}));notify(validAudio?'Аудиофайл выбран':'Изображение выбрано')});
 document.addEventListener('click',event=>{const button=event.target.closest('[data-audio-select]');if(!button)return;const message={type:'skazkomir:media-selected',field:'audio_path',path:button.dataset.audioPath};if(window.opener&&!window.opener.closed){window.opener.postMessage(message,location.origin);window.close();return}try{navigator.clipboard.writeText(message.path).then(()=>notify('Путь скопирован')).catch(()=>notify(message.path))}catch{notify(message.path)}});
 document.querySelectorAll('[data-media-select]').forEach(button=>button.addEventListener('click',async()=>{const message={type:'skazkomir:media-selected',field:button.dataset.mediaField,path:button.dataset.mediaPath};if(window.opener&&!window.opener.closed){window.opener.postMessage(message,location.origin);window.close();return}try{await navigator.clipboard.writeText(message.path);notify('Путь скопирован')}catch{notify(message.path)}}));
 
@@ -326,9 +326,11 @@ document.querySelectorAll('[data-media-select]').forEach(button=>button.addEvent
 document.querySelectorAll('[data-rich-editor]').forEach(editor=>{
   const source=editor.querySelector('[data-rich-source]'),host=editor.querySelector('[data-rich-host]'),preview=editor.querySelector('[data-rich-pane="preview"]'),tabs=[...editor.querySelectorAll('[data-rich-tab]')];
   if(!source||!host||!window.Quill)return;
-  const quill=new Quill(host,{theme:'snow',formats:['bold','italic','underline','header','blockquote','list'],modules:{toolbar:[[{header:[2,false]}],['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],['blockquote'],['clean']]},placeholder:'Напишите текст сказки…'});
+  const toolbarOptions=[[{header:[2,false]}],['bold','italic','underline'],[{list:'ordered'},{list:'bullet'}],['blockquote','image'],['clean']];
+  const quill=new Quill(host,{theme:'snow',formats:['bold','italic','underline','header','blockquote','list','image'],modules:{toolbar:{container:toolbarOptions,handlers:{image(){const url=window.prompt('Введите HTTPS-ссылку на изображение или путь /storage/… либо /assets/…');if(!url)return;const safe=/^https:\/\//i.test(url)||/^\/(storage|assets)\//i.test(url);if(!safe){notify('Используйте HTTPS-ссылку или путь /storage/ либо /assets/');return}const range=this.quill.getSelection(true);this.quill.insertEmbed(range.index,'image',url,'user');this.quill.setSelection(range.index+1)}}}},placeholder:'Напишите описание подборки…'});
+  host.__quill=quill;
   quill.root.setAttribute('aria-labelledby',source.getAttribute('aria-labelledby')||'');
-  quill.root.setAttribute('aria-required','true');
+  quill.root.setAttribute('aria-required',String(source.required));
   source.addEventListener('focus',()=>quill.focus());
   const initial=editor.dataset.initialHtml||'';
   if(initial)quill.clipboard.dangerouslyPasteHTML(initial,'silent');
@@ -343,21 +345,28 @@ document.querySelectorAll('[data-rich-editor]').forEach(editor=>{
     if(tag==='h2')return '[h2]'+content.trim()+'[/h2]\n\n';
     if(tag==='blockquote')return '[quote]'+content.trim()+'[/quote]\n\n';
     if(tag==='li')return '[li]'+content.trim()+'[/li]';
+    if(tag==='img'){const src=node.getAttribute('src')||'';return (/^https:\/\//i.test(src)||/^\/(storage|assets)\//i.test(src))?'[img]'+src+'[/img]':''}
     if(tag==='ul')return '[list]'+content+'[/list]\n\n';
     if(tag==='ol')return (node.querySelector('li[data-list=\"bullet\"]')?'[list]':'[olist]')+content+(node.querySelector('li[data-list=\"bullet\"]')?'[/list]':'[/olist]')+'\n\n';
     if(tag==='p'||tag==='div')return content.trim()+'\n\n';
     return content;
   };
-  const sync=()=>{source.value=[...quill.root.childNodes].map(convert).join('').replace(/\n{3,}/g,'\n\n').trim();source.dispatchEvent(new Event('input',{bubbles:true}))};
+  const sync=()=>{source.value=[...quill.root.childNodes].map(convert).join('').replace(/\n{3,}/g,'\n\n').trim();const max=Number(source.dataset.richMax||0),count=editor.querySelector('[data-rich-count]');if(count&&max){count.textContent=`${source.value.length} / ${max}`;count.classList.toggle('is-over-limit',source.value.length>max);source.setCustomValidity(source.value.length>max?`Максимум ${max} символов.`:'')}source.dispatchEvent(new Event('input',{bubbles:true}))};
   quill.on('text-change',sync);sync();
   source.addEventListener('invalid',()=>quill.focus(),true);
   editor.classList.add('is-enhanced');
   const renderPreview=()=>{
     const escaped=document.createElement('div');escaped.textContent=source.value;
-    preview.innerHTML=escaped.innerHTML.replace(/\[b\](.*?)\[\/b\]/gis,'<strong>$1</strong>').replace(/\[i\](.*?)\[\/i\]/gis,'<em>$1</em>').replace(/\[u\](.*?)\[\/u\]/gis,'<u>$1</u>').replace(/\[h2\](.*?)\[\/h2\]/gis,'<h2>$1</h2>').replace(/\[quote\](.*?)\[\/quote\]/gis,'<blockquote>$1</blockquote>').replace(/\[list\]/gi,'<ul>').replace(/\[\/list\]/gi,'</ul>').replace(/\[olist\]/gi,'<ol>').replace(/\[\/olist\]/gi,'</ol>').replace(/\[li\](.*?)\[\/li\]/gis,'<li>$1</li>').replace(/\n/g,'<br>');
+    preview.innerHTML=escaped.innerHTML.replace(/\[b\](.*?)\[\/b\]/gis,'<strong>$1</strong>').replace(/\[i\](.*?)\[\/i\]/gis,'<em>$1</em>').replace(/\[u\](.*?)\[\/u\]/gis,'<u>$1</u>').replace(/\[h2\](.*?)\[\/h2\]/gis,'<h2>$1</h2>').replace(/\[quote\](.*?)\[\/quote\]/gis,'<blockquote>$1</blockquote>').replace(/\[list\]/gi,'<ul>').replace(/\[\/list\]/gi,'</ul>').replace(/\[olist\]/gi,'<ol>').replace(/\[\/olist\]/gi,'</ol>').replace(/\[li\](.*?)\[\/li\]/gis,'<li>$1</li>').replace(/\[img\](https:\/\/[^\s\]]+|\/(?:storage|assets)\/[^\s\]]+)\[\/img\]/gi,'<img src="$1" alt="">').replace(/\n/g,'<br>');
     if(!source.value.trim())preview.innerHTML='<p class="rich-editor-empty">Предпросмотр появится здесь.</p>';
   };
   tabs.forEach(tab=>tab.addEventListener('click',()=>{const selected=tab.dataset.richTab;editor.querySelectorAll('[data-rich-pane]').forEach(pane=>pane.hidden=pane.dataset.richPane!==selected);tabs.forEach(item=>{const active=item===tab;item.classList.toggle('is-active',active);item.setAttribute('aria-selected',String(active))});if(selected==='preview'){sync();renderPreview()}}));
+});
+
+document.querySelectorAll('[data-landing-type]').forEach(select=>{
+  const form=select.closest('form'),filter=form?.querySelector('[data-landing-filter]'),age=form?.querySelector('[data-landing-age]'),value=form?.querySelector('[name="filter_value"]'),label=form?.querySelector('[data-landing-filter-label]');
+  const update=()=>{const isAge=['age','audio_age'].includes(select.value),isAuthor=select.value==='author';if(filter){filter.hidden=isAge;if(value)value.disabled=isAge}if(age){age.hidden=!isAge;age.querySelectorAll('input').forEach(input=>{input.disabled=!isAge;input.required=isAge})}if(value)value.setAttribute('list',isAuthor?'landingAuthorChoices':'landingGenreChoices');if(label)label.textContent=isAuthor?'Имя автора точно как в материалах':'Жанр точно как в материалах'};
+  select.addEventListener('change',update);update();
 });
 
 // Searchable genre control retains a native select as the form and validation source.

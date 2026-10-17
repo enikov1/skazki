@@ -9,6 +9,7 @@
         <a class="admin-link active" href="{{ route('admin.dashboard') }}">Обзор</a>
         @if(auth()->user()->hasAnyRole(['admin', 'editor']))
             <a class="admin-link" href="{{ route('admin.stories.index') }}">Сказки</a>
+            <a class="admin-link" href="{{ route('admin.catalog-pages.index') }}">SEO-страницы каталога</a>
             <a class="admin-link" href="{{ route('admin.articles.index') }}">Статьи</a>
             <a class="admin-link" href="{{ route('admin.media.index') }}">Медиатека</a>
             <a class="admin-link" href="{{ route('admin.colorings.pages.index') }}">Раскраски</a>

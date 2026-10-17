@@ -20,6 +20,7 @@
   </form>
   <p class="catalog-count" role="status" aria-live="polite" data-audio-count>Найдено аудиозаписей: {{ $stories->total() }}</p>
   <div data-audio-results>@include('audio.results')</div>
+  @if($landingPages->isNotEmpty())<nav class="catalog-seo-links" aria-label="Подборки аудиосказок"><h2>Аудиосказки по жанрам, авторам и возрасту</h2><div>@foreach($landingPages as $landingPage)<a href="{{ $landingPage->publicUrl() }}">{{ $landingPage->title }}</a>@endforeach</div></nav>@endif
 </section>
 @include('audio.player')
 @endsection

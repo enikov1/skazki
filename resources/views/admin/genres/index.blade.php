@@ -2,7 +2,7 @@
 @section('title', 'Жанры — управление сайтом')
 @section('content')
 <nav class="breadcrumbs"><a href="{{ route('admin.dashboard') }}">Панель управления</a><span>/</span><span>Жанры</span></nav>
-<div class="admin-topline"><div><p class="eyebrow">Справочники библиотеки</p><h1>Жанры сказок</h1><p class="lead">Список жанров используется в редакторе сказок и фильтрах каталога.</p></div></div>
+<div class="admin-topline"><div><p class="eyebrow">Справочники библиотеки</p><h1>Жанры сказок</h1><p class="lead">Список жанров используется в редакторе сказок и фильтрах каталога. У каждого жанра может быть отдельная SEO-страница.</p><a class="text-link" href="{{ route('admin.catalog-pages.index') }}">Настроить SEO-страницы каталогов →</a></div></div>
 @if($errors->any())<div class="form-errors" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
 <section class="admin-panel genre-create-panel"><div><h2>Добавить жанр</h2><p class="form-hint">Новый жанр сразу появится в списке выбора материалов.</p></div>
     <form class="genre-create-form" method="post" action="{{ route('admin.genres.store') }}" data-ajax-form data-genre-create>@csrf

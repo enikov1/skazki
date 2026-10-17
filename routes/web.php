@@ -35,12 +35,19 @@ use App\Http\Controllers\Admin\ColoringPageController;
 use App\Http\Controllers\Admin\ColoringSubmissionModerationController;
 use App\Http\Controllers\Admin\SiteSettingsController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\CatalogLandingPageController;
+use App\Http\Controllers\Admin\CatalogLandingPageAdminController;
 use App\Http\Controllers\RobotsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StoryController::class, 'index'])->name('home');
 Route::get('/skazki', [StoryController::class, 'catalog'])->name('stories.index');
 Route::get('/audio', [StoryController::class, 'audioIndex'])->name('audio.index');
+Route::get('/skazki/zhanr/{slug}', [CatalogLandingPageController::class, 'storyGenre'])->name('catalog-pages.story-genre');
+Route::get('/audio/zhanr/{slug}', [CatalogLandingPageController::class, 'audioGenre'])->name('catalog-pages.audio-genre');
+Route::get('/skazki/vozrast/{slug}', [CatalogLandingPageController::class, 'age'])->name('catalog-pages.age');
+Route::get('/audio/vozrast/{slug}', [CatalogLandingPageController::class, 'audioAge'])->name('catalog-pages.audio-age');
+Route::get('/avtory/{slug}', [CatalogLandingPageController::class, 'author'])->name('catalog-pages.author');
 Route::view('/politika-konfidentsialnosti', 'privacy-policy')->name('privacy-policy');
 Route::get('/igry', [GameController::class, 'index'])->name('games.index');
 Route::get('/igry/naydi-otlichiya', [InteractiveGameController::class, 'differencesIndex'])->name('games.differences.index');
@@ -171,6 +178,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'account.active', 'r
     Route::post('/genres', [GenreController::class, 'store'])->middleware('role:admin')->name('genres.store');
     Route::patch('/genres/{genre}', [GenreController::class, 'update'])->middleware('role:admin')->name('genres.update');
     Route::delete('/genres/{genre}', [GenreController::class, 'destroy'])->middleware('role:admin')->name('genres.destroy');
+    Route::post('/catalog-pages/generate', [CatalogLandingPageAdminController::class, 'generate'])->middleware(['role:admin,editor', 'throttle:public-write'])->name('catalog-pages.generate');
+    Route::resource('catalog-pages', CatalogLandingPageAdminController::class)->parameters(['catalog-pages' => 'catalogPage'])->except(['show', 'destroy'])->middleware('role:admin,editor');
     Route::get('/coloring-categories', [ColoringCategoryController::class, 'index'])->middleware('role:admin')->name('coloring-categories.index');
     Route::post('/coloring-categories', [ColoringCategoryController::class, 'store'])->middleware('role:admin')->name('coloring-categories.store');
     Route::patch('/coloring-categories/{category}', [ColoringCategoryController::class, 'update'])->middleware('role:admin')->name('coloring-categories.update');

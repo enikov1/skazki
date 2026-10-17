@@ -13,5 +13,6 @@
     <button class="button button-primary" type="submit">Найти сказку</button>
   </form>
   <div class="story-catalog-results" data-story-catalog-results aria-live="polite">@include('stories.catalog-results', ['stories' => $stories])</div>
+  @if($landingPages->isNotEmpty())<nav class="catalog-seo-links" aria-label="Подборки сказок"><h2>Сказки по жанрам, авторам и возрасту</h2><div>@foreach($landingPages as $landingPage)<a href="{{ $landingPage->publicUrl() }}">{{ $landingPage->title }}</a>@endforeach</div></nav>@endif
 </section>
 @endsection

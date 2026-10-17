@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EditorialStatus;
 use App\Models\Story;
+use App\Models\CatalogLandingPage;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -68,7 +69,8 @@ class StoryController extends Controller
             ]);
         }
 
-        return view('audio.index', compact('stories', 'genres', 'filters', 'audioQueue'));
+        $landingPages = CatalogLandingPage::published()->whereIn('type', ['audio_genre', 'audio_age', 'author'])->orderBy('title')->get();
+        return view('audio.index', compact('stories', 'genres', 'filters', 'audioQueue', 'landingPages'));
     }
 
     public function index(Request $request): View
@@ -98,7 +100,8 @@ class StoryController extends Controller
             return response()->json(['html' => view('stories.catalog-results', compact('stories'))->render(), 'count' => $stories->total()]);
         }
 
-        return view('stories.catalog', compact('stories', 'genres', 'filters'));
+        $landingPages = CatalogLandingPage::published()->whereIn('type', ['story_genre', 'age', 'author'])->orderBy('title')->get();
+        return view('stories.catalog', compact('stories', 'genres', 'filters', 'landingPages'));
     }
 
     public function show(Story $story): View

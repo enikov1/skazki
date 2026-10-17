@@ -7,6 +7,7 @@ use App\Models\Article;
 use App\Models\ColoringCategory;
 use App\Models\ColoringSubmission;
 use App\Models\InteractiveGame;
+use App\Models\CatalogLandingPage;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,6 +24,17 @@ class SitemapController extends Controller
             }
             foreach (Story::published()->orderBy('id')->cursor(['slug', 'updated_at']) as $story) {
                 echo '<url><loc>'.htmlspecialchars(route('stories.show', $story->slug), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$story->updated_at->toAtomString().'</lastmod></url>';
+            }
+            foreach (CatalogLandingPage::published()->orderBy('id')->cursor() as $landingPage) {
+                $hasMaterials = match ($landingPage->type) {
+                    'story_genre' => Story::published()->where('genre', $landingPage->filter_value)->exists(),
+                    'audio_genre' => Story::published()->where('genre', $landingPage->filter_value)->whereNotNull('audio_path')->exists(),
+                    'author' => Story::published()->where('author', $landingPage->filter_value)->exists(),
+                    'age' => Story::published()->where('age_min', '<=', $landingPage->age_max)->where('age_max', '>=', $landingPage->age_min)->exists(),
+                    'audio_age' => Story::published()->whereNotNull('audio_path')->where('age_min', '<=', $landingPage->age_max)->where('age_max', '>=', $landingPage->age_min)->exists(),
+                    default => false,
+                };
+                if ($hasMaterials) echo '<url><loc>'.htmlspecialchars($landingPage->publicUrl(), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$landingPage->updated_at->toAtomString().'</lastmod></url>';
             }
             foreach (Article::published()->orderBy('id')->cursor(['slug', 'updated_at']) as $article) {
                 echo '<url><loc>'.htmlspecialchars(route('articles.show', $article->slug), ENT_XML1 | ENT_COMPAT, 'UTF-8').'</loc><lastmod>'.$article->updated_at->toAtomString().'</lastmod></url>';

@@ -51,7 +51,7 @@ class MediaLibraryController extends Controller
         return view('admin.media.index', [
             'media' => $media,
             'audio' => $audio,
-            'select' => in_array($request->query('select'), ['cover_path', 'gameImageA', 'gameImageB'], true) ? $request->query('select') : null,
+            'select' => in_array($request->query('select'), ['cover_path', 'gameImageA', 'gameImageB', 'richImage'], true) ? $request->query('select') : null,
         ]);
     }
 

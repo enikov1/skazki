@@ -1513,3 +1513,67 @@
     justify-self: start;
   }
 }
+/* Catalog SEO page editor */
+.admin-area .catalog-seo-editor {
+  align-items: start;
+}
+
+.admin-area .catalog-seo-editor [data-landing-age][hidden], .admin-area .catalog-seo-editor [data-landing-filter][hidden] {
+  display: none !important;
+}
+
+.admin-area .catalog-seo-admin-panel {
+  padding: 18px;
+}
+
+.admin-area .catalog-seo-admin-panel table {
+  min-width: 760px;
+}
+
+.admin-area .catalog-seo-editor .rich-editor-field {
+  margin-top: 18px;
+}
+
+.admin-area .catalog-seo-editor .rich-editor-field .ql-editor {
+  min-height: 280px;
+}
+
+.admin-area .catalog-seo-editor .ql-toolbar button.ql-image {
+  width: 28px;
+}
+
+.admin-area .catalog-seo-editor [data-rich-count] {
+  float: right;
+}
+
+.admin-area .catalog-seo-editor [data-rich-count].is-over-limit {
+  color: #b23d2a;
+  font-weight: 800;
+}
+
+.admin-area .catalog-seo-editor .catalog-rich-image {
+  max-height: 180px;
+}
+
+.admin-area .catalog-seo-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-area .catalog-seo-admin-actions form {
+  margin: 0;
+}
+
+@media (max-width: 650px) {
+  .admin-area .catalog-seo-editor .editor-aside {
+    position: static;
+  }
+  .admin-area .catalog-seo-admin-panel {
+    padding: 12px;
+  }
+  .admin-area .catalog-seo-editor .rich-editor-field .ql-editor {
+    min-height: 220px;
+  }
+}
