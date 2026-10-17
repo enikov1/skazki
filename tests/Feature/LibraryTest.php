@@ -151,6 +151,7 @@ class LibraryTest extends TestCase
         $this->post('/skazki')
             ->assertStatus(405)->assertSee('Действие недоступно — СказкоМир')->assertSee('405');
 
+        auth()->logout();
         $this->postJson(route('login.store'), [])
             ->assertUnprocessable()->assertJsonStructure(['message', 'errors'])->assertJsonValidationErrors(['email', 'password']);
 
