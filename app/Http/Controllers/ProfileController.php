@@ -159,11 +159,15 @@ class ProfileController extends Controller
     public function destroyAccount(Request $request): JsonResponse|RedirectResponse
     {
         $user = $request->user();
-        $request->validate([
+        $data = $request->validate([
             'confirm_email' => ['required', 'string', 'max:255', Rule::in([$user->email])],
             'confirmation' => ['required', Rule::in(['УДАЛИТЬ'])],
-            'current_password' => $user->password_login_enabled ? ['required', 'current_password'] : ['nullable'],
+            'current_password' => $user->password_login_enabled ? ['required', 'string'] : ['nullable', 'string'],
         ]);
+
+        if ($user->password_login_enabled && ! Hash::check($data['current_password'], $user->getAuthPassword())) {
+            throw ValidationException::withMessages(['current_password' => 'Текущий пароль указан неверно.']);
+        }
 
         $avatarPath = $user->avatar_path;
         $submissionFiles = $user->coloringSubmissions()->pluck('file_path')->filter()->unique()->values()->all();

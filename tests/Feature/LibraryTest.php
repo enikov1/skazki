@@ -1247,7 +1247,7 @@ class LibraryTest extends TestCase
         Storage::fake('public');
         Storage::fake('local');
 
-        $owner = User::factory()->create(['name' => 'Удаляемый читатель', 'email' => 'delete-owner@example.test', 'avatar_path' => 'avatars/delete-owner.png']);
+        $owner = User::factory()->create(['name' => 'Удаляемый читатель', 'email' => 'delete-owner@example.test', 'avatar_path' => 'avatars/delete-owner.png', 'password_login_enabled' => true]);
         $other = User::factory()->create(['email' => 'preserved-user@example.test']);
         Storage::disk('public')->put('avatars/delete-owner.png', 'avatar');
         Storage::disk('local')->put('coloring-submissions/delete-owner.png', 'private artwork');
