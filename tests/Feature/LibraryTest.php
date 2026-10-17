@@ -568,6 +568,42 @@ class LibraryTest extends TestCase
         $this->assertDatabaseHas('user_consent_events', ['user_id' => $user->id, 'consent_type' => 'privacy_notice', 'action' => 'granted']);
     }
 
+    public function test_registration_sends_signed_verification_email_and_user_can_resend_it(): void
+    {
+        $this->seed();
+        \\Illuminate\\Support\\Facades\\Notification::fake();
+        $password = Str::password(24);
+
+        $this->post(route('register.store'), [
+            'name' => 'Проверка почты',
+            'email' => 'verification@example.test',
+            'password' => $password,
+            'password_confirmation' => $password,
+            'terms' => '1',
+        ])->assertRedirect(route('home'));
+
+        $user = User::where('email', 'verification@example.test')->firstOrFail();
+        $notification = \\Illuminate\\Auth\\Notifications\\VerifyEmail::class;
+        $this->assertNull($user->email_verified_at);
+        \\Illuminate\\Support\\Facades\\Notification::assertSentTo($user, $notification);
+
+        $this->actingAs($user)
+            ->postJson(route('verification.send'))
+            ->assertOk()
+            ->assertJsonPath('message', 'Письмо для подтверждения отправлено.');
+        $this->assertCount(2, \\Illuminate\\Support\\Facades\\Notification::sent($user, $notification));
+
+        $signedUrl = \\Illuminate\\Support\\Facades\\URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(30),
+            ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
+        );
+        $this->get($signedUrl)
+            ->assertRedirect(route('home'))
+            ->assertSessionHas('status', 'Адрес почты подтверждён.');
+        $this->assertNotNull($user->fresh()->email_verified_at);
+    }
+
     public function test_authentication_registration_and_password_recovery_support_ajax(): void
     {
         $this->seed();
