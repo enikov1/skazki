@@ -1181,5 +1181,39 @@ class LibraryTest extends TestCase
         $this->patchJson(route('admin.coloring-work-comments.update', $comment), ['status' => 'approved'])->assertOk();
         $this->get(route('colorings.page', [$category, $page]))->assertSee('Очень красивая раскраска!')->assertSee('Читатель');
     }
+    public function test_profile_achievements_count_published_content_and_standalone_games(): void
+    {
+        $reader = User::factory()->create();
+        $publishedStory = Story::create([
+            'title' => 'Опубликованная сказка', 'slug' => 'published-achievement-story', 'genre' => 'Тест',
+            'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+        $draftStory = Story::create([
+            'title' => 'Черновая сказка', 'slug' => 'draft-achievement-story', 'genre' => 'Тест',
+            'summary' => 'Описание', 'body' => 'Текст',
+        ]);
+        $reader->readingHistories()->create(['story_id' => $publishedStory->id, 'last_read_at' => now()]);
+        $reader->readingHistories()->create(['story_id' => $draftStory->id, 'last_read_at' => now()]);
+        $reader->storyQuizAttempts()->create(['story_id' => $draftStory->id, 'score' => 1, 'question_count' => 1, 'answers' => []]);
+
+        $publishedGame = App\Models\InteractiveGame::create([
+            'type' => 'mosaics', 'title' => 'Опубликованная мозаика', 'slug' => 'published-achievement-game',
+            'data' => ['rows' => 2, 'columns' => 2], 'is_published' => true,
+        ]);
+        $draftGame = App\Models\InteractiveGame::create([
+            'type' => 'mosaics', 'title' => 'Черновая мозаика', 'slug' => 'draft-achievement-game',
+            'data' => ['rows' => 2, 'columns' => 2], 'is_published' => false,
+        ]);
+        $reader->interactiveGameAttempts()->createMany([
+            ['interactive_game_id' => $publishedGame->id, 'duration_seconds' => 60, 'completed_at' => now()],
+            ['interactive_game_id' => $draftGame->id, 'duration_seconds' => 60, 'completed_at' => now()],
+        ]);
+
+        $this->actingAs($reader)->get(route('profile.show'))
+            ->assertOk()
+            ->assertSee('Первое чтение: 1 из 1')
+            ->assertSee('Первый ответ: 0 из 1')
+            ->assertSee('Первая игра: 1 из 1');
+    }
 
 }

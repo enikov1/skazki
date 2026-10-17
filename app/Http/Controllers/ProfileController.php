@@ -54,13 +54,32 @@ class ProfileController extends Controller
         $newsletterConsent = in_array($section, ['overview', 'settings'], true) ? $user->consentEvents()->where('consent_type', 'newsletter')->orderByDesc('recorded_at')->orderByDesc('id')->first() : null;
         $consentEvents = in_array($section, ['overview', 'settings'], true) ? $user->consentEvents()->whereIn('consent_type', ['terms', 'privacy_notice'])->orderBy('recorded_at')->get()->keyBy('consent_type') : collect();
         $socialAccounts = in_array($section, ['overview', 'security'], true) ? $user->socialAccounts()->orderBy('provider')->get() : collect();
-        $achievements = $section === 'overview' ? [
-            ['icon' => 'book', 'title' => 'Первое чтение', 'description' => 'Откройте первую сказку', 'progress' => $user->readingHistories()->whereHas('story', fn ($query) => $query->published())->count(), 'target' => 1, 'url' => route('home')],
-            ['icon' => 'star', 'title' => 'Любознательный читатель', 'description' => 'Откройте пять разных сказок', 'progress' => $user->readingHistories()->whereHas('story', fn ($query) => $query->published())->count(), 'target' => 5, 'url' => route('profile.history')],
-            ['icon' => 'puzzle', 'title' => 'Первый ответ', 'description' => 'Пройдите викторину', 'progress' => $user->storyQuizAttempts()->count(), 'target' => 1, 'url' => route('games.index')],
-            ['icon' => 'palette', 'title' => 'Начинающий художник', 'description' => 'Сохраните прогресс раскрашивания', 'progress' => $user->coloringProgress()->count(), 'target' => 1, 'url' => route('colorings.index')],
-            ['icon' => 'image', 'title' => 'В галерее', 'description' => 'Поделитесь работой после проверки', 'progress' => $user->coloringSubmissions()->where('status', 'approved')->count(), 'target' => 1, 'url' => route('colorings.gallery')],
-        ] : [];
+        $achievements = [];
+        if ($section === 'overview') {
+            $publishedReads = $user->readingHistories()
+                ->whereHas('story', fn ($query) => $query->published())
+                ->distinct()
+                ->count('story_id');
+            $publishedQuizzes = $user->storyQuizAttempts()
+                ->whereHas('story', fn ($query) => $query->published())
+                ->count();
+            $publishedGames = $user->interactiveGameAttempts()
+                ->whereHas('game', fn ($query) => $query->published())
+                ->count();
+            $publishedColoringProgress = $user->coloringProgress()
+                ->whereHas('page', fn ($page) => $page->where('is_published', true)
+                    ->whereHas('category', fn ($category) => $category->where('is_published', true)))
+                ->count();
+
+            $achievements = [
+                ['icon' => 'book', 'title' => 'Первое чтение', 'description' => 'Откройте первую сказку', 'progress' => $publishedReads, 'target' => 1, 'url' => route('home')],
+                ['icon' => 'star', 'title' => 'Любознательный читатель', 'description' => 'Откройте пять разных сказок', 'progress' => $publishedReads, 'target' => 5, 'url' => route('profile.history')],
+                ['icon' => 'puzzle', 'title' => 'Первый ответ', 'description' => 'Пройдите викторину по сказке', 'progress' => $publishedQuizzes, 'target' => 1, 'url' => route('games.index')],
+                ['icon' => 'puzzle', 'title' => 'Первая игра', 'description' => 'Соберите мозаику или найдите отличия', 'progress' => $publishedGames, 'target' => 1, 'url' => route('games.index')],
+                ['icon' => 'palette', 'title' => 'Начинающий художник', 'description' => 'Сохраните прогресс раскрашивания', 'progress' => $publishedColoringProgress, 'target' => 1, 'url' => route('colorings.index')],
+                ['icon' => 'image', 'title' => 'В галерее', 'description' => 'Поделитесь работой после проверки', 'progress' => $user->coloringSubmissions()->where('status', 'approved')->count(), 'target' => 1, 'url' => route('colorings.gallery')],
+            ];
+        }
 
         return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'gameAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
     }
