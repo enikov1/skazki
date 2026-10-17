@@ -8,9 +8,10 @@ sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${port}>/" /etc/apache2/sites-avail
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-php artisan migrate --force
+touch /tmp/skazkomir-preview.sqlite
+DB_CONNECTION=sqlite DB_DATABASE=/tmp/skazkomir-preview.sqlite php artisan migrate --force
 if [ "${SEED_DEMO_CONTENT:-false}" = "true" ]; then
-    APP_ENV=local php artisan db:seed --force
+    APP_ENV=local DB_CONNECTION=sqlite DB_DATABASE=/tmp/skazkomir-preview.sqlite php artisan db:seed --force
 fi
 
 exec apache2-foreground
