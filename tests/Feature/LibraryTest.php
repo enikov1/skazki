@@ -1242,5 +1242,67 @@ class LibraryTest extends TestCase
         $this->assertStringNotContainsString('other-person@example.test', json_encode($payload, JSON_THROW_ON_ERROR));
         $this->assertStringNotContainsString('Чужой профиль', json_encode($payload, JSON_THROW_ON_ERROR));
     }
+    public function test_user_can_delete_their_account_after_reauthentication_and_owned_data_is_removed(): void
+    {
+        Storage::fake('public');
+        Storage::fake('local');
+
+        $owner = User::factory()->create(['name' => 'Удаляемый читатель', 'email' => 'delete-owner@example.test', 'avatar_path' => 'avatars/delete-owner.png']);
+        $other = User::factory()->create(['email' => 'preserved-user@example.test']);
+        Storage::disk('public')->put('avatars/delete-owner.png', 'avatar');
+        Storage::disk('local')->put('coloring-submissions/delete-owner.png', 'private artwork');
+
+        $story = Story::create([
+            'title' => 'История автора', 'slug' => 'story-created-before-account-delete', 'genre' => 'Тест',
+            'summary' => 'Описание', 'body' => 'Текст', 'created_by' => $owner->id,
+            'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+        $comment = $story->comments()->create(['user_id' => $owner->id, 'body' => 'Личный комментарий', 'status' => 'approved']);
+        $owner->readingHistories()->create(['story_id' => $story->id, 'last_read_at' => now()]);
+        $submission = $owner->coloringSubmissions()->create([
+            'title' => 'Мой рисунок', 'slug' => 'private-drawing-delete-test', 'file_path' => 'coloring-submissions/delete-owner.png',
+            'guardian_consent_at' => now(), 'status' => 'pending',
+        ]);
+        $other->readingHistories()->create(['story_id' => $story->id, 'last_read_at' => now()]);
+        \App\Models\AuditLog::create([
+            'actor_id' => $owner->id, 'action' => 'user.blocked', 'subject_type' => User::class, 'subject_id' => $owner->id,
+            'summary' => 'Аккаунт delete-owner@example.test заблокирован',
+        ]);
+
+        $payload = ['confirm_email' => $owner->email, 'confirmation' => 'УДАЛИТЬ', 'current_password' => 'wrong-password'];
+        $this->actingAs($owner)->deleteJson(route('profile.account.destroy'), $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors('current_password');
+        $this->assertDatabaseHas('users', ['id' => $owner->id]);
+
+        $payload['current_password'] = 'password-for-tests';
+        $this->deleteJson(route('profile.account.destroy'), $payload)
+            ->assertOk()->assertJsonPath('redirect', route('home'))->assertJsonPath('message', 'Аккаунт удалён. Ваши личные данные и опубликованные работы удалены.');
+        $this->assertGuest();
+        $this->assertDatabaseMissing('users', ['id' => $owner->id]);
+        $this->assertDatabaseMissing('comments', ['id' => $comment->id]);
+        $this->assertDatabaseMissing('coloring_submissions', ['id' => $submission->id]);
+        $this->assertDatabaseHas('users', ['id' => $other->id, 'email' => 'preserved-user@example.test']);
+        $this->assertDatabaseHas('reading_histories', ['user_id' => $other->id, 'story_id' => $story->id]);
+        $this->assertDatabaseHas('stories', ['id' => $story->id, 'created_by' => null]);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'user.blocked', 'actor_id' => null, 'subject_id' => null, 'summary' => '[аккаунт удалён] заблокирован']);
+        Storage::disk('public')->assertMissing('avatars/delete-owner.png');
+        Storage::disk('local')->assertMissing('coloring-submissions/delete-owner.png');
+    }
+
+    public function test_last_active_administrator_cannot_delete_their_own_account(): void
+    {
+        $this->seed();
+        $admin = User::factory()->create(['email' => 'only-admin@example.test']);
+        $admin->roles()->attach(Role::where('slug', 'admin')->value('id'));
+
+        $this->actingAs($admin)->deleteJson(route('profile.account.destroy'), [
+            'confirm_email' => $admin->email,
+            'confirmation' => 'УДАЛИТЬ',
+            'current_password' => 'password-for-tests',
+        ])->assertUnprocessable()->assertJsonValidationErrors('confirmation');
+
+        $this->assertDatabaseHas('users', ['id' => $admin->id]);
+        $this->assertAuthenticatedAs($admin);
+    }
 
 }

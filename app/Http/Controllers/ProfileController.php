@@ -4,15 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 use App\Models\SocialAccount;
+use App\Models\Role;
+use App\Models\AuditLog;
 use App\Http\Controllers\Concerns\RespondsToAjax;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
+use Throwable;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProfileController extends Controller
@@ -147,6 +154,73 @@ class ProfileController extends Controller
             'skazkomir-data-'.$user->id.'-'.now()->format('Y-m-d').'.json',
             ['Content-Type' => 'application/json; charset=utf-8', 'Cache-Control' => 'private, no-store, max-age=0']
         );
+    }
+
+    public function destroyAccount(Request $request): JsonResponse|RedirectResponse
+    {
+        $user = $request->user();
+        $request->validate([
+            'confirm_email' => ['required', 'string', 'max:255', Rule::in([$user->email])],
+            'confirmation' => ['required', Rule::in(['УДАЛИТЬ'])],
+            'current_password' => $user->password_login_enabled ? ['required', 'current_password'] : ['nullable'],
+        ]);
+
+        $avatarPath = $user->avatar_path;
+        $submissionFiles = $user->coloringSubmissions()->pluck('file_path')->filter()->unique()->values()->all();
+
+        DB::transaction(function () use ($user): void {
+            if ($user->roles()->where('slug', 'admin')->exists()) {
+                $adminRole = Role::query()->where('slug', 'admin')->lockForUpdate()->first();
+                if ($adminRole && $adminRole->users()->whereNull('blocked_at')->count() <= 1) {
+                    throw ValidationException::withMessages(['confirmation' => 'Сначала назначьте другого активного администратора.']);
+                }
+            }
+
+            DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+            DB::table('sessions')->where('user_id', $user->id)->delete();
+
+            $auditEntries = DB::table('audit_logs')
+                ->where('actor_id', $user->id)
+                ->orWhere(fn ($query) => $query->where('subject_type', $user::class)->where('subject_id', $user->id))
+                ->get(['id', 'actor_id', 'subject_type', 'subject_id', 'summary']);
+
+            foreach ($auditEntries as $entry) {
+                $summary = str_replace(
+                    array_values(array_filter([$user->email, $user->name])),
+                    '[аккаунт удалён]',
+                    $entry->summary
+                );
+                $changes = ['actor_id' => null, 'summary' => $summary];
+                if ($entry->subject_type === $user::class && (int) $entry->subject_id === (int) $user->id) {
+                    $changes['subject_id'] = null;
+                }
+                DB::table('audit_logs')->where('id', $entry->id)->update($changes);
+            }
+
+            $user->delete();
+        });
+
+        try {
+            if ($avatarPath) {
+                Storage::disk('public')->delete($avatarPath);
+            }
+            if ($submissionFiles !== []) {
+                Storage::disk('local')->delete($submissionFiles);
+            }
+        } catch (Throwable $exception) {
+            report($exception);
+            Log::warning('Account deleted, but one or more private profile files could not be removed.', ['user_id' => $user->id]);
+        }
+
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'Аккаунт удалён. Ваши личные данные и опубликованные работы удалены.', 'redirect' => route('home')]);
+        }
+
+        return redirect()->route('home')->with('status', 'Аккаунт удалён. Ваши личные данные и опубликованные работы удалены.');
     }
 
     public function update(Request $request): RedirectResponse|JsonResponse
