@@ -84,6 +84,70 @@ class ProfileController extends Controller
         return view('profile.show', compact('section', 'user', 'history', 'quizAttempts', 'gameAttempts', 'coloringFavorites', 'coloringProgress', 'coloringSubmissions', 'audioProgress', 'savedAudioQueue', 'avatarUrl', 'preferences', 'newsletterConsent', 'consentEvents', 'socialAccounts', 'achievements'));
     }
 
+    public function exportData(Request $request): Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $user = $request->user();
+
+        $export = [
+            'schema_version' => 1,
+            'exported_at' => now()->toIso8601String(),
+            'account' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'email_verified_at' => $user->email_verified_at?->toIso8601String(),
+                'created_at' => $user->created_at?->toIso8601String(),
+                'profile_preferences' => $user->profile_preferences ?? [],
+            ],
+            'consents' => $user->consentEvents()->orderBy('recorded_at')->get(['consent_type', 'policy_version', 'action', 'source', 'recorded_at'])->toArray(),
+            'reading_history' => $user->readingHistories()->with('story:id,title,slug')->latest('last_read_at')->get()->map(fn ($entry) => [
+                'story' => $entry->story ? ['title' => $entry->story->title, 'slug' => $entry->story->slug] : null,
+                'last_read_at' => $entry->last_read_at?->toIso8601String(),
+                'paragraph_position' => $entry->paragraph_position,
+            ])->all(),
+            'story_quiz_attempts' => $user->storyQuizAttempts()->with('story:id,title,slug')->latest()->get()->map(fn ($attempt) => [
+                'story' => $attempt->story ? ['title' => $attempt->story->title, 'slug' => $attempt->story->slug] : null,
+                'score' => $attempt->score,
+                'question_count' => $attempt->question_count,
+                'answers' => $attempt->answers,
+                'created_at' => $attempt->created_at?->toIso8601String(),
+            ])->all(),
+            'interactive_game_attempts' => $user->interactiveGameAttempts()->with('game:id,title,type')->latest('completed_at')->get()->map(fn ($attempt) => [
+                'game' => $attempt->game ? ['title' => $attempt->game->title, 'type' => $attempt->game->type] : null,
+                'duration_seconds' => $attempt->duration_seconds,
+                'completed_at' => $attempt->completed_at?->toIso8601String(),
+            ])->all(),
+            'audio_playback' => $user->audioPlaybackStates()->with('story:id,title,slug')->get()->map(fn ($state) => [
+                'story' => $state->story ? ['title' => $state->story->title, 'slug' => $state->story->slug] : null,
+                'position_seconds' => $state->position_seconds,
+                'queue_position' => $state->queue_position,
+                'updated_at' => $state->updated_at?->toIso8601String(),
+            ])->all(),
+            'coloring_favorites' => $user->coloringFavorites()->with('page:id,title,slug,coloring_category_id', 'page.category:id,name,slug')->get()->map(fn ($favorite) => [
+                'page' => $favorite->page ? ['title' => $favorite->page->title, 'slug' => $favorite->page->slug, 'category' => $favorite->page->category?->name] : null,
+                'created_at' => $favorite->created_at?->toIso8601String(),
+            ])->all(),
+            'coloring_progress' => $user->coloringProgress()->with('page:id,title,slug,coloring_category_id', 'page.category:id,name,slug')->get()->map(fn ($progress) => [
+                'page' => $progress->page ? ['title' => $progress->page->title, 'slug' => $progress->page->slug, 'category' => $progress->page->category?->name] : null,
+                'strokes' => $progress->strokes,
+                'updated_at' => $progress->updated_at?->toIso8601String(),
+            ])->all(),
+            'coloring_submissions' => $user->coloringSubmissions()->with('page:id,title')->latest()->get()->map(fn ($submission) => [
+                'title' => $submission->title,
+                'page_title' => $submission->page?->title,
+                'status' => $submission->status,
+                'guardian_consent_at' => $submission->guardian_consent_at?->toIso8601String(),
+                'created_at' => $submission->created_at?->toIso8601String(),
+            ])->all(),
+            'connected_accounts' => $user->socialAccounts()->get(['provider', 'email', 'display_name', 'created_at'])->toArray(),
+        ];
+
+        return response()->streamDownload(
+            fn () => print json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
+            'skazkomir-data-'.$user->id.'-'.now()->format('Y-m-d').'.json',
+            ['Content-Type' => 'application/json; charset=utf-8']
+        );
+    }
+
     public function update(Request $request): RedirectResponse|JsonResponse
     {
         $data = $request->validate(['name' => ['required', 'string', 'min:2', 'max:80']]);

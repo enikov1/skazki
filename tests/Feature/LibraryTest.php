@@ -1215,5 +1215,29 @@ class LibraryTest extends TestCase
             ->assertSee('Первый ответ: 0 из 1')
             ->assertSee('Первая игра: 1 из 1');
     }
+    public function test_profile_data_export_contains_only_the_signed_in_users_account_and_activity(): void
+    {
+        $owner = User::factory()->create(['name' => 'Владелец экспорта', 'email' => 'export-owner@example.test']);
+        $other = User::factory()->create(['name' => 'Чужой профиль', 'email' => 'other-person@example.test']);
+        $story = Story::create([
+            'title' => 'История владельца', 'slug' => 'export-owner-story', 'genre' => 'Тест',
+            'summary' => 'Описание', 'body' => 'Текст', 'status' => 'published', 'published_at' => now()->subMinute(),
+        ]);
+        $owner->readingHistories()->create(['story_id' => $story->id, 'last_read_at' => now(), 'paragraph_position' => 3]);
+        $owner->consentEvents()->create(['consent_type' => 'newsletter', 'action' => 'granted', 'source' => 'profile', 'recorded_at' => now()]);
+        $other->readingHistories()->create(['story_id' => $story->id, 'last_read_at' => now()]);
+
+        $response = $this->actingAs($owner)->get(route('profile.data-export'))
+            ->assertOk()
+            ->assertDownload();
+        $payload = json_decode($response->streamedContent(), true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame('export-owner@example.test', $payload['account']['email']);
+        $this->assertSame(3, $payload['reading_history'][0]['paragraph_position']);
+        $this->assertSame('История владельца', $payload['reading_history'][0]['story']['title']);
+        $this->assertSame('granted', $payload['consents'][0]['action']);
+        $this->assertStringNotContainsString('other-person@example.test', json_encode($payload, JSON_THROW_ON_ERROR));
+        $this->assertStringNotContainsString('Чужой профиль', json_encode($payload, JSON_THROW_ON_ERROR));
+    }
 
 }

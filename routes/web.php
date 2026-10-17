@@ -127,6 +127,7 @@ Route::middleware(['auth', 'account.active'])->group(function (): void {
     Route::get('/profile/history', [ProfileController::class, 'history'])->name('profile.history');
     Route::get('/profile/settings', [ProfileController::class, 'settings'])->name('profile.settings');
     Route::get('/profile/security', [ProfileController::class, 'security'])->name('profile.security');
+    Route::get('/profile/data-export', [ProfileController::class, 'exportData'])->middleware('throttle:3,60')->name('profile.data-export');
     Route::post('/audio/queue', [StoryController::class, 'saveAudioQueue'])->middleware('throttle:30,1')->name('audio.queue.save');
     Route::post('/skazki/{story:slug}/audio/progress', [StoryController::class, 'saveAudioProgress'])->middleware('throttle:public-write')->name('stories.audio.progress');
     Route::post('/skazki/{story:slug}/reading-progress', [StoryController::class, 'saveReadingProgress'])->middleware('throttle:public-write')->name('stories.reading-progress');
