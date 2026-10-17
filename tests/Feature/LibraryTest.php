@@ -1018,7 +1018,7 @@ class LibraryTest extends TestCase
     public function test_completed_interactive_games_are_saved_to_the_players_profile_history(): void
     {
         $this->seed();
-        \\App\\Models\\InteractiveGame $differences = \\App\\Models\\InteractiveGame::create([
+        $differences = \\App\\Models\\InteractiveGame::create([
             'type' => 'differences', 'title' => 'Лесная полянка', 'slug' => 'lesnaya-polyanka',
             'description' => 'Найдите отличия.', 'image_a' => 'assets/games/forest-a.png',
             'image_b' => 'assets/games/forest-b.png', 'data' => ['differences' => [['x' => 0.5, 'y' => 0.5]]],
