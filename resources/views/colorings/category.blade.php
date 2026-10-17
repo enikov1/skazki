@@ -1,0 +1,13 @@
+@extends('layouts.app')
+@section('title', $category->name.' — раскраски | СказкоМир')
+@section('description', $category->description ?: 'Раскраски в категории «'.$category->name.'».')
+@if(request()->query())@section('robots', 'noindex,follow')@endif
+@push('head')
+<script type="application/ld+json">{!! json_encode([chr(64).'context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_map(fn ($item, $index) => ['@type' => 'ListItem', 'position' => $index + 1, 'name' => $item[0], 'item' => $item[1]], [['Главная', route('home')], ['Раскраски', route('colorings.index')], [$category->name, route('colorings.category', $category)]], array_keys([['Главная', route('home')], ['Раскраски', route('colorings.index')], [$category->name, route('colorings.category', $category)]]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
+@endpush
+@section('content')
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('colorings.index') }}">Раскраски</a><span>/</span><span aria-current="page">{{ $category->name }}</span></nav>
+<header class="page-panel coloring-heading"><p class="eyebrow">Категория раскрасок</p><h1 class="page-title">{{ $category->name }}</h1>@if($category->description)<p class="lead">{{ $category->description }}</p>@endif</header>
+<form class="coloring-search" method="get" action="{{ route('colorings.category', $category) }}" data-coloring-filter><label class="field"><span class="sr-only">Найти раскраску</span><input type="search" name="q" value="{{ request('q') }}" maxlength="100" placeholder="Найти рисунок"></label><button class="button" type="submit">Найти</button><a class="button button-quiet" href="{{ route('colorings.category', $category) }}" data-coloring-reset>Сбросить</a></form>
+<div data-coloring-results aria-live="polite">@include('colorings.page-cards', ['category' => $category, 'pages' => $pages])</div>
+@endsection

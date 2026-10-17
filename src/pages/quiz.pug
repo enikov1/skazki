@@ -1,0 +1,34 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Викторина — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Сказки', href: 'fairy-tales.html'}, {label: 'Викторина', href: null}])
+    h1.page-title Викторина: Колобок
+    p.lead Ответьте на три вопроса по истории. Результат появится сразу после последнего ответа.
+    section.page-panel#quiz(data-step='0')
+      .progress
+        i#quizProgress(style='width: 0%;')
+      p#quizQuestion Вопрос 1 из 3. Кто автор этой истории?
+      #quizAnswers
+        button.quiz-option(data-answer='0') Русская народная сказка
+        button.quiz-option(data-answer='1') Александр Пушкин
+        button.quiz-option(data-answer='2') Корней Чуковский
+      p#quizResult.notice(hidden)
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

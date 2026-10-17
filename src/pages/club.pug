@@ -1,0 +1,35 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Клуб читателей — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Клуб читателей', href: null}])
+    h1.page-title Клуб читателей
+    p.lead Читайте вместе, делитесь впечатлениями и участвуйте в добрых читательских заданиях.
+    section.page-panel
+      h2 Челлендж месяца: семейное чтение
+      p Выберите любую историю из библиотеки, обсудите её вместе и поделитесь добрыми впечатлениями.
+      a.btn(href='fairy-tales.html') Выбрать сказку
+    section.page-panel
+      h2 Идеи для обсуждения
+      .activity-row
+        .activity-card Кто из героев тебе запомнился?
+        .activity-card Как бы ты поступил на его месте?
+        .activity-card Какой финал ты бы придумал?
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Сессия завершилась — СказкоМир')
+@section('code', '419')
+@section('heading', 'Сессия завершилась')
+@section('message', 'Обновите страницу и отправьте форму ещё раз.')

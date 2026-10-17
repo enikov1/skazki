@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Действие недоступно — СказкоМир')
+@section('code', '405')
+@section('heading', 'Действие недоступно')
+@section('message', 'Для этой страницы нельзя выполнить запрошенное действие.')

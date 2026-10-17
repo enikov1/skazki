@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Ошибка — СказкоМир')
+@section('code', (string) (isset($exception) ? $exception->getStatusCode() : 500))
+@section('heading', 'Страница временно недоступна')
+@section('message', 'Попробуйте вернуться назад или открыть главную страницу.')

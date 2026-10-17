@@ -1,0 +1,48 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Логическое задание — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Занятия', href: 'activities.html'}, {label: 'Логические задачи', href: 'logic.html'}, {label: 'Задание', href: null}])
+    h1.page-title Задание по сказке
+    p.lead Вспомни сюжет и выбери правильный ответ.
+    p
+      a.pill(href='logic.html') ← Все логические задания
+    section.page-panel.logic-game
+      .logic-heading
+        span
+          img.logic-task-art(src='/assets/illustrations/logic-puzzles.webp', alt='Ребёнок собирает деревянную головоломку')
+        div
+          small История: Репка
+          h2 Вспоминаем и рассуждаем
+      .progress
+        i#logicProgress(style='width: 0%;')
+      p#logicStep.detail-meta Задание 1 из 5 · правильных ответов: 0
+      h2#logicQuestion Кто тянул репку первым?
+      #logicAnswers
+        button.quiz-option Дед
+        button.quiz-option Внучка
+        button.quiz-option Мышка
+      p#logicFeedback.notice(hidden)
+      button.btn#logicNext(hidden)
+        | Дальше 
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#arrow-right')
+      button.pill#logicRestart(hidden) Пройти ещё раз
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

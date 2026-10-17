@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Страница не найдена — СказкоМир')
+@section('code', '404')
+@section('heading', 'Страница не найдена')
+@section('message', 'Возможно, ссылка устарела или страница была перемещена.')

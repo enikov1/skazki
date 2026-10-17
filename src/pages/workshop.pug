@@ -1,0 +1,68 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Творческая мастерская — СказкоМир
+
+block content
+  +siteHeader('workshop')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Мастерская', href: null}])
+    .page-heading-art
+      div
+        h1.page-title Творческая мастерская
+        p.lead Придумайте героя и место действия, а затем начните собственную историю.
+      img(src='/assets/illustrations/story-workshop.webp', alt='Девочка сочиняет историю и представляет сказочный мир')
+    section.page-panel
+      h2 Начните свою сказку
+      form#storyForm.form-grid
+        .field
+          label Название истории
+          input#storyTitle(name='title', required, placeholder='Например, Приключение Тёмы')
+        .field
+          label Главный герой
+          input#storyHero(name='hero', required, placeholder='Кто будет героем?')
+        .field
+          label Место действия
+          select#storyPlace(name='place')
+            option Волшебный лес
+            option Морской берег
+            option Мой город
+            option Свой вариант
+        .field
+          label Возраст читателя
+          select#storyAge(name='age')
+            option 3–5 лет
+            option 5–8 лет
+            option 9–12 лет
+        .field.full
+          label Текст сказки
+          textarea#storyText(name='story', required, placeholder='Однажды утром герой отправился…')
+        .field.full
+          button.btn Создать сказку
+      #draftResult
+    section.page-panel
+      h2 Подсказки для вдохновения
+      .activity-row
+        .activity-card
+          b Выберите героя
+          p Любимый зверёк, храбрый ребёнок или смешной предмет.
+        .activity-card
+          b Придумайте задачу
+          p Что герой хочет найти, кому помочь или чему научиться?
+        .activity-card
+          b Завершите добром
+          p Пусть история оставит читателю тёплую мысль.
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

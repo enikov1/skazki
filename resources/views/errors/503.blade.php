@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Временно недоступно — СказкоМир')
+@section('code', '503')
+@section('heading', 'Временно недоступно')
+@section('message', 'Сайт обновляется. Попробуйте зайти ещё раз через некоторое время.')

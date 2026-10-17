@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Внутренняя ошибка — СказкоМир')
+@section('code', '500')
+@section('heading', 'Внутренняя ошибка')
+@section('message', 'Мы уже записали ошибку. Попробуйте открыть страницу позже.')

@@ -1,0 +1,31 @@
+name: Tests
+on:
+  push:
+  pull_request:
+jobs:
+  laravel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci && npm run build
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, mbstring, xml, curl, fileinfo, gd
+          coverage: none
+      - run: composer install --no-interaction --prefer-dist
+      - run: composer validate --strict
+      - run: composer audit --locked --no-dev
+      - run: npm audit --omit=dev --audit-level=moderate
+      - run: cp .env.example .env && php artisan key:generate
+      - run: touch database/database.sqlite
+      - run: DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite php artisan migrate --force --seed
+      - name: Compile and lint every Blade template
+        run: |
+          php artisan view:cache
+          find storage/framework/views -name '*.php' -print0 | xargs -0 -n1 php -l
+          php artisan view:clear
+      - run: DB_CONNECTION=sqlite DB_DATABASE=database/database.sqlite composer test
