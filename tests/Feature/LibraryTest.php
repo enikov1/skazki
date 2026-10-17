@@ -1166,7 +1166,7 @@ class LibraryTest extends TestCase
         $this->actingAs($admin)->get(route('admin.coloring-categories.index'))->assertOk()->assertSee('Категории раскрасок');
         $this->postJson(route('admin.coloring-categories.store'), ['name' => 'Лесные жители', 'description' => 'Рисунки животных леса', 'is_published' => 1])
             ->assertOk()->assertJsonPath('message', 'Категория раскрасок сохранена.');
-        $category = ColoringCategory::firstOrFail();
+        $category = ColoringCategory::where('name', 'Лесные жители')->firstOrFail();
         $this->postJson(route('admin.colorings.pages.store'), ['category_id' => $category->id, 'title' => 'Лисёнок', 'outline_path' => 'storage/media/fox.png', 'is_published' => 1])->assertOk();
         $page = $category->pages()->firstOrFail();
         $this->get(route('colorings.index'))->assertOk()->assertSee('Лесные жители')->assertSee('1 раскраска');

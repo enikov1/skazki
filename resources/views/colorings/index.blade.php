@@ -3,7 +3,7 @@
 @section('description', 'Раскраски по темам для детей: выбирайте категорию и открывайте новые рисунки.')
 @if(request()->query())@section('robots', 'noindex,follow')@endif
 @push('head')
-<script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_map(fn ($item, $index) => ['@type' => 'ListItem', 'position' => $index + 1, 'name' => $item[0], 'item' => $item[1]], [['Главная', route('home')], ['Раскраски', route('colorings.index')]], array_keys([['Главная', route('home')], ['Раскраски', route('colorings.index')]]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
+<script type="application/ld+json">{!! json_encode([chr(64).'context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_map(fn ($item, $index) => ['@type' => 'ListItem', 'position' => $index + 1, 'name' => $item[0], 'item' => $item[1]], [['Главная', route('home')], ['Раскраски', route('colorings.index')]], array_keys([['Главная', route('home')], ['Раскраски', route('colorings.index')]]))], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}</script>
 @endpush
 @section('content')
 <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ route('home') }}">Главная</a><span>/</span><span aria-current="page">Раскраски</span></nav>
