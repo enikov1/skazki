@@ -50,7 +50,7 @@ class StoryController extends Controller
                         'id' => $story->slug,
                         'title' => $story->title,
                         'author' => $story->author ?: 'СказкоМир',
-                        'cover' => $story->cover_path ? asset($story->cover_path) : asset('assets/illustrations/audio-story.webp'),
+                        'cover' => $story->cover_path ? asset($story->cover_path) : asset('assets/illustrations/audio-story.svg'),
                         'src' => route('stories.audio', $story),
                         'download' => $story->allow_download ? route('stories.audio.download', $story) : '',
                         'progressUrl' => route('stories.audio.progress', $story),

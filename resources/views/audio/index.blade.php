@@ -8,7 +8,7 @@
 @endpush
 @section('content')
 <nav class="breadcrumbs"><a href="{{ route('home') }}">Главная</a><span>/</span><span>Аудиосказки</span></nav>
-<div class="page-heading-art"><div><h1 class="page-title">Аудиосказки</h1><p class="lead">Устройтесь поудобнее, наденьте наушники и отправляйтесь в сказочное путешествие.</p></div><img src="{{ asset('assets/illustrations/audio-story.webp') }}" alt="Ребёнок слушает сказку в наушниках" fetchpriority="high"></div>
+<div class="page-heading-art"><div><h1 class="page-title">Аудиосказки</h1><p class="lead">Устройтесь поудобнее, наденьте наушники и отправляйтесь в сказочное путешествие.</p></div><img src="{{ asset('assets/illustrations/audio-story.svg') }}" alt="Сказочные герои читают вместе" fetchpriority="high"></div>
 <section class="page-panel audio-catalog-panel">
   <div class="section-head audio-catalog-title"><div><h2>Выберите историю</h2><p>Все опубликованные аудиосказки — рядом, а очередь поможет слушать их одну за другой.</p></div><span class="audio-ready-count" data-audio-total>{{ $stories->total() }} аудиозаписей</span></div>
   <form class="audio-filter-panel" method="get" action="{{ route('audio.index') }}" data-audio-filter aria-label="Фильтры аудиосказок">

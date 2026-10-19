@@ -35,32 +35,32 @@ mixin siteHeader(activePage)
           use(href='/assets/icons.svg#star')
         |  Сегодня читают
       a.ticker-book(href='story.html?id=kolobok')
-        img(src='/assets/covers/kolobok.jpg', alt='', loading='lazy')
+        img(src='/assets/covers/kolobok.svg', alt='', loading='lazy')
         span
           b Колобок
           small Русская народная сказка
       a.ticker-book(href='story.html?id=repka')
-        img(src='/assets/covers/repka.jpg', alt='', loading='lazy')
+        img(src='/assets/covers/repka.svg', alt='', loading='lazy')
         span
           b Репка
           small Русская народная сказка
       a.ticker-book(href='story.html?id=three-pigs')
-        img(src='/assets/covers/three-pigs.jpg', alt='', loading='lazy')
+        img(src='/assets/covers/three-pigs.svg', alt='', loading='lazy')
         span
           b Три поросёнка
           small С. Михалков
       a.ticker-book(href='story.html?id=masha')
-        img(src='/assets/covers/masha.jpg', alt='', loading='lazy')
+        img(src='/assets/covers/masha.svg', alt='', loading='lazy')
         span
           b Маша и медведь
           small Русская народная сказка
       a.ticker-book(href='story.html?id=sivka')
-        img(src='/assets/covers/sivka-burka.jpg', alt='', loading='lazy')
+        img(src='/assets/covers/sivka-burka.svg', alt='', loading='lazy')
         span
           b Сивка-Бурка
           small Русская народная сказка
       a.ticker-book(href='story.html?id=little-red')
-        img(src='/assets/covers/red-riding-hood.jpg', alt='', loading='lazy')
+        img(src='/assets/covers/red-riding-hood.svg', alt='', loading='lazy')
         span
           b Красная Шапочка
           small Шарль Перро
@@ -137,7 +137,7 @@ mixin audioPlayerDock()
   section.audio-dock#audioDock(hidden, aria-label='Аудиоплеер')
     .audio-dock-shell
       .dock-track
-        img#dockCover(src='/assets/illustrations/audio-story.webp', alt='')
+        img#dockCover(src='/assets/illustrations/audio-story.svg', alt='')
         .dock-track-copy
           strong#dockTitle Выберите сказку
           span#dockAuthor Добавьте её в очередь или нажмите «Слушать»

@@ -2,7 +2,7 @@
   @forelse($stories as $story)
     @php
       $audioUrl = route('stories.audio', $story);
-      $coverUrl = $story->cover_path ? asset($story->cover_path) : asset('assets/illustrations/audio-story.webp');
+      $coverUrl = $story->cover_path ? asset($story->cover_path) : asset('assets/illustrations/audio-story.svg');
     @endphp
     @php($savedPosition = auth()->check() ? (int) ($story->audioPlaybackStates->first()?->position_seconds ?? 0) : 0)
     <article class="audio-item audio-row has-audio" data-audio-id="{{ $story->slug }}" data-audio-title="{{ $story->title }}" data-audio-author="{{ $story->author ?: 'СказкоМир' }}" data-audio-cover="{{ $coverUrl }}" data-audio-src="{{ $audioUrl }}" data-audio-progress="{{ $savedPosition }}" @auth data-audio-progress-url="{{ route('stories.audio.progress', $story) }}" @endauth @if($story->allow_download)data-audio-download-url="{{ route('stories.audio.download', $story) }}"@endif data-genre="{{ $story->genre }}" data-age-min="{{ $story->age_min }}" data-age-max="{{ $story->age_max }}">

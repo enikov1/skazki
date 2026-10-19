@@ -10,7 +10,7 @@ use Illuminate\View\View;
 
 class ArticleController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|\Illuminate\Http\JsonResponse
     {
         $filters = $request->validate(['q' => ['nullable', 'string', 'max:100'], 'category' => ['nullable', 'string', 'max:100']]);
         $articles = Article::published()
@@ -19,6 +19,9 @@ class ArticleController extends Controller
             ->latest('published_at')->paginate(9)->withQueryString();
         $categories = cache()->remember('articles:categories:v1', 600, fn () => Article::published()->select('category')->distinct()->orderBy('category')->pluck('category'));
 
+        if ($request->expectsJson()) {
+            return response()->json(['html' => view('articles.results', compact('articles'))->render(), 'count' => $articles->total()]);
+        }
         return view('articles.index', compact('articles', 'categories', 'filters'));
     }
 
