@@ -47,7 +47,15 @@ for base in ['src','resources','app','database']:
   old=p.read_text();new=old
   for a,b in replacements.items():new=new.replace(a,b)
   if old!=new:p.write_text(new)
-for old in replacements:
- p=ROOT/'src/assets'/old
- if p.exists():p.unlink()
-print('Replaced 33 truncated demo assets with local SVG files.')
+# Existing database records may still use the former raster URLs.
+# Optional exports preserve those URLs without keeping truncated originals.
+if '--raster-compat' in __import__('sys').argv:
+ import io
+ import cairosvg
+ from PIL import Image
+ for old,new in replacements.items():
+  png=cairosvg.svg2png(url=str(ROOT/'src/assets'/new))
+  image=Image.open(io.BytesIO(png)).convert('RGB')
+  target=ROOT/'src/assets'/old
+  image.save(target,quality=88,optimize=True)
+print('Generated vector art; optional raster exports preserve existing database URLs.')
