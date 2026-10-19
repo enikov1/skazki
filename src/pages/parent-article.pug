@@ -1,0 +1,73 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Статья для родителей — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Родителям', href: 'parents.html'}, {label: 'Статья', href: null}])
+    article.page-panel.full-article
+      a.pill(href='parents.html') ← Все статьи
+      .article-art.article-art-large
+        img(src='/assets/illustrations/family-reading.svg', alt='Родитель и ребёнок читают сказку вместе')
+      span.article-category Читаем вместе · 3–8 лет
+      h1 Как читать вместе, чтобы ребёнку было интересно
+      .article-meta
+        span
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#clock')
+          |  5 минут чтения
+        span
+          | ★ 4,9 
+          small Оценка читателей
+        span
+          span#parentCommentCount 0
+          |  комментариев
+      p.article-intro Простые приёмы семейного чтения без спешки и обязательных норм.
+      .article-content
+        h2 Начните с простого выбора
+        p Выберите удобное время и предложите ребёнку самому выбрать историю. Когда у него есть возможность выбирать, чтение воспринимается как приятное совместное занятие, а не как ещё одна обязанность.
+        h2 Читайте в своём темпе
+        p Читайте по очереди, рассматривайте иллюстрации и делайте паузы. Не обязательно дочитывать книгу за один раз: можно остановиться на интересном месте и вернуться к нему завтра.
+        h2 Обсуждайте без проверки
+        p После истории поговорите о героях. Вместо проверки «правильно ли запомнил» спросите, кто понравился и почему, или как бы ребёнок поступил на месте героя.
+      section.page-panel
+        h2 Комментарии
+        p.notice Задайте вопрос или поделитесь своей идеей.
+        form#parentCommentForm.form-grid
+          .field
+            label(for='parentCommentName') Имя
+            input#parentCommentName(required, maxlength='32')
+          .field.full
+            label(for='parentCommentText') Комментарий
+            textarea#parentCommentText(required, maxlength='500')
+          .field.full
+            button.btn Оставить комментарий
+        #parentComments.comment-list
+          article.comment
+            .comment-heading
+              b Ольга
+              span.comment-date Вчера
+            p Стали читать перед сном — теперь это наше любимое время.
+            +commentReactions(9, 0)
+          article.comment
+            .comment-heading
+              b Анна
+              span.comment-date 3 дня назад
+            p Спасибо за идею читать по очереди, ребёнку очень понравилось.
+            +commentReactions(5, 1)
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

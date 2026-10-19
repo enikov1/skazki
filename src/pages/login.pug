@@ -1,0 +1,18 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Вход — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +breadcrumbs([{label: 'Главная', href: '/'}, {label: 'Вход', href: null}])
+    section.page-panel(style='max-width:620px;margin:24px auto;text-align:center')
+      h1.page-title Вход
+      p.lead Откроется форма входа в аккаунт.
+      a.btn(href='/login') Продолжить
+      script.
+        window.location.replace('/login');
+  +siteFooter()

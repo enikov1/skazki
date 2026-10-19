@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Слишком много запросов — СказкоМир')
+@section('code', '429')
+@section('heading', 'Слишком много запросов')
+@section('message', 'Подождите немного и повторите попытку.')

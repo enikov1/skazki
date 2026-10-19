@@ -1,0 +1,10 @@
+@extends('layouts.app')
+@section('title', 'SEO-страницы каталога — управление сайтом')
+@section('content')
+<nav class="breadcrumbs"><a href="{{ route('admin.dashboard') }}">Панель управления</a><span>/</span><span aria-current="page">SEO-страницы каталога</span></nav>
+<div class="admin-topline"><div><p class="eyebrow">Поисковая оптимизация</p><h1>SEO-страницы каталога</h1><p class="lead">Создавайте посадочные страницы жанров, авторов и возрастных подборок сказок и аудио.</p></div><div class="catalog-seo-admin-actions"><form method="post" action="{{ route('admin.catalog-pages.generate') }}" data-ajax-form>@csrf<button class="button button-soft" type="submit">Создать черновики для каталога</button></form><a class="button" href="{{ route('admin.catalog-pages.create') }}">Создать страницу</a></div></div>
+<section class="admin-panel catalog-seo-admin-panel"><div class="table-wrap"><table><thead><tr><th>Страница</th><th>Тип</th><th>Фильтр материалов</th><th>Статус</th><th></th></tr></thead><tbody>
+@forelse($pages as $page)<tr><td><strong>{{ $page->title }}</strong><br>@if($page->status === 'published')<a class="text-link" href="{{ $page->publicUrl() }}" target="_blank" rel="noopener">/{{ ltrim(parse_url($page->publicUrl(), PHP_URL_PATH), '/') }}</a>@else<span class="field-help">/{{ ltrim(parse_url($page->publicUrl(), PHP_URL_PATH), '/') }}</span>@endif</td><td>{{ match($page->type) { 'story_genre' => 'Жанр сказок', 'audio_genre' => 'Жанр аудиосказок', 'author' => 'Автор', 'age' => 'Возраст сказок', 'audio_age' => 'Возраст аудио' } }}</td><td>{{ $page->filter_value ?: ($page->age_min.'–'.$page->age_max.' лет') }}</td><td><span class="status-pill status-{{ $page->status }}">{{ $page->status === 'published' ? 'Опубликована' : 'Черновик' }}</span></td><td><a class="button button-soft button-small" href="{{ route('admin.catalog-pages.edit', $page) }}">Редактировать</a></td></tr>
+@empty<tr><td colspan="5"><div class="empty-state"><h2>SEO-страниц пока нет</h2><p>Создайте страницу для жанра, автора или возрастной подборки.</p></div></td></tr>@endforelse
+</tbody></table></div>{{ $pages->links() }}</section>
+@endsection

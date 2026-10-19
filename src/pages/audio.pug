@@ -1,0 +1,65 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Аудиосказки — СказкоМир
+
+block content
+  - const audioTracks = [{ id: 'kolobok', title: 'Колобок', author: 'Русская народная сказка', genre: 'Народные', age: '3–5 лет', duration: '5 минут', image: '/assets/covers/kolobok.svg', story: 'story.html?id=kolobok', audio: '/assets/audio/kolobok.mp3' }, { id: 'repka', title: 'Репка', author: 'Русская народная сказка', genre: 'Народные', age: '3–5 лет', duration: '3 минуты', image: '/assets/covers/repka.svg', story: 'story.html?id=repka' }, { id: 'three-pigs', title: 'Три поросёнка', author: 'С. Михалков', genre: 'Про животных', age: '5–8 лет', duration: '8 минут', image: '/assets/covers/three-pigs.svg', story: 'story.html?id=three-pigs' }, { id: 'masha', title: 'Маша и медведь', author: 'Русская народная сказка', genre: 'Народные', age: '5–8 лет', duration: '7 минут', image: '/assets/covers/masha.svg', story: 'story.html?id=masha' }, { id: 'sivka', title: 'Сивка-Бурка', author: 'Русская народная сказка', genre: 'Народные', age: '5–8 лет', duration: '10 минут', image: '/assets/covers/sivka-burka.svg', story: 'story.html?id=sivka' }, { id: 'little-red', title: 'Красная Шапочка', author: 'Шарль Перро', genre: 'Авторские', age: '5–8 лет', duration: '8 минут', image: '/assets/covers/red-riding-hood.svg', story: 'story.html?id=little-red' }, { id: 'thumbelina', title: 'Дюймовочка', author: 'Г. Х. Андерсен', genre: 'Авторские', age: '9–12 лет', duration: '12 минут', image: '/assets/covers/thumbelina.svg', story: 'story.html?id=thumbelina' }, { id: 'turnip', title: 'Лисичка со скалочкой', author: 'Русская народная сказка', genre: 'Про животных', age: '5–8 лет', duration: '4 минуты', image: '/assets/covers/fox-rolling-pin.svg', story: 'story.html?id=turnip' }, { id: 'aybolit', title: 'Доктор Айболит', author: 'Корней Чуковский', genre: 'Стихи', age: '5–8 лет', duration: '9 минут', image: '/assets/covers/aybolit.svg', story: 'story.html?id=aybolit' }, { id: 'moydodyr', title: 'Мойдодыр', author: 'Корней Чуковский', genre: 'Стихи', age: '3–5 лет', duration: '6 минут', image: '/assets/covers/moidodyr.svg', story: 'story.html?id=moydodyr' }, { id: 'fox-crane', title: 'Лиса и журавль', author: 'Русская народная сказка', genre: 'Народные', age: '3–5 лет', duration: '4 минуты', image: '/assets/covers/fox-and-crane.svg', story: 'story.html?id=fox-crane' }, { id: 'cat-house', title: 'Кошкин дом', author: 'Самуил Маршак', genre: 'Стихи', age: '5–8 лет', duration: '8 минут', image: '/assets/covers/koshkin-dom.svg', story: 'story.html?id=cat-house' }]
+  +siteHeader('audio')
+  main.page-wrap.audio-page
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Аудиосказки', href: null}])
+    .page-heading-art
+      div
+        h1.page-title Аудиосказки
+        p.lead Устройтесь поудобнее, наденьте наушники и отправляйтесь в сказочное путешествие.
+      img(src='/assets/illustrations/audio-story.svg', alt='Ребёнок слушает сказку в наушниках, пока взрослый читает рядом')
+    section.page-panel.audio-catalog-panel
+      .section-head.audio-catalog-title
+        div
+          h2 Выберите историю
+          p Все сказки — рядом, а очередь поможет слушать их одну за другой.
+        span.audio-ready-count 1 аудиосказка
+      .audio-filter-panel(aria-label='Фильтры аудиосказок')
+        .audio-filter-grid
+          +uiSelect('audioGenre','Жанр',[{value:'Все',label:'Все жанры'},{value:'Народные',label:'Народные сказки'},{value:'Авторские',label:'Авторские сказки'},{value:'Про животных',label:'Про животных'},{value:'Стихи',label:'Стихи'}], 'Все')
+          +uiSelect('audioAge','Возраст',[{value:'Все',label:'Любой возраст'},{value:'3–5 лет',label:'3–5 лет'},{value:'5–8 лет',label:'5–8 лет'},{value:'9–12 лет',label:'9–12 лет'}], 'Все')
+          +uiSelect('audioSort','Сначала',[{value:'popular',label:'Сначала доступные'},{value:'az',label:'По названию'},{value:'duration',label:'По длительности'}], 'popular')
+          button.pill#resetAudioFilters(type='button') Сбросить
+        p.catalog-count#catalogAudioCount(role='status' aria-live='polite') Найдено 12 сказок · 1 аудиозапись доступна
+      .audio-list
+        each track in audioTracks
+          article.audio-item.audio-row(class=track.audio ? 'has-audio' : null, data-age=track.age, data-genre=track.genre, data-duration=track.duration, data-audio-id=track.id, data-audio-title=track.title, data-audio-author=track.author, data-audio-cover=track.image, data-audio-src=track.audio || null)
+            a.audio-row-cover(href=track.story, tabindex='-1', aria-hidden='true')
+              img(src=track.image, alt='', loading='lazy')
+            .audio-row-copy
+              h3
+                a(href=track.story)= track.title
+              p= track.author + ' · ' + track.genre + ' · ' + track.age
+              span.audio-availability(class=track.audio ? 'is-ready' : null)= track.audio ? 'Можно слушать' : 'Аудиоверсия скоро появится'
+            .audio-row-actions
+              button.audio-play-button(type='button', data-audio-play=track.id, disabled=!track.audio, aria-label=track.audio ? 'Слушать «' + track.title + '»' : 'Аудиоверсия скоро появится')
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#play')
+                span Слушать
+              button.audio-queue-button(type='button', data-queue-add=track.id, disabled=!track.audio, aria-label=track.audio ? 'Добавить «' + track.title + '» в очередь' : 'Скоро можно будет добавить в очередь', title=track.audio ? 'Добавить в очередь' : 'Аудиоверсия скоро появится')
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#queue-add')
+              a.audio-details-link(href=track.story, aria-label='Подробнее о сказке «' + track.title + '»')
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#arrow-right')
+      p.audio-note#catalogAudioNote(role='status' aria-live='polite') Пока можно послушать «Колобка». Новые аудиосказки будут появляться здесь.
+  +audioPlayerDock()
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

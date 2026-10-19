@@ -1,0 +1,136 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Моя книжная полка — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Профиль', href: null}])
+    .page-heading-art
+      div
+        h1.page-title Мой профиль
+        p.lead Здесь собраны любимые книги, недавние занятия и читательские достижения.
+      img(src='/assets/illustrations/auth-register.svg', alt='Дети вместе открывают новую историю')
+    section.page-panel.profile-card
+      .profile-avatar
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#user')
+      .profile-info
+        h2#profileGreeting Добро пожаловать, Анна!
+        p.profile-meta Взрослый читатель · С нами с октября 2026 года
+        p Рады видеть вас в СказкоМире! Здесь можно настроить профиль и найти любимые истории.
+        button.pill#editProfile
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#pencil')
+          |  Настроить профиль
+    section.profile-stats
+      article
+        strong 4
+        span прочитано историй
+      article
+        strong 3
+        span в избранном
+      article
+        strong 2
+        span занятия пройдены
+    section.page-panel
+      .section-head
+        h2 Моя книжная полка
+        a(href='fairy-tales.html')
+          | Найти сказку 
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#arrow-right')
+      .book-row.profile-books
+        a.book-card(href='story.html?id=kolobok')
+          .cover.c1
+            img.cover-img(src='/assets/covers/kolobok.svg', alt='Обложка сказки «Колобок»')
+          h3 Колобок
+          .author Русская народная сказка
+        a.book-card(href='story.html?id=repka')
+          .cover.c2
+            img.cover-img(src='/assets/covers/repka.svg', alt='Обложка сказки «Репка»')
+          h3 Репка
+          .author Русская народная сказка
+        a.book-card(href='story.html?id=three-pigs')
+          .cover.c3
+            img.cover-img(src='/assets/covers/three-pigs.svg', alt='Обложка сказки «Три поросёнка»')
+          h3 Три поросёнка
+          .author С. Михалков
+    section.page-panel
+      .section-head
+        h2 Недавно читали
+        a(href='fairy-tales.html')
+          | Открыть библиотеку 
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#arrow-right')
+      .history-list
+        .history-entry
+          span.history-date Сегодня · 10 минут
+          a(href='read.html?id=kolobok') Прочитана сказка «Колобок»
+        .history-entry
+          span.history-date Вчера · 7 минут
+          a(href='read.html?id=repka') Прочитана сказка «Репка»
+        .history-entry
+          span.history-date 10 октября · 8 минут
+          a(href='story.html?id=three-pigs') Прослушаны «Три поросёнка»
+    section.page-panel
+      .section-head
+        h2 Мои черновики
+        a(href='workshop.html')
+          | Написать историю 
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#arrow-right')
+      .history-list
+        .history-entry
+          span.history-date Черновик · 12 октября
+          span Лисёнок и осенний ветер
+        .history-entry
+          span.history-date Черновик · 9 октября
+          span Как ёжик нашёл дорогу домой
+    section.page-panel.history-panel
+      .section-head
+        h2 История активности
+        a.pill(href='achievements.html') Мои достижения
+      .history-list
+        .history-entry
+          span.history-date Сегодня
+          span Прочитана сказка «Колобок»
+        .history-entry
+          span.history-date Вчера
+          span Пройдена викторина по сказке «Репка»
+        .history-entry
+          span.history-date 10 октября
+          span Завершена раскраска «Три поросёнка»
+    .modal#profileModal
+      form.modal-card#profileForm
+        button.modal-close(type='button', data-close-profile, aria-label='Закрыть') ×
+        h2 Настройки профиля
+        p.notice Расскажите, как к вам обращаться и какие истории вам нравятся.
+        .field
+          label(for='profileName') Как вас называть
+          input#profileName(maxlength='32', placeholder='Имя читателя', required)
+        .field
+          label(for='profileAge') Возрастная группа
+          select#profileAge
+            option(value) Не выбрана
+            option 3–5 лет
+            option 5–8 лет
+            option 9–12 лет
+            option Родитель
+        p
+          button.btn(type='submit') Сохранить настройки
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

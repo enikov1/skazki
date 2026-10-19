@@ -1,0 +1,9 @@
+@extends('layouts.app')
+@section('title', $label.' — игры для детей | СказкоМир')
+@section('content')
+<nav class="breadcrumbs"><a href="{{ route('home') }}">Главная</a><span>/</span><a href="{{ route('games.index') }}">Игры</a><span>/</span><span aria-current="page">{{ $label }}</span></nav>
+<header class="page-panel games-heading"><p class="eyebrow">Играем и развиваемся</p><h1 class="page-title">{{ $label }}</h1><p class="lead">{{ $type === 'differences' ? 'Сравнивайте картинки и находите все спрятанные отличия.' : 'Соберите картинку из перемешанных частей.' }}</p></header>
+<nav class="game-type-nav" aria-label="Виды игр"><a href="{{ route('games.index') }}">Викторины</a><a @class(['active' => $type === 'differences']) href="{{ route('games.differences.index') }}">Найди отличия</a><a @class(['active' => $type === 'mosaics']) href="{{ route('games.mosaics.index') }}">Мозаики</a></nav>
+<div class="game-card-grid">@forelse($games as $game)<article class="game-card"><a class="game-card-cover" href="{{ $type === 'differences' ? route('games.differences.show', $game->slug) : route('games.mosaics.show', $game->slug) }}"><img src="{{ asset($game->image_a) }}" alt="" loading="lazy"></a><div class="game-card-copy"><p class="eyebrow">{{ $game->type_label }}</p><h2><a href="{{ $type === 'differences' ? route('games.differences.show', $game->slug) : route('games.mosaics.show', $game->slug) }}">{{ $game->title }}</a></h2><p>{{ $game->description }}</p></div><a class="button" href="{{ $type === 'differences' ? route('games.differences.show', $game->slug) : route('games.mosaics.show', $game->slug) }}">Играть</a></article>@empty<div class="empty-state"><h2>Игры скоро появятся</h2><p>Мы готовим новые задания. Пока можно пройти викторину по сказке.</p><a class="button" href="{{ route('games.index') }}">К викторинам</a></div>@endforelse</div>
+{{ $games->links('vendor.pagination.skazki') }}
+@endsection

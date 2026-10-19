@@ -1,0 +1,271 @@
+mixin siteHeader(activePage)
+  header.topbar
+    .top-inner
+      a.brand(href='index.html' aria-label='СказкоМир — на главную')
+        span.brand-icon
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#bear')
+        span
+          | СказкоМир
+          small ЧИТАЕМ ВМЕСТЕ
+      nav.nav#nav(aria-label='Основная навигация')
+        a(href='index.html', class=activePage === 'home' ? 'active' : null) Главная
+        a(href='fairy-tales.html', class=activePage === 'tales' ? 'active' : null) Сказки
+        a(href='audio.html', class=activePage === 'audio' ? 'active' : null) Аудио
+        a(href='activities.html', class=activePage === 'activities' ? 'active' : null) Занятия
+        a(href='workshop.html', class=activePage === 'workshop' ? 'active' : null) Мастерская
+        a(href='parents.html', class=activePage === 'parents' ? 'active' : null) Родителям
+      button.menu-close(type='button', data-menu-close, aria-label='Закрыть меню')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+        | Закрыть меню
+      .right-head
+        a.icon-btn(href='/login', aria-label='Войти или зарегистрироваться')
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#user')
+          |  Войти
+        button.menu-btn#menuBtn(type='button', aria-label='Открыть меню', aria-expanded='false', aria-controls='nav')
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#menu')
+  .nav-scrim#navScrim
+  .ticker(aria-label='Популярные сказки')
+    .ticker-in
+      span.ticker-label
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#star')
+        |  Сегодня читают
+      a.ticker-book(href='story.html?id=kolobok')
+        img(src='/assets/covers/kolobok.svg', alt='', loading='lazy')
+        span
+          b Колобок
+          small Русская народная сказка
+      a.ticker-book(href='story.html?id=repka')
+        img(src='/assets/covers/repka.svg', alt='', loading='lazy')
+        span
+          b Репка
+          small Русская народная сказка
+      a.ticker-book(href='story.html?id=three-pigs')
+        img(src='/assets/covers/three-pigs.svg', alt='', loading='lazy')
+        span
+          b Три поросёнка
+          small С. Михалков
+      a.ticker-book(href='story.html?id=masha')
+        img(src='/assets/covers/masha.svg', alt='', loading='lazy')
+        span
+          b Маша и медведь
+          small Русская народная сказка
+      a.ticker-book(href='story.html?id=sivka')
+        img(src='/assets/covers/sivka-burka.svg', alt='', loading='lazy')
+        span
+          b Сивка-Бурка
+          small Русская народная сказка
+      a.ticker-book(href='story.html?id=little-red')
+        img(src='/assets/covers/red-riding-hood.svg', alt='', loading='lazy')
+        span
+          b Красная Шапочка
+          small Шарль Перро
+
+mixin siteSearch()
+  form.searchbar#searchForm(role='search', action='search.html', method='get')
+    label.visually-hidden(for='globalSearch') Поиск по библиотеке
+    span(aria-hidden='true')
+      svg.icon
+        use(href='/assets/icons.svg#search')
+    input#globalSearch(type='search', name='q', placeholder='Найти сказку, рассказ, стихотворение или загадку…')
+    button(type='submit', aria-label='Найти')
+      svg.icon(aria-hidden='true')
+        use(href='/assets/icons.svg#search')
+
+mixin breadcrumbs(items)
+  nav.breadcrumbs(aria-label='Хлебные крошки')
+    ol
+      each item, index in items
+        li
+          if index < items.length - 1
+            a(href=item.href)= item.label
+          else
+            span(aria-current='page')= item.label
+
+mixin uiSelect(id, label, options, selected)
+  .ui-field
+    label.ui-field-label(for=id)= label
+    select.ui-select(id=id, name=id)
+      each option in options
+        option(value=option.value, selected=option.value === selected)= option.label
+
+mixin uiCheckbox(id, label, checked)
+  label.ui-check
+    input(type='checkbox', id=id, name=id, checked=checked)
+    span.ui-check-box(aria-hidden='true')
+    span= label
+
+mixin uiRadioGroup(name, label, options, selected)
+  fieldset.ui-radio-group
+    legend.ui-field-label= label
+    .ui-radio-options
+      each option in options
+        label.ui-radio
+          input(type='radio', name=name, value=option.value, checked=option.value === selected)
+          span= option.label
+
+mixin uiToggle(id, label, checked)
+  label.ui-toggle
+    input(type='checkbox', id=id, name=id, checked=checked, role='switch')
+    span.ui-toggle-track(aria-hidden='true')
+    span= label
+
+mixin uiRange(id, label, min, max, value, step)
+  .ui-range-field
+    label.ui-field-label(for=id)
+      span= label
+      output(id=id + 'Value', for=id)= value
+    input.ui-range(type='range', id=id, name=id, min=min, max=max, value=value, step=step || 1)
+
+mixin commentReactions(likes, dislikes)
+  .comment-reactions(aria-label='Оценка комментария')
+    button.comment-vote(type='button', data-vote='like', aria-pressed='false', aria-label='Нравится')
+      svg.icon(aria-hidden='true')
+        use(href='/assets/icons.svg#thumb-up')
+      span(data-vote-count)= likes
+    button.comment-vote(type='button', data-vote='dislike', aria-pressed='false', aria-label='Не нравится')
+      svg.icon(aria-hidden='true')
+        use(href='/assets/icons.svg#thumb-down')
+      span(data-vote-count)= dislikes
+
+mixin audioPlayerDock()
+  audio#catalogAudio(preload='metadata')
+  section.audio-dock#audioDock(hidden, aria-label='Аудиоплеер')
+    .audio-dock-shell
+      .dock-track
+        img#dockCover(src='/assets/illustrations/audio-story.svg', alt='')
+        .dock-track-copy
+          strong#dockTitle Выберите сказку
+          span#dockAuthor Добавьте её в очередь или нажмите «Слушать»
+      .dock-center
+        .dock-transport
+          button.dock-icon-button#dockPrevious(type='button', aria-label='Предыдущая сказка', title='Предыдущая сказка', disabled)
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#track-previous')
+          button.dock-icon-button#dockBack(type='button', aria-label='Назад на 10 секунд', title='Назад на 10 секунд', disabled)
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#skip-back')
+          button.dock-play#dockPlay(type='button', aria-label='Воспроизвести', disabled)
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#play')
+          button.dock-icon-button#dockForward(type='button', aria-label='Вперёд на 10 секунд', title='Вперёд на 10 секунд', disabled)
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#skip-forward')
+          button.dock-icon-button#dockNext(type='button', aria-label='Следующая сказка', title='Следующая сказка', disabled)
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#track-next')
+        .dock-timeline
+          time#dockCurrent 0:00
+          input#dockSeek(type='range', min='0', max='100', value='0', step='0.1', aria-label='Позиция в сказке', disabled)
+          time#dockDuration 0:00
+      .dock-actions
+        button.dock-icon-button#dockRepeat(type='button', aria-label='Повторять очередь', title='Повторять очередь', aria-pressed='false', disabled)
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#repeat')
+        label.dock-speed
+          span.visually-hidden Скорость воспроизведения
+          select#dockRate(aria-label='Скорость воспроизведения', disabled)
+            option(value='0.75') 0,75×
+            option(value='1', selected) 1×
+            option(value='1.25') 1,25×
+            option(value='1.5') 1,5×
+        label.dock-volume
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#volume')
+          input#dockVolume(type='range', min='0', max='1', step='0.05', value='0.8', aria-label='Громкость', disabled)
+        a.dock-icon-button#dockDownload(aria-label='Скачать сказку', title='Скачать сказку', aria-disabled='true', tabindex='-1')
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#download')
+        button.dock-queue-button#dockQueueToggle(type='button', aria-expanded='false', aria-controls='audioQueuePanel', aria-label='Открыть очередь')
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#queue-list')
+          span Очередь
+          b#audioQueueCount 0
+      .audio-queue-panel#audioQueuePanel(hidden)
+        .queue-panel-head
+          div
+            strong Очередь сказок
+            span#queueSummary Добавьте сказки, которые хочется послушать
+          button.dock-icon-button#queueClose(type='button', aria-label='Закрыть очередь')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#close')
+        ol#audioQueueList.queue-list
+        p.queue-empty#queueEmpty Ваша очередь пока пуста.
+  template#audioQueueItemTemplate
+    li.queue-item
+      button.queue-item-play(type='button', data-queue-play, aria-label='Слушать эту сказку')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#play')
+      img(data-queue-cover, alt='')
+      span.queue-item-copy
+        b(data-queue-title)
+        small(data-queue-author)
+      button.queue-item-remove(type='button', data-queue-remove, aria-label='Убрать из очереди')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+
+mixin siteFooter()
+  footer.footer
+    .footer-in
+      div
+        a.brand(href='index.html')
+          span.brand-icon
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#bear')
+          span
+            | СказкоМир
+            small ЧИТАЕМ ВМЕСТЕ
+        p.footer-about
+          | Добрые истории, аудиосказки и занятия для детей и родителей.
+          br
+          br
+          | Иллюстрации к книгам — с 
+          a(href='https://mishka-knizhka.ru/', target='_blank', rel='noopener') сайта «Мишкины книжки»
+          | .
+      .footer-links
+        a(href='fairy-tales.html') Сказки
+        a(href='audio.html') Аудиосказки
+        a(href='activities.html') Занятия
+        a(href='workshop.html') Мастерская
+        a(href='club.html') Клуб читателей
+        a(href='comments.html') Отзывы читателей
+        a(href='parents.html') Родителям
+        a(href='about.html') О СказкоМире
+        a(href='help.html') Помощь
+        a(href='contacts.html') Контакты
+        a(href='privacy.html') Политика конфиденциальности
+    .copyright © 2026 СказкоМир · Читаем вместе
+
+mixin socialAuthButtons()
+  .social-login(aria-label='Войти через социальную сеть')
+    button.social-button.social-yandex(type='button', data-auth-provider='Яндекс')
+      svg.icon(aria-hidden='true')
+        use(href='/assets/icons.svg#yandex')
+      |  Продолжить с Яндексом
+    button.social-button.social-vk(type='button', data-auth-provider='VK')
+      svg.icon(aria-hidden='true')
+        use(href='/assets/icons.svg#vk')
+      |  Продолжить с VK
+
+mixin authIntro(label, heading, description, art, artAlt)
+  aside.auth-aside
+    a.brand(href='index.html')
+      span.brand-icon
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#bear')
+      span
+        | СказкоМир
+        small ЧИТАЕМ ВМЕСТЕ
+    span.auth-kicker= label
+    h1= heading
+    p= description
+    if art
+      img.auth-illustration(src=art, alt=artAlt)
+    .auth-aside-note
+      svg.icon(aria-hidden='true')
+        use(href='/assets/icons.svg#book')
+      span Уютная библиотека для всей семьи

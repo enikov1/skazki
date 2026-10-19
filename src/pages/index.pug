@@ -1,0 +1,359 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title СказкоМир — детские сказки и аудио онлайн — СказкоМир
+
+block content
+  +siteHeader('home')
+  main.page-wrap
+    +siteSearch()
+    .layout
+      .maincol
+        section.hero
+          div
+            span.eyebrow
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#star')
+              |  Сказка, которую выбирают сегодня
+            h1 Читайте и слушайте вместе
+            p Любимые истории для маленьких читателей и их родителей.
+            a.btn(href='story.html?id=three-pigs') Читать сказку →
+            |  
+            a.btn.secondary(href='audio.html') Слушать
+          a.hero-book(href='story.html?id=three-pigs')
+            img(src='/assets/illustrations/family-reading.svg', alt='Взрослый и ребёнок читают историю вместе')
+            small Читаем вместе
+        .feature-row
+          a.feature-tile(href='activities.html')
+            h3
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#puzzle')
+              |  Загадка дня
+            p Без рук, без топорёнка построена избёнка. Что это?
+            span.tile-link
+              | Попробовать отгадать 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+          a.feature-tile(href='parents.html')
+            h3
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#message')
+              |  Идея для чтения
+            p Читайте по очереди: взрослый — страницу, ребёнок — абзац.
+            span.tile-link
+              | Советы родителям 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        .promo
+          strong Читайте в своём ритме
+          p Выбирайте историю по возрасту, настроению и времени.
+          a.btn.small(href='fairy-tales.html') Открыть библиотеку
+        section.section
+          .section-head
+            h2 Сказки
+            a(href='fairy-tales.html')
+              | Все материалы 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+          .book-row
+            a.book-card(href='story.html?id=kolobok', data-book-id='kolobok', data-genre='Народные', data-age='3–5 лет', data-search='колобок русская народная сказка народные')
+              .cover.c1
+                img.cover-img(src='/assets/covers/kolobok.svg', alt='Иллюстрация к сказке «Колобок»', loading='lazy')
+                span.mini-title Колобок
+              h3 Колобок
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=repka', data-book-id='repka', data-genre='Народные', data-age='3–5 лет', data-search='репка русская народная сказка народные')
+              .cover.c2
+                img.cover-img(src='/assets/covers/repka.svg', alt='Иллюстрация к сказке «Репка»', loading='lazy')
+                span.mini-title Репка
+              h3 Репка
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=three-pigs', data-book-id='three-pigs', data-genre='Про животных', data-age='5–8 лет', data-search='три поросёнка с. михалков про животных')
+              .cover.c3
+                img.cover-img(src='/assets/covers/three-pigs.svg', alt='Иллюстрация к сказке «Три поросёнка»', loading='lazy')
+                span.mini-title Три поросёнка
+              h3 Три поросёнка
+              .author С. Михалков
+            a.book-card(href='story.html?id=masha', data-book-id='masha', data-genre='Народные', data-age='5–8 лет', data-search='маша и медведь русская народная сказка народные')
+              .cover.c4
+                img.cover-img(src='/assets/covers/masha.svg', alt='Иллюстрация к сказке «Маша и медведь»', loading='lazy')
+                span.mini-title Маша и медведь
+              h3 Маша и медведь
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=sivka', data-book-id='sivka', data-genre='Народные', data-age='5–8 лет', data-search='сивка-бурка русская народная сказка народные')
+              .cover.c5
+                img.cover-img(src='/assets/covers/sivka-burka.svg', alt='Иллюстрация к сказке «Сивка-Бурка»', loading='lazy')
+                span.mini-title Сивка-Бурка
+              h3 Сивка-Бурка
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=little-red', data-book-id='little-red', data-genre='Авторские', data-age='5–8 лет', data-search='красная шапочка шарль перро авторские')
+              .cover.c6
+                img.cover-img(src='/assets/covers/red-riding-hood.svg', alt='Иллюстрация к сказке «Красная Шапочка»', loading='lazy')
+                span.mini-title Красная Шапочка
+              h3 Красная Шапочка
+              .author Шарль Перро
+        section.section.bluebg
+          .section-head
+            h2 Рассказы
+            a(href='fairy-tales.html?type=stories')
+              | Все материалы 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+          .book-row
+            a.book-card(href='story.html?id=masha', data-book-id='masha', data-genre='Народные', data-age='5–8 лет', data-search='маша и медведь русская народная сказка народные')
+              .cover.c4
+                img.cover-img(src='/assets/covers/masha.svg', alt='Иллюстрация к сказке «Маша и медведь»', loading='lazy')
+                span.mini-title Маша и медведь
+              h3 Маша и медведь
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=sivka', data-book-id='sivka', data-genre='Народные', data-age='5–8 лет', data-search='сивка-бурка русская народная сказка народные')
+              .cover.c5
+                img.cover-img(src='/assets/covers/sivka-burka.svg', alt='Иллюстрация к сказке «Сивка-Бурка»', loading='lazy')
+                span.mini-title Сивка-Бурка
+              h3 Сивка-Бурка
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=little-red', data-book-id='little-red', data-genre='Авторские', data-age='5–8 лет', data-search='красная шапочка шарль перро авторские')
+              .cover.c6
+                img.cover-img(src='/assets/covers/red-riding-hood.svg', alt='Иллюстрация к сказке «Красная Шапочка»', loading='lazy')
+                span.mini-title Красная Шапочка
+              h3 Красная Шапочка
+              .author Шарль Перро
+            a.book-card(href='story.html?id=thumbelina', data-book-id='thumbelina', data-genre='Авторские', data-age='9–12 лет', data-search='дюймовочка г. х. андерсен авторские')
+              .cover.c7
+                img.cover-img(src='/assets/covers/thumbelina.svg', alt='Иллюстрация к сказке «Дюймовочка»', loading='lazy')
+                span.mini-title Дюймовочка
+              h3 Дюймовочка
+              .author Г. Х. Андерсен
+            a.book-card(href='story.html?id=turnip', data-book-id='turnip', data-genre='Про животных', data-age='5–8 лет', data-search='лисичка со скалочкой русская народная сказка про животных')
+              .cover.c8
+                img.cover-img(src='/assets/covers/fox-rolling-pin.svg', alt='Иллюстрация к сказке «Лисичка со скалочкой»', loading='lazy')
+                span.mini-title Лисичка со скалочкой
+              h3 Лисичка со скалочкой
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=aybolit', data-book-id='aybolit', data-genre='Стихи', data-age='5–8 лет', data-search='доктор айболит корней чуковский стихи')
+              .cover.c9
+                img.cover-img(src='/assets/covers/aybolit.svg', alt='Иллюстрация к сказке «Доктор Айболит»', loading='lazy')
+                span.mini-title Доктор Айболит
+              h3 Доктор Айболит
+              .author Корней Чуковский
+        section.section.bluebg
+          .section-head
+            h2 Аудиосказки
+            a(href='audio.html')
+              | Все материалы 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+          .book-row
+            a.book-card(href='story.html?id=kolobok', data-book-id='kolobok', data-genre='Народные', data-age='3–5 лет', data-search='колобок русская народная сказка народные')
+              .cover.c1
+                img.cover-img(src='/assets/covers/kolobok.svg', alt='Иллюстрация к сказке «Колобок»', loading='lazy')
+                span.mini-title Колобок
+                span.audio-play
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#play')
+              h3 Колобок
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=repka', data-book-id='repka', data-genre='Народные', data-age='3–5 лет', data-search='репка русская народная сказка народные')
+              .cover.c2
+                img.cover-img(src='/assets/covers/repka.svg', alt='Иллюстрация к сказке «Репка»', loading='lazy')
+                span.mini-title Репка
+                span.audio-play
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#play')
+              h3 Репка
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=three-pigs', data-book-id='three-pigs', data-genre='Про животных', data-age='5–8 лет', data-search='три поросёнка с. михалков про животных')
+              .cover.c3
+                img.cover-img(src='/assets/covers/three-pigs.svg', alt='Иллюстрация к сказке «Три поросёнка»', loading='lazy')
+                span.mini-title Три поросёнка
+                span.audio-play
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#play')
+              h3 Три поросёнка
+              .author С. Михалков
+            a.book-card(href='story.html?id=masha', data-book-id='masha', data-genre='Народные', data-age='5–8 лет', data-search='маша и медведь русская народная сказка народные')
+              .cover.c4
+                img.cover-img(src='/assets/covers/masha.svg', alt='Иллюстрация к сказке «Маша и медведь»', loading='lazy')
+                span.mini-title Маша и медведь
+                span.audio-play
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#play')
+              h3 Маша и медведь
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=sivka', data-book-id='sivka', data-genre='Народные', data-age='5–8 лет', data-search='сивка-бурка русская народная сказка народные')
+              .cover.c5
+                img.cover-img(src='/assets/covers/sivka-burka.svg', alt='Иллюстрация к сказке «Сивка-Бурка»', loading='lazy')
+                span.mini-title Сивка-Бурка
+                span.audio-play
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#play')
+              h3 Сивка-Бурка
+              .author Русская народная сказка
+            a.book-card(href='story.html?id=little-red', data-book-id='little-red', data-genre='Авторские', data-age='5–8 лет', data-search='красная шапочка шарль перро авторские')
+              .cover.c6
+                img.cover-img(src='/assets/covers/red-riding-hood.svg', alt='Иллюстрация к сказке «Красная Шапочка»', loading='lazy')
+                span.mini-title Красная Шапочка
+                span.audio-play
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#play')
+              h3 Красная Шапочка
+              .author Шарль Перро
+        section.section
+          .section-head
+            h2 Занятия для детей
+            a(href='activities.html') Все занятия →
+          .round-row
+            a.round-card(href='activities.html')
+              span.round-icon
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#puzzle')
+              | Загадки
+            a.round-card(href='activities.html')
+              span.round-icon
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#bulb')
+              | Викторины
+            a.round-card(href='coloring.html')
+              span.round-icon
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#palette')
+              | Раскраски
+            a.round-card(href='logic.html')
+              span.round-icon
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#target')
+              | Счёт
+            a.round-card(href='fairy-tales.html')
+              span.round-icon
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#book')
+              | Чтение
+      aside.sidebar
+        section.sidebox
+          h3
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#medal')
+            |  Самые активные
+          ul
+            li.rank
+              i 1
+              | Миша
+              span 985
+            li.rank
+              i 2
+              | Алиса
+              span 840
+            li.rank
+              i 3
+              | Варвара
+              span 756
+            li.rank
+              i 4
+              | Саша
+              span 691
+            li.rank
+              i 5
+              | Марина
+              span 570
+        section.sidebox
+          h3
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#message')
+            |  Последние заметки
+          .recent-notes
+            article.recent-note
+              .note-avatar.note-peach М
+              .note-content
+                p «Очень добрая сказка!»
+                a(href='story.html?id=kolobok') Маша · Колобок
+              +commentReactions(12, 1)
+            article.recent-note
+              .note-avatar.note-mint И
+              .note-content
+                p «Читали всей семьёй»
+                a(href='story.html?id=three-pigs') Илья · Три поросёнка
+              +commentReactions(8, 0)
+            article.recent-note
+              .note-avatar.note-lilac С
+              .note-content
+                p «Понравился герой»
+                a(href='story.html?id=masha') Соня · Маша и медведь
+              +commentReactions(6, 0)
+          a.sidebox-more(href='comments.html') Все отзывы читателей →
+        section.sidebox
+          h3
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#heart')
+            |  Популярное
+          ul
+            li
+              a(href='story.html?id=kolobok')
+                | Колобок 
+                span.rating
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#heart')
+                  |  4.9
+            li
+              a(href='story.html?id=repka')
+                | Репка 
+                span.rating
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#heart')
+                  |  4.9
+            li
+              a(href='story.html?id=three-pigs')
+                | Три поросёнка 
+                span.rating
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#heart')
+                  |  4.9
+            li
+              a(href='story.html?id=masha')
+                | Маша и медведь 
+                span.rating
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#heart')
+                  |  4.9
+            li
+              a(href='story.html?id=sivka')
+                | Сивка-Бурка 
+                span.rating
+                  svg.icon(aria-hidden='true')
+                    use(href='/assets/icons.svg#heart')
+                  |  4.9
+        section.sidebox
+          h3 Подборки
+          ul
+            li
+              a(href='fairy-tales.html?genre=Народные')
+                | Русские народные 
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#arrow-right')
+            li
+              a(href='fairy-tales.html?age=3–5')
+                | Для малышей 
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#arrow-right')
+            li
+              a(href='audio.html')
+                | Слушать сказки 
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#arrow-right')
+            li
+              a(href='activities.html')
+                | Загадки и игры 
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#arrow-right')
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

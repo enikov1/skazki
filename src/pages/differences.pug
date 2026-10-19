@@ -1,0 +1,177 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Найди отличия — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Занятия', href: 'activities.html'}, {label: 'Найди отличия', href: null}])
+    .page-heading-art
+      div
+        h1.page-title Найди отличия
+        p.lead Рассмотрите две картинки и найдите, что в них изменилось.
+      img(src='/assets/illustrations/find-differences.svg', alt='Ребёнок с лупой ищет отличия на картинках с лисой')
+    section.page-panel.catalog-filters
+      .filters
+        span.filter-label Возраст
+        button.pill.active(data-task-age='Все') Все
+        button.pill(data-task-age='3–5 лет') 3–5 лет
+        button.pill(data-task-age='5–8 лет') 5–8 лет
+        button.pill(data-task-age='9–12 лет') 9–12 лет
+      .field
+        label(for='taskStory') Сказка
+        select#taskStory
+          option(value='Все') Все сказки
+          option(value='kolobok') Колобок
+          option(value='repka') Репка
+          option(value='three-pigs') Три поросёнка
+          option(value='masha') Маша и медведь
+          option(value='sivka') Сивка-Бурка
+          option(value='little-red') Красная Шапочка
+          option(value='thumbelina') Дюймовочка
+          option(value='turnip') Лисичка со скалочкой
+          option(value='aybolit') Доктор Айболит
+          option(value='moydodyr') Мойдодыр
+          option(value='fox-crane') Лиса и журавль
+          option(value='cat-house') Кошкин дом
+      p.catalog-count Показано 1–6 из 12 заданий
+    section.page-panel
+      .task-grid
+        a.task-card(href='difference-task.html?id=kolobok', data-story='kolobok', data-age='3–5 лет')
+          img(src='/assets/covers/kolobok.svg', alt)
+          div
+            span.task-age 3–5 лет · Народные
+            h2 Найди отличия: «Колобок»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=repka', data-story='repka', data-age='3–5 лет')
+          img(src='/assets/covers/repka.svg', alt)
+          div
+            span.task-age 3–5 лет · Народные
+            h2 Найди отличия: «Репка»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=three-pigs', data-story='three-pigs', data-age='5–8 лет')
+          img(src='/assets/covers/three-pigs.svg', alt)
+          div
+            span.task-age 5–8 лет · Про животных
+            h2 Найди отличия: «Три поросёнка»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=masha', data-story='masha', data-age='5–8 лет')
+          img(src='/assets/covers/masha.svg', alt)
+          div
+            span.task-age 5–8 лет · Народные
+            h2 Найди отличия: «Маша и медведь»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=sivka', data-story='sivka', data-age='5–8 лет')
+          img(src='/assets/covers/sivka-burka.svg', alt)
+          div
+            span.task-age 5–8 лет · Народные
+            h2 Найди отличия: «Сивка-Бурка»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=little-red', data-story='little-red', data-age='5–8 лет')
+          img(src='/assets/covers/red-riding-hood.svg', alt)
+          div
+            span.task-age 5–8 лет · Авторские
+            h2 Найди отличия: «Красная Шапочка»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=thumbelina', data-story='thumbelina', data-age='9–12 лет')
+          img(src='/assets/covers/thumbelina.svg', alt)
+          div
+            span.task-age 9–12 лет · Авторские
+            h2 Найди отличия: «Дюймовочка»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=turnip', data-story='turnip', data-age='5–8 лет')
+          img(src='/assets/covers/fox-rolling-pin.svg', alt)
+          div
+            span.task-age 5–8 лет · Про животных
+            h2 Найди отличия: «Лисичка со скалочкой»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=aybolit', data-story='aybolit', data-age='5–8 лет')
+          img(src='/assets/covers/aybolit.svg', alt)
+          div
+            span.task-age 5–8 лет · Стихи
+            h2 Найди отличия: «Доктор Айболит»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=moydodyr', data-story='moydodyr', data-age='3–5 лет')
+          img(src='/assets/covers/moidodyr.svg', alt)
+          div
+            span.task-age 3–5 лет · Стихи
+            h2 Найди отличия: «Мойдодыр»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=fox-crane', data-story='fox-crane', data-age='3–5 лет')
+          img(src='/assets/covers/fox-and-crane.svg', alt)
+          div
+            span.task-age 3–5 лет · Народные
+            h2 Найди отличия: «Лиса и журавль»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.task-card(href='difference-task.html?id=cat-house', data-story='cat-house', data-age='5–8 лет')
+          img(src='/assets/covers/koshkin-dom.svg', alt)
+          div
+            span.task-age 5–8 лет · Стихи
+            h2 Найди отличия: «Кошкин дом»
+            p Найди пять отличий и проверь свою наблюдательность.
+            span.task-link
+              | Открыть задание 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+      nav.pagination(aria-label='Страницы')
+        a.active(href='?age=%D0%92%D1%81%D0%B5&story=%D0%92%D1%81%D0%B5&page=1', aria-current='page') 1
+        a(href='?age=%D0%92%D1%81%D0%B5&story=%D0%92%D1%81%D0%B5&page=2') 2
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

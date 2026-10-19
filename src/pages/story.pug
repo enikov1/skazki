@@ -1,0 +1,186 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Читаем вместе — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Сказки', href: 'fairy-tales.html'}, {label: 'Сказка', href: null}])
+    section.page-panel
+      .detail
+        .cover.c1
+          img.cover-img(src='/assets/covers/kolobok.svg', alt='Иллюстрация к сказке «Колобок»')
+          span.mini-title Колобок
+        div
+          h1.story-title Колобок
+          .detail-meta Русская народная сказка · 3–5 лет · 5 минут
+          .meta-chips
+            span Жанр: Народные
+            span Возраст: 3–5 лет
+            span Чтение: 5 минут
+            span
+              | ★ Рейтинг 
+              b 4,8
+              |  
+              small Оценка читателей
+            span
+              | Отзывы: 
+              b#commentCount 0
+          .tool-row
+            a.btn(href='read.html?id=kolobok')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#book')
+              |  Читать историю
+            button.btn.blue(data-audio)
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#play')
+              |  Слушать
+            button.pill(data-save)
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#bookmark')
+              |  В мою полку
+            button.pill(data-share)
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#share')
+              |  Поделиться
+          .audio-player#audioPlayer
+            .player-title Аудиосказка
+            audio#storyAudio(preload='none')
+            .custom-controls
+              button.player-play#audioPlay(type='button', aria-label='Воспроизвести', disabled)
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#play')
+              span.audio-current#audioCurrent 0:00
+              input.audio-seek#audioSeek(type='range', min='0', max='100', value='0', aria-label='Позиция воспроизведения', disabled)
+              span.audio-duration#audioDuration 0:00
+              button.player-icon#audioLoop(type='button', aria-label='Повторять', title='Повторять', disabled) ↻
+              a.player-icon#audioDownload(aria-label='Скачать аудиозапись', title='Скачать аудиозапись', aria-disabled='true', tabindex='-1')
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#download')
+              label.speed-control
+                select#audioRate(aria-label='Скорость', disabled)
+                  option(value='0.75') 0,75×
+                  option(value='1', selected) 1×
+                  option(value='1.25') 1,25×
+                  option(value='1.5') 1,5×
+              label.volume-control(aria-label='Громкость')
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#volume')
+                input#audioVolume(type='range', min='0', max='1', step='0.05', value='1', disabled)
+            small#audioStatus(aria-live='polite') У этой сказки пока нет аудиозаписи. Можно прочитать историю или выбрать другую сказку.
+      section.story-description
+        h2 О сказке
+        p Жили-были старик со старухой. Вот и просит старик: «Испеки, старуха, колобок». Старуха по коробу поскребла, по сусеку помела — и набралось муки горсти две. Замесила тесто, испекла колобок и положила на окошко остудить.
+        p Автор: Русская народная сказка. Категория: Народные. Подходит для детей 3–5 лет.
+      section.page-panel
+        h2 Отзывы о сказке
+        p.notice Поделитесь впечатлением о сказке — ваш отзыв появится ниже.
+        form#commentForm.form-grid
+          .field
+            label(for='commentName') Имя
+            input#commentName(maxlength='32', required, placeholder='Например, Маша')
+          .field
+            label(for='commentRating') Ваша оценка
+            select#commentRating
+              option(value='5') ★★★★★ — отлично
+              option(value='4') ★★★★☆ — понравилось
+              option(value='3') ★★★☆☆ — нормально
+              option(value='2') ★★☆☆☆ — не очень
+              option(value='1') ★☆☆☆☆ — не понравилось
+          .field.full
+            label(for='commentText') Комментарий
+            textarea#commentText(maxlength='500', required, placeholder='Что вам запомнилось?')
+          .field.full
+            button.btn Оставить отзыв
+        #commentList.comment-list
+          article.comment
+            .comment-heading
+              b Маша
+              span.comment-rating ★★★★★
+            p Очень добрая сказка! Читали всей семьёй.
+            +commentReactions(12, 1)
+          article.comment
+            .comment-heading
+              b Илья
+              span.comment-rating ★★★★★
+            p Колобок такой весёлый, особенно его песенка.
+            +commentReactions(7, 0)
+      section.quiz-callout
+        span.quiz-mark
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#bulb')
+        div
+          span.eyebrow Проверьте, что запомнилось
+          h2 Викторина по сказке «Колобок»
+          p Короткие вопросы о героях и событиях истории — пройдите после чтения.
+        a.btn(href='quiz.html?id=kolobok')
+          | Пройти викторину 
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#arrow-right')
+      section.page-panel.related-section
+        .section-head
+          div
+            span.eyebrow Продолжите чтение
+            h2 Другие сказки
+          a(href='fairy-tales.html')
+            | Вся библиотека 
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#arrow-right')
+        .book-row
+          a.book-card(href='story.html?id=repka', data-book-id='repka', data-genre='Народные', data-age='3–5 лет', data-search='репка русская народная сказка народные')
+            .cover.c2
+              img.cover-img(src='/assets/covers/repka.svg', alt='Иллюстрация к сказке «Репка»', loading='lazy')
+              span.mini-title Репка
+            h3 Репка
+            .author Русская народная сказка
+          a.book-card(href='story.html?id=masha', data-book-id='masha', data-genre='Народные', data-age='5–8 лет', data-search='маша и медведь русская народная сказка народные')
+            .cover.c4
+              img.cover-img(src='/assets/covers/masha.svg', alt='Иллюстрация к сказке «Маша и медведь»', loading='lazy')
+              span.mini-title Маша и медведь
+              span.audio-play
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#play')
+            h3 Маша и медведь
+            .author Русская народная сказка
+          a.book-card(href='story.html?id=sivka', data-book-id='sivka', data-genre='Народные', data-age='5–8 лет', data-search='сивка-бурка русская народная сказка народные')
+            .cover.c5
+              img.cover-img(src='/assets/covers/sivka-burka.svg', alt='Иллюстрация к сказке «Сивка-Бурка»', loading='lazy')
+              span.mini-title Сивка-Бурка
+              span.audio-play
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#play')
+            h3 Сивка-Бурка
+            .author Русская народная сказка
+          a.book-card(href='story.html?id=moydodyr', data-book-id='moydodyr', data-genre='Стихи', data-age='3–5 лет', data-search='мойдодыр корней чуковский стихи')
+            .cover.c10
+              img.cover-img(src='/assets/covers/moidodyr.svg', alt='Иллюстрация к сказке «Мойдодыр»', loading='lazy')
+              span.mini-title Мойдодыр
+              span.audio-play
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#play')
+            h3 Мойдодыр
+            .author Корней Чуковский
+          a.book-card(href='story.html?id=fox-crane', data-book-id='fox-crane', data-genre='Народные', data-age='3–5 лет', data-search='лиса и журавль русская народная сказка народные')
+            .cover.c11
+              img.cover-img(src='/assets/covers/fox-and-crane.svg', alt='Иллюстрация к сказке «Лиса и журавль»', loading='lazy')
+              span.mini-title Лиса и журавль
+              span.audio-play
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#play')
+            h3 Лиса и журавль
+            .author Русская народная сказка
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

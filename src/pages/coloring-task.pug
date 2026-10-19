@@ -1,0 +1,254 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Раскраска онлайн — СказкоМир
+
+block content
+  - const paintColors = [{ name: 'Жёлтый', value: '#ffd34e', mark: '●' }, { name: 'Оранжевый', value: '#ff9a52', mark: '●' }, { name: 'Красный', value: '#f16f69', mark: '●' }, { name: 'Розовый', value: '#f5a8c4', mark: '●' }, { name: 'Фиолетовый', value: '#ad91db', mark: '●' }, { name: 'Синий', value: '#66aee8', mark: '●' }, { name: 'Голубой', value: '#93d8e8', mark: '●' }, { name: 'Зелёный', value: '#73bd79', mark: '●' }, { name: 'Салатовый', value: '#b8d96b', mark: '●' }, { name: 'Коричневый', value: '#a97856', mark: '●' }, { name: 'Серый', value: '#9ba8ad', mark: '●' }, { name: 'Чёрный', value: '#344650', mark: '●' }]
+
+  +siteHeader('activities')
+  main.page-wrap.coloring-detail-page
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Занятия', href: 'activities.html'}, {label: 'Раскраски', href: 'coloring.html'}, {label: 'Раскраска', href: null}])
+    .coloring-detail-head
+      div
+        a.back-link(href='coloring.html') ← К каталогу раскрасок
+        span.task-age#coloringMeta 3–5 лет · Просто · по сказке «Колобок»
+        h1.page-title#coloringTitle Раскраска: Колобок
+        p.lead Раскрашивай кистью прямо поверх чёрного контура. Готовую картинку можно скачать или распечатать.
+      button.pill.like-button#coloringLike(type='button', data-like, data-count='24', aria-pressed='false')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#heart')
+        span Нравится
+        span(data-like-count) 24
+    section.coloring-studio(aria-label='Онлайн раскраска')
+      aside.palette-panel
+        .palette-heading
+          span.palette-bubble(aria-hidden='true')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#palette')
+          div
+            h2 Палитра цветов
+            p Выбери цвет и рисуй пальцем или мышкой
+        .paint-colors(role='group', aria-label='Выберите цвет')
+          each color, index in paintColors
+            button.paint-color(type='button', class=index === 0 ? 'selected' : null, data-paint=color.value, aria-label=color.name, aria-pressed=index === 0 ? 'true' : 'false', title=color.name, style=`--swatch:${color.value}`)
+              span.paint-dot(aria-hidden='true')
+              span.paint-color-name= color.name
+        .drawing-tools(role='group', aria-label='Инструменты рисования')
+          button.drawing-tool.is-active#brushTool(type='button', aria-pressed='true')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#brush')
+            | Кисть
+          button.drawing-tool#eraserTool(type='button', aria-pressed='false')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#eraser')
+            | Ластик
+        .brush-size-control
+          label(for='brushSize')
+            span Толщина кисти
+            output#brushSizeValue(for='brushSize') 12 px
+          input#brushSize(type='range', min='3', max='48', value='12', step='1')
+          .brush-size-preview
+            span#brushSizePreview(aria-hidden='true')
+            small Тонкая — толстая
+        .selected-color
+          span#selectedColorDot(aria-hidden='true')
+          span Выбран цвет: <b#selectedColorName>Жёлтый</b>
+        .palette-tip
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#bulb')
+          span Рисунок не закрашивается сам — веди кистью так, как тебе удобно.
+        .palette-tools
+          button.pill#undoPaint(type='button', disabled)
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#arrow-left')
+            | Отменить
+          button.pill#redoPaint(type='button', disabled)
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#redo')
+            | Вернуть
+          button.pill#clearPaint(type='button')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#close')
+            | Начать заново
+      .coloring-board-wrap
+        .board-toolbar
+          span.board-hint
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#palette')
+            | Веди кистью по рисунку — раскрашивай как на бумаге
+          .board-actions
+            button.pill#zoomOut(type='button', aria-label='Уменьшить рисунок')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#zoom-out')
+            output#zoomValue.board-zoom(for='zoomOut zoomIn') 100%
+            button.pill#zoomIn(type='button', aria-label='Увеличить рисунок')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#zoom-in')
+            button.pill#zoomReset(type='button') 100%
+            button.pill#downloadColoring(type='button')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#download')
+              | Скачать
+            button.pill#printColoring(type='button')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#book')
+              | Распечатать
+        .coloring-board
+          .coloring-artboard#coloringArtboard
+            img.coloring-outline#coloringOutline(src='/assets/colorings/kolobok.svg', alt='Чёрно-белый контур раскраски Колобок')
+            canvas.coloring-canvas#coloringCanvas(aria-label='Полотно для рисования поверх раскраски' role='img')
+          .coloring-scene-caption#coloringSceneCaption Колобок на лесной тропинке
+        .coloring-actions
+          button.pill.like-button(data-like, data-count='24', aria-pressed='false')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#thumb-up')
+            span Нравится
+            span(data-like-count) 24
+          button.pill(type='button', data-favorite, aria-pressed='false')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#bookmark')
+            span В избранное
+          .share-buttons
+            span Поделиться:
+            button.social-share(type='button', data-share-target='vk', aria-label='Поделиться ВКонтакте') VK
+            button.social-share(type='button', data-share-target='telegram', aria-label='Поделиться в Telegram') TG
+            button.social-share(type='button', data-share-target='copy', aria-label='Скопировать ссылку')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#share')
+    section.page-panel.coloring-instructions
+      h2 Как раскрашивать
+      ol
+        li Выбери цветную кнопку. Она станет обведённой.
+        li Нажми на большую часть рисунка, которую хочешь раскрасить.
+        li Если готово — скачай картинку или распечатай её.
+    section.page-panel.reader-gallery-section
+      .section-head
+        div
+          span.eyebrow Галерея читателей
+          h2 Как раскрасили другие
+        span.gallery-count 3 работы
+      .reader-works#readerWorks
+        article.reader-work
+          .reader-work-art.work-art-sun(aria-label='Раскрашенный рисунок')
+            span.work-sun
+            span.work-house
+            span.work-tree
+          .reader-work-info
+            div
+              b Маша, 6 лет
+              span.work-caption Мой домик в лесу
+            button.pill.work-like(type='button', data-like, data-count='8', aria-pressed='false', aria-label='Поставить лайк работе Маши')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#heart')
+              span(data-like-count) 8
+          p.work-comment Очень люблю жёлтое солнышко!
+        article.reader-work
+          .reader-work-art.work-art-flower(aria-label='Раскрашенный рисунок')
+            span.work-flower
+            span.work-hill
+            span.work-cloud
+          .reader-work-info
+            div
+              b Артём, 5 лет
+              span.work-caption Цветочная полянка
+            button.pill.work-like(type='button', data-like, data-count='5', aria-pressed='false', aria-label='Поставить лайк работе Артёма')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#heart')
+              span(data-like-count) 5
+          p.work-comment Раскрасил всё сам!
+        article.reader-work
+          .reader-work-art.work-art-pig(aria-label='Раскрашенный рисунок')
+            span.work-pig
+            span.work-fence
+            span.work-cloud
+          .reader-work-info
+            div
+              b Лиза, 7 лет
+              span.work-caption Домик для поросёнка
+            button.pill.work-like(type='button', data-like, data-count='12', aria-pressed='false', aria-label='Поставить лайк работе Лизы')
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#heart')
+              span(data-like-count) 12
+          p.work-comment Кирпичный дом — самый крепкий.
+    section.page-panel.share-work-panel
+      .section-head
+        div
+          span.eyebrow Твоя очередь
+          h2 Поделись своей раскраской
+      p.lead Сфотографируй готовую работу или выбери снимок. Добавь имя и пару слов, чтобы поделиться своей раскраской.
+      form#workUploadForm.work-upload-form
+        .field
+          label(for='workPhoto') Фотография раскраски
+          input#workPhoto(type='file', accept='image/*', required)
+          small Можно выбрать фотографию с телефона или компьютера.
+        .field
+          label(for='workAuthor') Имя автора
+          input#workAuthor(type='text', maxlength='32', placeholder='Например, Маша', required)
+        .field
+          label(for='workCaption') Подпись к работе
+          textarea#workCaption(name='caption', maxlength='180', placeholder='Расскажи, какие цвета выбрал…', required)
+        .work-upload-preview#workUploadPreviewBox(hidden)
+          img#workUploadPreview(alt='Предварительный просмотр выбранной фотографии')
+        button.btn(type='submit')
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#upload')
+          | Поделиться работой
+        p#workUploadStatus.form-status(role='status', aria-live='polite', hidden)
+    section.page-panel
+      .section-head
+        h2 Комментарии к раскраске
+        span#coloringCommentCount 2 комментария
+      .comment-list#coloringComments
+        article.comment
+          b Оля
+          p Очень здорово, что можно раскрашивать прямо на сайте!
+          +commentReactions(4, 0)
+        article.comment
+          b Дима
+          p Я выбрал зелёный для дерева и голубой для неба.
+          +commentReactions(3, 0)
+      form#coloringCommentForm.form-grid
+        .field
+          label(for='coloringCommentName') Имя
+          input#coloringCommentName(type='text', maxlength='32', placeholder='Как к вам обращаться', required)
+        .field.full
+          label(for='coloringCommentText') Комментарий
+          textarea#coloringCommentText(maxlength='500', placeholder='Напишите добрые слова или поделитесь идеей', required)
+        .field.full
+          button.btn(type='submit') Оставить комментарий
+          p#coloringCommentStatus.form-status(role='status', aria-live='polite', hidden)
+    template#readerWorkTemplate
+      article.reader-work.reader-work-new
+        .reader-work-art.uploaded-work-art
+          img.uploaded-work-image(alt='Раскраска, загруженная читателем')
+        .reader-work-info
+          div
+            b(data-work-author)
+            span.work-caption(data-work-caption)
+          button.pill.work-like(type='button', data-like, data-count='0', aria-pressed='false', aria-label='Поставить лайк работе')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#heart')
+            span(data-like-count) 0
+        p.work-comment Спасибо, что поделился своей раскраской!
+    template#coloringCommentTemplate
+      article.comment
+        b(data-comment-author)
+        p(data-comment-copy)
+        .comment-reactions(aria-label='Оценка комментария')
+          button.comment-vote(type='button', data-vote='like', aria-pressed='false', aria-label='Нравится')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#thumb-up')
+            span(data-vote-count) 0
+          button.comment-vote(type='button', data-vote='dislike', aria-pressed='false', aria-label='Не нравится')
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#thumb-down')
+            span(data-vote-count) 0
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast

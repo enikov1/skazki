@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('title', 'Не удалось обработать данные — СказкоМир')
+@section('code', '422')
+@section('heading', 'Не удалось обработать данные')
+@section('message', 'Проверьте введённые данные и попробуйте ещё раз.')

@@ -1,0 +1,18 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Регистрация — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +breadcrumbs([{label: 'Главная', href: '/'}, {label: 'Регистрация', href: null}])
+    section.page-panel(style='max-width:620px;margin:24px auto;text-align:center')
+      h1.page-title Регистрация
+      p.lead Откроется форма регистрации.
+      a.btn(href='/register') Продолжить
+      script.
+        window.location.replace('/register');
+  +siteFooter()

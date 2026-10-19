@@ -1,0 +1,151 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Родителям — СказкоМир
+
+block content
+  +siteHeader('parents')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Родителям', href: null}])
+    .page-heading-art
+      div
+        h1.page-title Статьи для родителей
+        p.lead Практичные идеи о чтении, выборе книг и семейных занятиях.
+      img(src='/assets/illustrations/family-reading.svg', alt='Родитель и ребёнок читают книжку перед сном')
+    section.page-panel.catalog-filters
+      .filters
+        span.filter-label Рубрика
+        button.pill.active(type='button', data-article-filter='Все') Все
+        button.pill(type='button', data-article-filter='Читаем вместе') Читаем вместе
+        button.pill(type='button', data-article-filter='Практика') Практика
+        button.pill(type='button', data-article-filter='По возрасту') По возрасту
+        button.pill(type='button', data-article-filter='Разговор о книге') Разговор о книге
+        button.pill(type='button', data-article-filter='Развитие') Развитие
+      p.catalog-count Показано 1–4 из 6 статей
+    section.page-panel
+      .article-grid
+        a.article-card(href='parent-article.html?id=family-reading')
+          .article-art
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#book')
+          .article-card-body
+            span.article-category Читаем вместе · 3–8 лет
+            h2 Как читать вместе, чтобы ребёнку было интересно
+            p Простые приёмы семейного чтения без спешки и обязательных норм.
+            .article-meta
+              span
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#clock')
+                |  5 минут
+              span ★ 4,9
+            b.task-link
+              | Читать статью 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.article-card(href='parent-article.html?id=read-before-sleep')
+          .article-art
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#book')
+          .article-card-body
+            span.article-category Практика · 3–8 лет
+            h2 Вечернее чтение: спокойный ритуал перед сном
+            p Как сделать чтение уютной частью вечера без гонки за количеством страниц.
+            .article-meta
+              span
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#clock')
+                |  4 минуты
+              span ★ 4,8
+            b.task-link
+              | Читать статью 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.article-card(href='parent-article.html?id=choose-by-age')
+          .article-art
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#book')
+          .article-card-body
+            span.article-category По возрасту · 3–12 лет
+            h2 Как подобрать сказку по возрасту и интересам
+            p На что смотреть кроме возрастной маркировки книги.
+            .article-meta
+              span
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#clock')
+                |  6 минут
+              span ★ 4,9
+            b.task-link
+              | Читать статью 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.article-card(href='parent-article.html?id=questions-after')
+          .article-art
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#book')
+          .article-card-body
+            span.article-category Разговор о книге · 5–12 лет
+            h2 О чём поговорить после прочтения сказки
+            p Открытые вопросы, которые помогают обсуждать сюжет без «проверки знаний».
+            .article-meta
+              span
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#clock')
+                |  5 минут
+              span ★ 4,7
+            b.task-link
+              | Читать статью 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.article-card(href='parent-article.html?id=first-reading')
+          .article-art
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#book')
+          .article-card-body
+            span.article-category По возрасту · 5–8 лет
+            h2 Как поддержать ребёнка, который только учится читать
+            p Поддержка, короткие подходы и совместное чтение помогают без лишнего давления.
+            .article-meta
+              span
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#clock')
+                |  7 минут
+              span ★ 4,8
+            b.task-link
+              | Читать статью 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+        a.article-card(href='parent-article.html?id=repeat-stories')
+          .article-art
+            svg.icon(aria-hidden='true')
+              use(href='/assets/icons.svg#book')
+          .article-card-body
+            span.article-category Развитие · 3–8 лет
+            h2 Почему детям нравится перечитывать знакомые истории
+            p Повторное чтение помогает замечать знакомые детали и чувствовать уверенность.
+            .article-meta
+              span
+                svg.icon(aria-hidden='true')
+                  use(href='/assets/icons.svg#clock')
+                |  3 минуты
+              span ★ 4,9
+            b.task-link
+              | Читать статью 
+              svg.icon(aria-hidden='true')
+                use(href='/assets/icons.svg#arrow-right')
+      nav.pagination(aria-label='Страницы статей')
+        a.active(href='?category=%D0%92%D1%81%D0%B5&page=1', aria-current='page') 1
+        a(href='?category=%D0%92%D1%81%D0%B5&page=2') 2
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent

@@ -1,0 +1,107 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Каталог раскрасок — СказкоМир
+
+block content
+  - const coloringItems = [{ id: 'kolobok', title: 'Колобок на лесной дорожке', book: 'Колобок', age: '3–5 лет', level: 'Просто', genre: 'Народная сказка', img: '/assets/covers/kolobok.svg', likes: 24 }, { id: 'repka', title: 'Большая-пребольшая репка', book: 'Репка', age: '3–5 лет', level: 'Просто', genre: 'Народная сказка', img: '/assets/covers/repka.svg', likes: 18 }, { id: 'three-pigs', title: 'Домики трёх поросят', book: 'Три поросёнка', age: '5–8 лет', level: 'Средне', genre: 'Про животных', img: '/assets/covers/three-pigs.svg', likes: 32 }, { id: 'masha', title: 'Маша и лесной мишка', book: 'Маша и медведь', age: '5–8 лет', level: 'Средне', genre: 'Народная сказка', img: '/assets/covers/masha.svg', likes: 41 }, { id: 'sivka', title: 'Сивка-Бурка', book: 'Сивка-Бурка', age: '5–8 лет', level: 'Средне', genre: 'Народная сказка', img: '/assets/covers/sivka-burka.svg', likes: 15 }, { id: 'little-red', title: 'Дорога Красной Шапочки', book: 'Красная Шапочка', age: '5–8 лет', level: 'Средне', genre: 'Авторская сказка', img: '/assets/covers/red-riding-hood.svg', likes: 27 }, { id: 'thumbelina', title: 'Цветок Дюймовочки', book: 'Дюймовочка', age: '9–12 лет', level: 'Подробно', genre: 'Авторская сказка', img: '/assets/covers/thumbelina.svg', likes: 13 }, { id: 'turnip', title: 'Лисичка со скалочкой', book: 'Лисичка со скалочкой', age: '5–8 лет', level: 'Просто', genre: 'Про животных', img: '/assets/covers/fox-rolling-pin.svg', likes: 20 }, { id: 'aybolit', title: 'Добрый доктор Айболит', book: 'Доктор Айболит', age: '5–8 лет', level: 'Средне', genre: 'Стихи', img: '/assets/covers/aybolit.svg', likes: 36 }, { id: 'moydodyr', title: 'Умывальник Мойдодыр', book: 'Мойдодыр', age: '3–5 лет', level: 'Просто', genre: 'Стихи', img: '/assets/covers/moidodyr.svg', likes: 16 }, { id: 'fox-crane', title: 'Лиса и журавль в гостях', book: 'Лиса и журавль', age: '3–5 лет', level: 'Просто', genre: 'Народная сказка', img: '/assets/covers/fox-and-crane.svg', likes: 22 }, { id: 'cat-house', title: 'Кошкин дом', book: 'Кошкин дом', age: '5–8 лет', level: 'Подробно', genre: 'Стихи', img: '/assets/covers/koshkin-dom.svg', likes: 19 }]
+  - const coloringCategories = [{id:'all', title:'Сказочные герои', description:'Любимые истории и их персонажи', cover:'kolobok', ids:'kolobok repka three-pigs masha sivka little-red thumbelina turnip aybolit moydodyr fox-crane cat-house'}, {id:'animals', title:'Животные и друзья', description:'Лесные встречи и добрые зверята', cover:'three-pigs', ids:'three-pigs masha sivka turnip fox-crane aybolit'}, {id:'poems', title:'Стихи и сказки', description:'Рисунки по любимым детским стихам', cover:'aybolit', ids:'aybolit moydodyr cat-house'}, {id:'kind', title:'Добрые истории', description:'Тёплые сюжеты для тихого вечера', cover:'masha', ids:'kolobok repka masha little-red thumbelina'}]
+
+  +siteHeader('activities')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Занятия', href: 'activities.html'}, {label: 'Раскраски', href: null}])
+    .coloring-catalog-head
+      div
+        span.eyebrow Творческая мастерская
+        h1.page-title Раскраски по любимым сказкам
+        p.lead Выберите рисунок, распечатайте его или раскрасьте прямо на странице. Готовыми работами можно поделиться с другими читателями.
+      .coloring-head-mark
+        img(src='/assets/illustrations/coloring.svg', alt='Ребёнок рисует цветными карандашами')
+    section.coloring-categories#coloringCategories(aria-label='Категории раскрасок')
+      .section-head
+        div
+          span.eyebrow Выберите тему
+          h2 Категории раскрасок
+          p Подберите рисунки по настроению или любимым героям.
+      .coloring-category-grid
+        each category in coloringCategories
+          a.coloring-category-card(href=`coloring.html?category=${category.id}`, data-coloring-category=category.id, data-ids=category.ids)
+            .coloring-category-art
+              img(src=`/assets/colorings/${category.cover}.png`, alt='', loading='lazy')
+              span.category-count= category.ids.split(' ').length + ' раскрасок'
+            .coloring-category-copy
+              h3= category.title
+              p= category.description
+              span.category-open Открыть категорию
+    section#coloringCatalog(hidden, aria-label='Каталог раскрасок')
+      .coloring-catalog-top
+        button.category-back#coloringBack(type='button')
+          svg.icon(aria-hidden='true')
+            use(href='/assets/icons.svg#arrow-right')
+          | Все категории
+        div
+          h2#coloringCategoryTitle Раскраски
+          p#coloringCategoryLead Выберите рисунок для творчества
+      section.page-panel catalog-filters coloring-filters(aria-label='Фильтры раскрасок')
+        .filter-panel-head
+          div
+            span.filter-kicker Настройте подборку
+            h3 Подберите раскраску
+          button.pill#resetColoringFilters(type='button') Сбросить фильтры
+        .coloring-filter-grid
+          +uiSelect('coloringStory','Сказка',[{value:'Все',label:'Все сказки'}, ...coloringItems.map(item => ({value:item.id,label:item.book}))], 'Все')
+          +uiSelect('coloringAge','Возраст',[{value:'Все',label:'Любой возраст'},{value:'3–5 лет',label:'3–5 лет'},{value:'5–8 лет',label:'5–8 лет'},{value:'9–12 лет',label:'9–12 лет'}], 'Все')
+          +uiSelect('coloringSort','Сначала',[{value:'popular',label:'Популярные'},{value:'new',label:'Новые'},{value:'az',label:'По названию'}], 'popular')
+        .coloring-filter-options
+          +uiRadioGroup('coloringLevel','Сложность',[{value:'Все',label:'Любая'},{value:'Просто',label:'Просто'},{value:'Средне',label:'Средне'},{value:'Подробно',label:'Подробно'}],'Все')
+          .filter-checks
+            +uiCheckbox('coloringPrintable','Подходит для печати',true)
+            +uiToggle('coloringOnline','Можно раскрасить онлайн',true)
+          +uiRange('coloringLikes','Популярность',0,50,0,5)
+        p.catalog-count#coloringCount(role='status' aria-live='polite') Показано 1–6 из 12 раскрасок
+      .colorings-section(aria-label='Каталог раскрасок')
+        .colorings-grid#coloringGrid
+          each item, index in coloringItems
+            article.coloring-card(data-coloring-card, data-id=item.id, data-age=item.age, data-level=item.level, data-index=index, data-likes=item.likes, data-printable='true', data-online='true')
+              a.coloring-card-art(href=`coloring-task.html?id=${item.id}`, aria-label=`Открыть раскраску «${item.title}»`)
+                img(src=`/assets/colorings/${item.id}.png`, alt=`Чёрно-белый контур: ${item.title}`, loading='lazy')
+                span.coloring-preview-label Раскраска по сказке
+              .coloring-card-body
+                span.task-age= `${item.age} · ${item.level}`
+                h2
+                  a(href=`coloring-task.html?id=${item.id}`)= item.title
+                p= item.book
+                .coloring-card-actions
+                  a.btn.small(href=`coloring-task.html?id=${item.id}&download=1`, aria-label=`Скачать раскраску «${item.title}»`)
+                    svg.icon(aria-hidden='true')
+                      use(href='/assets/icons.svg#download')
+                    | Скачать
+                  button.pill.like-button(type='button', data-like, data-count=item.likes, aria-pressed='false', aria-label=`Нравится, ${item.likes} отметок`)
+                    svg.icon(aria-hidden='true')
+                      use(href='/assets/icons.svg#heart')
+                    span= item.likes
+                  button.pill(type='button', data-favorite, aria-pressed='false', aria-label='Добавить в избранное')
+                    svg.icon(aria-hidden='true')
+                      use(href='/assets/icons.svg#bookmark')
+                    span В избранное
+      p.empty#coloringEmpty(hidden) По этим условиям раскрасок не найдено. Измените фильтры.
+      nav.pagination#coloringPagination(aria-label='Страницы каталога раскрасок')
+        button.active(type='button', data-color-page='1', aria-current='page') 1
+        button(type='button', data-color-page='2') 2
+        button(type='button', data-color-next, aria-label='Следующая страница') →
+    section.coloring-community-intro
+      .community-icon
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#heart')
+      div
+        h2 Покажите, как раскрасили вы
+        p На странице каждой раскраски можно добавить фотографию своей работы, посмотреть работы других детей и поддержать их лайком.
+      a.btn(href='coloring-task.html?id=kolobok') Выбрать раскраску
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast

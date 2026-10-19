@@ -1,0 +1,44 @@
+extends _layout.pug
+
+include ../includes/site.pug
+
+block title
+  title Чтение сказки — СказкоМир
+
+block content
+  +siteHeader('')
+  main.page-wrap
+    +siteSearch()
+    +breadcrumbs([{label: 'Главная', href: 'index.html'}, {label: 'Сказки', href: 'fairy-tales.html'}, {label: 'Чтение', href: null}])
+    .page-heading-art.reader-heading-art
+      div
+        h1.page-title
+          a(href='story.html?id=kolobok') Колобок
+          |  · Чтение
+        p.lead Русская народная сказка · 3–5 лет · 5 минут
+      img(src='/assets/illustrations/family-reading.svg', alt='Ребёнок читает сказку вместе с родителем')
+    section.reading-shell
+      .reader-toolbar
+        a.pill(href='story.html?id=kolobok') ← К сказке
+        button.pill#fontDown(aria-label='Уменьшить текст') A−
+        button.pill#fontUp(aria-label='Увеличить текст') A+
+        button.pill#readerTheme Ночной режим
+      .reading-progress
+        span#readingProgress Прогресс чтения: 0 из 2 абзацев
+      article.reader-text#readerText(style='--reader-size: 19px;')
+        p.reader-author Русская народная сказка
+        h2.reader-title Колобок
+        p(data-paragraph='0') Жили-были старик со старухой. Вот и просит старик: «Испеки, старуха, колобок». Старуха по коробу поскребла, по сусеку помела — и набралось муки горсти две. Замесила тесто, испекла колобок и положила на окошко остудить.
+        p(data-paragraph='1') Надоело колобку лежать, он и покатился по дорожке. Катится, катится — навстречу ему заяц. «Колобок, колобок, я тебя съем!» — сказал заяц. А колобок запел свою песенку и покатился дальше.
+        p.reader-end Конец истории
+  +siteFooter()
+  button.sticky-top#toTop(aria-label='Наверх')
+    svg.icon(aria-hidden='true')
+      use(href='/assets/icons.svg#arrow-up')
+  .toast#toast
+  .modal#modal
+    .modal-card
+      button.modal-close#modalClose(aria-label='Закрыть')
+        svg.icon(aria-hidden='true')
+          use(href='/assets/icons.svg#close')
+      #modalContent
