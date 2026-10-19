@@ -28,7 +28,7 @@ class MediaLibraryController extends Controller
             }
 
             foreach (File::files($absoluteDirectory) as $file) {
-                if (in_array(strtolower($file->getExtension()), ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+                if (in_array(strtolower($file->getExtension()), ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'], true)) {
                     $media->push(['path' => 'assets/'.$directory.'/'.$file->getFilename(), 'name' => $file->getFilename()]);
                 }
             }

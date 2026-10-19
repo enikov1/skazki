@@ -227,10 +227,10 @@ class DemoContentSeeder extends Seeder
     private function seedColorings(): array
     {
         $rows = [
-            ['category' => 'Сказочные герои', 'category_slug' => 'skazochnye-geroi-demo', 'description' => 'Знакомые герои для первых раскрасок.', 'cover' => 'assets/covers/kolobok.svg', 'pages' => [['Лисёнок', 'lisenok-demo', 'fox-crane.png'], ['Колобок', 'kolobok-demo', 'kolobok.png'], ['Красная шапочка', 'krasnaya-shapochka-demo', 'little-red.png']]],
-            ['category' => 'Домашние истории', 'category_slug' => 'domashnie-istorii-demo', 'description' => 'Уютные сюжеты о доме и семье.', 'cover' => 'assets/covers/koshkin-dom.svg', 'pages' => [['Кошкин дом', 'koshkin-dom-demo', 'cat-house.png'], ['Маша и медведь', 'masha-demo', 'masha.png'], ['Три поросёнка', 'tri-porosenka-demo', 'three-pigs.png']]],
-            ['category' => 'Лесные друзья', 'category_slug' => 'lesnye-druzya-demo', 'description' => 'Животные и приключения в лесу.', 'cover' => 'assets/covers/fox-and-crane.svg', 'pages' => [['Лиса и журавль', 'lisa-i-zhuravl-demo', 'fox-crane.png'], ['Айболит', 'aybolit-demo', 'aybolit.png'], ['Сивка-Бурка', 'sivka-burka-demo', 'sivka.png']]],
-            ['category' => 'Добрые сказки', 'category_slug' => 'dobrye-skazki-demo', 'description' => 'Короткие рисунки для спокойного отдыха.', 'cover' => 'assets/covers/repka.svg', 'pages' => [['Репка', 'repka-demo', 'repka.png'], ['Мойдодыр', 'moydodyr-demo', 'moydodyr.png'], ['Дюймовочка', 'dyujmovochka-demo', 'thumbelina.png']]],
+            ['category' => 'Сказочные герои', 'category_slug' => 'skazochnye-geroi-demo', 'description' => 'Знакомые герои для первых раскрасок.', 'cover' => 'assets/covers/kolobok.svg', 'pages' => [['Лисёнок', 'lisenok-demo', 'fox-crane.svg'], ['Колобок', 'kolobok-demo', 'kolobok.svg'], ['Красная шапочка', 'krasnaya-shapochka-demo', 'little-red.svg']]],
+            ['category' => 'Домашние истории', 'category_slug' => 'domashnie-istorii-demo', 'description' => 'Уютные сюжеты о доме и семье.', 'cover' => 'assets/covers/koshkin-dom.svg', 'pages' => [['Кошкин дом', 'koshkin-dom-demo', 'cat-house.svg'], ['Маша и медведь', 'masha-demo', 'masha.svg'], ['Три поросёнка', 'tri-porosenka-demo', 'three-pigs.svg']]],
+            ['category' => 'Лесные друзья', 'category_slug' => 'lesnye-druzya-demo', 'description' => 'Животные и приключения в лесу.', 'cover' => 'assets/covers/fox-and-crane.svg', 'pages' => [['Лиса и журавль', 'lisa-i-zhuravl-demo', 'fox-crane.svg'], ['Айболит', 'aybolit-demo', 'aybolit.svg'], ['Сивка-Бурка', 'sivka-burka-demo', 'sivka.svg']]],
+            ['category' => 'Добрые сказки', 'category_slug' => 'dobrye-skazki-demo', 'description' => 'Короткие рисунки для спокойного отдыха.', 'cover' => 'assets/covers/repka.svg', 'pages' => [['Репка', 'repka-demo', 'repka.svg'], ['Мойдодыр', 'moydodyr-demo', 'moydodyr.svg'], ['Дюймовочка', 'dyujmovochka-demo', 'thumbelina.svg']]],
         ];
 
         $pages = [];
@@ -260,8 +260,8 @@ class DemoContentSeeder extends Seeder
         ]);
 
         foreach ([
-            ['slug' => 'demo-approved-fox', 'page' => $pages['lisenok-demo'], 'title' => 'Лисёнок на прогулке', 'source' => 'fox-crane.png', 'status' => 'approved'],
-            ['slug' => 'demo-pending-star', 'page' => $pages['repka-demo'], 'title' => 'Звёздочка для проверки', 'source' => 'simple.png', 'status' => 'pending'],
+            ['slug' => 'demo-approved-fox', 'page' => $pages['lisenok-demo'], 'title' => 'Лисёнок на прогулке', 'source' => 'demo-fox.png', 'status' => 'approved'],
+            ['slug' => 'demo-pending-star', 'page' => $pages['repka-demo'], 'title' => 'Звёздочка для проверки', 'source' => 'demo-star.png', 'status' => 'pending'],
         ] as $row) {
             $path = 'coloring-submissions/'.$row['slug'].'.png';
             $source = public_path('assets/colorings/'.$row['source']);
