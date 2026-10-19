@@ -7,8 +7,7 @@
   @include('auth.partials.aside', ['label' => 'Добро пожаловать', 'heading' => 'Ваша история начинается здесь', 'description' => 'Создайте аккаунт, чтобы возвращаться к любимым сказкам и продолжать чтение.', 'art' => 'assets/illustrations/auth-register.svg', 'alt' => 'Медвежонок читает книжку'])
   <section class="auth-card" aria-labelledby="authTitle"><span class="auth-kicker">Новый читатель</span><h2 id="authTitle">Создать аккаунт</h2><p class="auth-description">Заполните несколько полей, чтобы присоединиться к СказкоМиру.</p>
     @if($errors->any())<div class="form-errors" role="alert">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
-    <div class="social-login" aria-label="Создать аккаунт через социальную сеть"><a class="social-button social-yandex" href="{{ route('oauth.redirect', 'yandex') }}"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#yandex"></use></svg> Продолжить с Яндексом</a><a class="social-button social-vk" href="{{ route('oauth.redirect', 'vkontakte') }}"><svg class="icon" aria-hidden="true"><use href="{{ asset('assets/icons.svg') }}#vk"></use></svg> Продолжить с VK</a></div>
-    <div class="auth-divider"><span>или по электронной почте</span></div>
+    @include('auth.partials.social-login')
     <form class="auth-form" method="post" action="{{ route('register.store') }}" data-ajax-form>@csrf
       <div class="field"><label for="registerName">Как к вам обращаться</label><input id="registerName" type="text" name="name" value="{{ old('name') }}" autocomplete="name" maxlength="120" required></div>
       <div class="field"><label for="registerEmail">Электронная почта</label><input id="registerEmail" type="email" name="email" value="{{ old('email') }}" autocomplete="email" required></div>

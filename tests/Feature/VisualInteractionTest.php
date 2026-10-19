@@ -20,4 +20,11 @@ class VisualInteractionTest extends TestCase
         $empty = $this->getJson(route('articles.index', ['q' => 'ничего-не-найдено']))->assertOk()->assertJsonPath('count', 0);
         $this->assertStringContainsString('Подходящих статей пока нет', $empty->json('html'));
     }
+    public function test_unconfigured_social_login_is_not_presented_as_an_available_action(): void
+    {
+        config(['services.yandex.client_id' => null, 'services.yandex.client_secret' => null, 'services.vkontakte.client_id' => null, 'services.vkontakte.client_secret' => null]);
+        $this->get(route('login'))->assertOk()->assertDontSee('Продолжить с Яндексом')->assertDontSee('Продолжить с VK');
+        config(['services.yandex.client_id' => 'test-client', 'services.yandex.client_secret' => 'test-secret']);
+        $this->get(route('login'))->assertOk()->assertSee('Продолжить с Яндексом')->assertDontSee('Продолжить с VK');
+    }
 }

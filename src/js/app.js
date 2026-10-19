@@ -577,7 +577,7 @@ function bindCatalog({form,results,links,onLoaded}){
   finally{if(active===controller)results.removeAttribute('aria-busy')}
  };
  form.addEventListener('submit',event=>{event.preventDefault();const url=new URL(form.action,location.href);new FormData(form).forEach((value,key)=>{if(String(value).trim())url.searchParams.set(key,String(value).trim());else url.searchParams.delete(key)});url.searchParams.delete('page');load(url.toString())});
- document.addEventListener('click',event=>{const link=event.target.closest(links);if(!link||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();const url=new URL(link.href,location.href);form.querySelectorAll('[name]').forEach(field=>{if(field.type!=='submit')field.value=url.searchParams.get(field.name)||''});load(url.toString())});
+ document.addEventListener('click',event=>{const link=event.target.closest(links);if(!link||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;event.preventDefault();const url=new URL(link.href,location.href);if(link.matches('[data-article-category]')){const query=form.elements.namedItem('q')?.value?.trim();if(query)url.searchParams.set('q',query);else url.searchParams.delete('q')}form.querySelectorAll('[name]').forEach(field=>{if(field.type!=='submit')field.value=url.searchParams.get(field.name)||''});load(url.toString())});
  addEventListener('popstate',()=>{const url=new URL(location.href);form.querySelectorAll('[name]').forEach(field=>field.value=url.searchParams.get(field.name)||'');load(url.toString(),false)});
 }
 bindCatalog({form:storyCatalogForm,results:storyCatalogResults,links:'[data-story-catalog-results] .pagination a,[data-story-catalog-reset]'});
