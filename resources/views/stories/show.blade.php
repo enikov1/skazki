@@ -8,9 +8,9 @@
   <div class="detail">
     <div class="cover c1">@if($story->cover_path)<img class="cover-img" src="{{ asset($story->cover_path) }}" alt="Иллюстрация к сказке «{{ $story->title }}">@endif<span class="mini-title">{{ $story->title }}</span></div>
     <div>
-      <p class="eyebrow">{{ $story->genre }}</p><h1 class="story-title">{{ $story->title }}</h1><div class="detail-meta">{{ $story->author ?: 'СказкоМир' }} · {{ $story->age_min }}–{{ $story->age_max }} лет · {{ $story->reading_minutes }} минут</div>
+      <p class="eyebrow">{{ $story->genre }}</p><h1 class="story-title">{{ $story->title }}</h1><div class="detail-meta">{{ $story->author ?: 'СказкоМир' }} · {{ $story->age_min }}–{{ $story->age_max }} лет · {{ $story->reading_minutes }} мин</div>
       <div class="meta-chips">
-        <span>Жанр: {{ $story->genre }}</span><span>Возраст: {{ $story->age_min }}–{{ $story->age_max }} лет</span><span>Чтение: {{ $story->reading_minutes }} минут</span>
+        <span>Жанр: {{ $story->genre }}</span><span>Возраст: {{ $story->age_min }}–{{ $story->age_max }} лет</span><span>Чтение: {{ $story->reading_minutes }} мин</span>
         @if($story->series_name)
           <span>Серия: {{ $story->series_name }}</span>
         @endif
